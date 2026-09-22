@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>teste</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'  rel="stylesheet" type="text/css"  />
+	<style type="text/css">
+		.container > div > div{margin-top: 10px;}
+	</style>
+</head>
+<body>
+
+<div class='container'>
+	<div class="row">
+		<div class="col-md-5 col-md-offset-1">
+			<div class='alert alert-info' id='alerta'>
+				<strong>Status:</strong> <span id='alertStatus'>Parado</span> <br />
+				<strong>Estado:</strong> <span id='alertEstado'></span> <br />
+				<strong>Municipio:</strong> <span id='alertMunicipio'></span> <br />
+			</div>
+		</div>
+		<div class="col-md-5">
+			<button class="btn btn-success" id='iniciar'> INICIAR </button>
+			<button class="btn btn-danger" id='parar'> PARAR </button>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-10 col-md-offset-1">
+			<div class='form-group'>
+				<textarea class='form-control' id='resultado' cols="50" style="height:300px"></textarea>
+			</div>
+		</div>
+	</div>
+	<div class='hidden' id='retorno_principal'></div>
+	<div class='hidden' id='retorno_estado'></div>
+</div>
+
+
+<script type="text/javascript">
+	$(function(){
+		$('#parar').click(function(){
+		
+		});
+
+		$('#iniciar').click(function(){
+			$('#alertStatus').html('Executando');
+			var request = $.ajax({
+				url: "index_cidades.asp?u=1",
+				method: "GET",
+				dataType: "text",
+				async:false
+			});
+
+			request.done(function( msg ) {
+				$( "#retorno_principal" ).html( msg.replace('<html xmlns="http://www.w3.org/1999/xhtml">','').replace(/<script/g,'') );
+
+				$('#retorno_principal #menu_ufs li').each(function(){
+					var estado = $(this).text();
+
+					var request_estado = $.ajax({
+						url: "index_cidades.asp?u=1&p="+$(this).attr('id').replace('uf',''),
+						method: "GET",
+						dataType: "text",
+						async:false
+					});	
+
+					request.done(function( msg ) {
+						$( "#retorno_estado" ).html( msg.replace('<html xmlns="http://www.w3.org/1999/xhtml">','').replace(/<script/g,'') );
+
+						$("#retorno_estado #lista_municipios li").each(function(){
+							console.log($(this).attr('id') + '|' );
+
+							$('#resultado').val($('#resultado').val()+'Rota::create(["estado_id" => "'+estado+'", "codigo_ibge" => "'+$(this).attr('id').replace('m','')+'", "nome" => "'+ $(this).text()+'"]);\n');
+
+						});
+					});	
+
+					request.fail(function( jqXHR, textStatus ) {
+					  alert( "2 Request failed: " + textStatus );
+					});
+
+				});
+			});
+
+			request.fail(function( jqXHR, textStatus ) {
+			  alert( "1 Request failed: " + textStatus );
+			});
+		});
+	});
+</script>
+
+</body>
+</html>

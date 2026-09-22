@@ -1,0 +1,790 @@
+/*Bootstrap SOMENTE labels*/
+.label {
+  display: inline;
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: bold;
+  line-height: 1;
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25em;
+}
+a.label:hover,
+a.label:focus {
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.label:empty {
+  display: none;
+}
+.btn .label {
+  position: relative;
+  top: -1px;
+}
+.label-default {
+  background-color: #777777;
+}
+.label-default[href]:hover,
+.label-default[href]:focus {
+  background-color: #5e5e5e;
+}
+.label-primary {
+  background-color: #ff007f;
+}
+.label-primary[href]:hover,
+.label-primary[href]:focus {
+  background-color: #286090;
+}
+.label-success {
+  background-color: #5cb85c;
+}
+.label-success[href]:hover,
+.label-success[href]:focus {
+  background-color: #449d44;
+}
+.label-info {
+  background-color: #ff007f;
+}
+.label-info[href]:hover,
+.label-info[href]:focus {
+  background-color: #ff007f;
+}
+.label-warning {
+  background-color: #f0ad4e;
+}
+.label-warning[href]:hover,
+.label-warning[href]:focus {
+  background-color: #ec971f;
+}
+.label-danger {
+  background-color: #d9534f;
+}
+.label-danger[href]:hover,
+.label-danger[href]:focus {
+  background-color: #c9302c;
+}
+.clearfix:before,
+.clearfix:after {
+  content: " ";
+  display: table;
+}
+.clearfix:after {
+  clear: both;
+}
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pull-right {
+  float: right !important;
+}
+.pull-left {
+  float: left !important;
+}
+.hide {
+  display: none !important;
+}
+.show {
+  display: block !important;
+}
+.invisible {
+  visibility: hidden;
+}
+.text-hide {
+  font: 0/0 a;
+  color: transparent;
+  text-shadow: none;
+  background-color: transparent;
+  border: 0;
+}
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+}
+.affix {
+  position: fixed;
+}
+/*FIM bootstrap*/
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	background-color: #E1E1E1;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+}
+a img{
+	border:0px;
+}
+.cadSuperior{
+background-color:#DFEBFF;
+border:dotted 1px #666666;
+}
+.cabecalho_pags{
+background:#FFFFCC;
+border:#CCCCCC 1px dashed;
+margin:15px;
+}
+table{
+	font-size: 11px;
+}
+.linkTr:Hover{
+background:#FFFF99;
+cursor:pointer;
+}
+.msg{
+	font-size:13px;
+	font-weight:bold;
+	color:#CC0000;
+}
+.msg2{
+	font-size:13px;
+	font-weight:bold;
+	color:#003399;
+}
+.msgExcluir{
+	background-color:#FCA3A3;
+	font-size:14px;
+	text-align:center;
+	font-weight:bold;
+	padding:10px;
+	margin:10px;
+}
+.msgGrande{
+	font-size:14px;
+	color:#333333;
+	font-weight:bold;
+	padding:5px;
+	border-bottom:dotted 1px #CCCCCC;
+	border-top:dotted 1px #CCCCCC;
+	background-color:#FFFBDD;
+	margin-bottom:15px;
+	background-image:url(/gerencial_foto/images/icons/lista_exclamation_yellow.jpg);
+	background-repeat:no-repeat;
+	background-position:10px center;
+	padding-left:65px;
+	padding-top:12px;
+	padding-bottom:12px;
+}
+.msgGrandeSucesso{
+	font-size:14px;
+	color:#ff007f;
+	font-weight:bold;
+	padding:5px;
+	border-bottom:dotted 1px #CCCCCC;
+	border-top:dotted 1px #CCCCCC;
+	background-color:#FFFBDD;
+	margin-bottom:15px;
+	background-image:url(/gerencial_foto/images/icons/lista_exclamation_yellow.jpg);
+	background-repeat:no-repeat;
+	background-position:10px center;
+	padding-left:65px;
+	padding-top:12px;
+	padding-bottom:12px;
+}
+.msgGrandeErro{
+	font-size:14px;
+	color:#CC0000;
+	font-weight:bold;
+	padding:5px;
+	border-bottom:dotted 1px #CCCCCC;
+	border-top:dotted 1px #CCCCCC;
+	background-color:#FFFBDD;
+	margin-bottom:15px;
+	background-image:url(/gerencial_foto/images/icons/lista_exclamation_yellow.jpg);
+	background-repeat:no-repeat;
+	background-position:10px center;
+	padding-left:65px;
+	padding-top:12px;
+	padding-bottom:12px;
+}
+.subMenu{
+padding:6px;
+border: #CCCCCC dashed 1px;
+margin:3px;
+background-color:#F2F2F2;
+color:#333333;
+}
+.subMenu a:Link{
+padding:3px;
+color:#333333;
+font-size:13px;
+}
+.subMenu a:Visited{
+padding:3px;
+color:#333333;
+font-size:13px;
+}
+.subMenu a:Active{
+padding:3px;
+color:#333333;
+font-size:13px;
+}
+.subMenu a:Hover{
+padding:3px;
+color:#CC0000;
+font-size:13px;
+}
+	input, textarea, select {
+	border:solid #666666 1px;
+	font-size:13px;
+	background:#F4F4F4;
+	padding:2px;
+	font:Arial;}
+	
+	.inputTamanho1{
+	width:100px;
+		font-family:Arial, Helvetica, sans-serif;
+	}
+	.inputTamanho2{
+	width:230px;
+	font-size:13px;
+	font-family:Arial, Helvetica, sans-serif;
+	}
+	.inputTamanho3{
+		width:420px;
+			font-family:Arial, Helvetica, sans-serif;
+	}
+	/*CSS Calend�rio*/
+	.campoData{display:block;
+	text-align:center;
+	width:100px;
+	padding:2px;
+	}
+	#mainContainer{
+		width:600px;
+		margin:0 auto;
+		margin-top:10px;
+		border:1px double #000;
+		padding:3px;
+
+	}
+	#calendarDiv,#calendarDiv2{
+		width:240px;
+		height:240px;
+		float:left;
+	}
+	.clear{
+		clear:both;
+	}
+	/*CSS Calend�rio*/
+.menu_bots table a{
+text-decoration:none;
+}
+.menu_bots table a:link{
+color:#000000;
+text-decoration:none;
+}
+.menu_bots table a:visited{
+color:#000000;
+text-decoration:none;
+}
+.menu_bots table a:active{
+color:#000000;
+text-decoration:none;
+}
+
+#comboTexto{}
+
+.linha_pont_veritcal{
+position:relative;
+float:left;
+height:45px;
+border-left: dotted #000000 1px;
+}
+a:link {
+	color: #ff007f;
+}
+a:visited {
+	color: #ff007f;
+}
+a:hover {
+	color: #CC0000;	
+}
+a:active {
+	color: #ff007f;
+}
+.linkMaster:active{
+font-size:16px;
+font-weight:bold;
+color:#CC0000
+}
+.linkMaster:visited{
+font-size:16px;
+font-weight:bold;
+color:#CC0000
+}
+.linkMaster:link{
+font-size:16px;
+font-weight:bold;
+color:#CC0000
+}
+.linkMaster:hover{
+font-size:16px;
+font-weight:bold;
+color:#000000;
+}
+
+h1, h2, h3, h4, h5, h6{
+	font-weight: bold !important; 
+}
+
+h1{
+color:#666666 !important;
+font-size:16px !important;
+margin:5px !important;
+
+}
+h2{
+margin-left:5px !important;
+margin:0px !important;
+color:#ff007f !important;
+font-size:18px !important;
+}
+h3{
+font-size:24px !important;
+font-style:italic !important;
+color: #000000 !important;
+}
+.textoMenor{
+font-size:9px;}
+.textoMedio{
+font-size:14px;}
+.textoMaior{
+font-size:18px;}
+.menuLateralTitulo{
+font-size:12px;
+color:#333333;
+font-weight:bold;}
+.menuLinks:active{
+font-size:13px;
+color:#CC0000;}
+.menuLinks:visited{
+font-size:13px;
+color:#000000;}
+.menuLinks:link{
+font-size:13px;
+color:#CC0000;}
+.menuLinks:hover{
+font-size:14px;
+font-weight:bold;
+color:#CC0000;}
+
+/*CSS F1*/
+#dhtmlgoodies_leftPanel{	/* Styling the help panel */
+		
+		background-color:#CC0000;
+		color:#FFF;	/* White text color */
+		font-family: Trebuchet MS, Lucida Sans Unicode, Arial, sans-serif;	/* Which font to use */
+		
+		/* You shouldn't change these 5 options unless you need to */		
+		height:100%;	
+		left:0px;
+		z-index:10;
+		position:absolute;
+		display:none;
+		overflow:hidden;
+	}
+	
+	#dhtmlgoodies_leftPanel #leftPanelContent{
+		padding:0px;
+	}
+	#dhtmlgoodies_leftPanel .closeLink{ /* Layout of close link */
+		padding-left:2px;
+		padding-right:2px;
+		background-color:#FFF;
+		position:absolute;
+		top:2px;
+		right:2px;
+		border:1px solid #000;
+		color:#000;
+		font-size:0.8em;				
+	}
+	#dhtmlgoodies_leftPanel .closeLink:hover{	/* Close link text  - mouseover effect*/
+		color:#FFF;
+		background-color:#000;
+	}
+	.botoes_icones{
+	padding:3px;
+	}
+	.botoes_icones:hover{
+	padding:2px;
+	border:solid 1px #999999;	
+	}
+	.linkCinza{
+	color:#666666;}
+	.linkCinza:link{
+	color:#666666;}
+	.linkCinza:active{
+	color:#666666;}
+	.linkCinza:hover{
+		color:#000000;}
+	.linkCinza:visited{
+	color:#666666;}
+	.textoCinza{
+	color:#666666;
+	}
+	.btnTopo{
+	background-image:url(../images/layout/btnTopo.jpg);
+	cursor:pointer;
+	width:61px;
+	height:23px;
+	border:0px;}
+	
+	.btnAvancar{	background-image:url(../images/layout/btnAvancar.jpg);
+	cursor:pointer;
+	width:84px;
+	height:23px;
+	border:0px;
+	background-repeat:no-repeat;
+	}
+	.btnExcluir{	background-image:url(../images/layout/btnExcluir.jpg);
+	cursor:pointer;
+	width:75px;
+	height:22px;
+	border:0px;
+	}
+	.btnFiltrarAmarelo{	background-image:url(../images/layout/btnFiltrarAmarelo.jpg);
+	cursor:pointer;
+	width:75px;
+	height:20px;
+	border:0px;
+	}
+	.btnFiltrar{	background-image:url(../images/layout/btnFiltrar.jpg);
+	cursor:pointer;
+	width:75px;
+	height:20px;
+	border:0px;
+	}
+	.btnEntrar{	background-image:url(../images/layout/btnEntrar.jpg);
+	cursor:pointer;
+	width:75px;
+	height:22px;
+	border:0px;
+	}
+	
+	 .btnVoltar{	background-image:url(../images/layout/btnVoltar.jpg);
+	cursor:pointer;
+	width:72px;
+	height:24px;
+	border:0px;
+	background-repeat:no-repeat;
+	}
+	  .btnGravar{	background-image:url(../images/layout/btnGravar.jpg);
+	cursor:pointer;
+	width:77px;
+	height:24px;
+	border:0px;
+	  }
+	  .btnNormais{
+	  cursor:pointer;
+	  }
+	 .btnNormais:hover{
+	  cursor:pointer;
+	  background:#999999;
+	  font-weight:bold;
+	  border:#000000 solid 2px;
+	  }
+	  .inputRadio{
+	  border:none;
+	  padding:0px;
+	  background:none;  
+	  }
+
+.inputContaCaracteres{
+	border:solid 1px #FFFFFF;
+	font-size:10px;
+	width:50px;
+	background-color:#FFFFFF;
+	text-align:center;
+}
+.ocultar{
+	visibility:hidden;
+}
+.ocultarCompleto{
+	display:none;
+	visibility:hidden;
+}
+.exibeCompleto{
+	display:inherit;
+	visibility:visible;
+}
+.btnGeral{
+	font-weight:bold;
+	padding-top:5px;
+	padding-bottom:5px;
+	padding-left:10px;
+	padding-right:10px;
+	margin:5px;
+	background-image:url(../images/layout/fundo_btn_geral.jpg); 
+	background-repeat:repeat-x; position:relative; border:solid 1px #999999;
+}
+fieldset{
+	margin:10px;
+	padding:10px;	
+}
+
+
+/*///TAB ///*/
+#tabsCaixa{
+	border-left:1px solid #24618E;
+	border-right:1px solid #24618E;
+	border-bottom:1px solid #24618E;
+}
+.tabs{
+	display:none;
+	visibility:hidden;
+}
+#tabsJ {
+	float:left;
+	width:100%;
+	background:#F4F4F4;
+	font-size:13px;
+	font-weight:bold;
+	line-height:normal;
+	border-bottom:1px solid #24618E;
+  
+}
+#tabsJ ul {
+	margin:0;
+	padding:10px 10px 0 50px;
+	list-style:none;
+}
+#tabsJ li {
+	display:inline;
+	margin:0;
+	padding:0;
+}
+
+
+#tabsJ a, #tabsJ .guia_desabilitada {
+	float:left;
+	background:url(../images/tabview/tableftJ.gif) no-repeat left top;
+	margin:0;
+	padding:0 0 0 5px;
+	text-decoration:none;
+}
+#tabsJ a span{
+	float:left;
+	display:block;
+	background:url(../images/tabview/tabrightJ.gif) no-repeat right top;
+	padding:5px 15px 4px 6px;
+	color:#24618E;
+}
+
+#tabsJ .guia_desabilitada span{
+	float:left;
+	display:block;
+	background:url(../images/tabview/tabrightJ.gif) no-repeat right top;
+	padding:5px 15px 4px 6px;
+	color:#B0B0B0;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+#tabsJ a span, #tabsJ .guia_desabilitada span {
+	float:none;
+}
+/* End IE5-Mac hack */
+#tabsJ a:hover span {
+	color:#FFF;
+}
+#tabsJ a:hover {
+	background-position:0% -42px;
+}
+#tabsJ a:hover span {
+	background-position:100% -42px;
+}
+#tabsJ .current a {
+	background-position:0% -42px;
+}
+#tabsJ .current a span {
+	background-position:100% -42px;
+	color:#FFF;
+}
+
+/*In�cio -- M�dulo contas a pagar */
+
+.contasPagarReceberStatusA_nodia, .contasPagarReceberStatusA_vencido, .contasPagarReceberStatusA_nao_vencido, .contasPagarReceberStatusQ{
+	padding:3px;
+	padding:3px;
+	font-weight:bold;
+	color:#FFF;
+	text-align:center;
+	width:80px;
+}
+.contasPagarReceberStatusA_vencido, .contasPagarReceberStatusA_nao_vencido, .contasPagarReceberStatusA_nodia{
+	text-decoration:underline;
+}
+.contasPagarReceberStatusA_vencido:hover, .contasPagarReceberStatusA_nao_vencido:hover, .contasPagarReceberStatusA_nodia:hover{
+	cursor:pointer;
+}
+.contasPagarReceberStatusA_vencido{
+	background-color:#C00
+}
+.contasPagarReceberStatusA_nao_vencido{
+	background-color:#090;
+}
+.contasPagarReceberStatusA_nodia{
+	background-color:#F93;
+}
+
+.contasPagarReceberStatusQ{
+	background-color:#00C;
+}
+/*Fim -- M�dulo contas a pagar */
+.menu_paginacaocao{
+	padding:5px;
+}
+.menu_paginacaocao span{
+	width:30px;
+	text-align:center;
+	border:1px #CCC solid;
+	padding-left:6px;
+	padding-right:6px;
+	padding-top:2px;
+	padding-bottom:2px;
+	color:#000000;
+	background-color:#CCC;
+	font-weight:bold; 
+	margin:1px;
+}
+.menu_paginacaocao a,.menu_paginacaocao a:link,.menu_paginacaocao a:visited,.menu_paginacaocao a:active{
+	width:30px;
+	text-align:center;
+	border:1px #003399 solid;
+	padding-left:6px;
+	padding-right:6px;
+	padding-top:2px;
+	padding-bottom:2px;
+	color:#003399;
+	font-weight:bold;
+	margin:1px;
+}
+.menu_paginacaocao a:hover{
+	background-color:#003399;
+	color:#FFFFFF;
+	margin:1px;
+}
+.linkMenu:hover{
+	cursor:pointer;
+	background-color:#ff007f;
+}
+.ajaxCarregando{
+	filter:alpha(opacity=80);
+	opacity:0.8;
+	background-color:#fff;
+	z-index:999998;
+	position:absolute;
+	top:0px;
+	left:0px;
+	height:100%;
+	width:100%;
+}
+#ajaxCarregandoImg{
+	z-index:999999;
+	filter:alpha(opacity=100);
+	opacity:1.0;
+	color:#FFFFFF;
+	font-size:13px;
+	font-weight:bold;
+	background-image:url(../images/layout/carregando.gif);
+	background-repeat:no-repeat;
+	height:15px;
+	width:128px;
+}
+#mensagemBlackOut{
+	opacity:0.6;	/* Transparency */
+	filter:alpha(opacity=60);	/* Transparency */
+	background-color:#FFF;
+	z-index:11;
+	position:absolute; /* Always needed	*/
+	width:100%;
+	height:100%;
+	left:0px;
+	top:0px;
+}
+#mensagemBlackOutConteudo{
+	margin-top:-150px;
+	margin-left:-250px;
+	width:500px;
+	height:300px;
+	text-align:center;
+	border:solid 1px #999;
+	background-color:#FFF;
+	color:#FFF;
+	z-index:12;
+	position:absolute;
+	top:50%;
+	left:50%;
+}
+.padrao_link{
+	cursor: pointer;
+}
+
+.camposNaoAlteraveisAjax{
+	padding:4px;
+	font-weight: bold;
+	text-align:11px;
+	border-bottom:#999999 solid 1px;
+	background-color:#F4F4F4;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+.tituloBranco {
+  color: white !important;
+}
+
+.menu_bots {
+	background-color: red !important;
+}
+  
+  .menu_bots table {
+	background-color: #2f2f44 !important;
+}
+  
+  .menu_bots td,
+  .menu_bots a,
+  .menu_bots strong {
+	background-color: #2f2f44 !important;
+	color: white !important;
+}
+.menu_bots a {
+	color: white !important;
+	background-color: #2f2f44 !important;
+	text-decoration: none !important;
+  }
+  
+  .menu_bots a:hover {
+	color: #f0f0f0 !important; /* tom claro combinando */
+	background-color: #cc0066 !important; /* rosa escuro ou roxo */
+	text-decoration: none !important;
+  }
+  
+  .menu_bots strong {
+	color: white !important;
+  }
+/* Corrige cor do texto dos links e hover no menu rosa */
+table[style*="background-color: #ff007f;"] a,
+table[style*="background-color: #ff007f;"] a:link,
+table[style*="background-color: #ff007f;"] a:visited,
+table[style*="background-color: #ff007f;"] strong,
+table[style*="background-color: #ff007f;"] td {
+  color: white !important;
+  background-color: #2f2f44 !important;
+  text-decoration: none !important;
+}
+
+table[style*="background-color: #ff007f;"] a:hover {
+  color: #ffe6f0 !important;
+  background-color: #cc0066 !important;
+  text-decoration: none !important;
+}
+  

@@ -1,0 +1,1719 @@
+<%
+Session.Timeout = 1440
+hashkey = "N69hu49Er55pYfN3"
+
+'Variavel de Conexao
+Dim objConexao
+Dim objConexao2
+Dim objConexaoSQL6
+
+'Variavel que indica se estamos no ambiente de homologaÁ„o
+Dim amb_homologacao : amb_homologacao = false
+
+'Variavel que aponta para a pasta dados do sistema
+if not amb_homologacao then
+	caminho_dados = "e:\home\stillos\dados\gerencial_foto\"
+Else
+	caminho_dados = "C:\inetpub\dados\gerencial_foto\"
+end if
+
+Sub AbrirConexaoSQL6()
+	Set objConexaoSQL6 = Server.CreateObject("ADODB.Connection")
+	objConexaoSQL6.Open("Provider=SQLOLEDB.1;Password=hyHo2zIjlnx4;Persist Security Info=True;User ID=stillos6;Initial Catalog=stillos6;Data Source=sqlserver03.stillos.com.br")
+End sub
+
+Sub FecharConexaoSQL6()
+   objConexaoSQL6.Close
+   Set objConexaoSQL6=nothing
+End sub
+
+'Sub Rotina que Abre a Conexao
+Sub AbrirConexao()
+Set objConexao = Server.CreateObject("ADODB.Connection")
+
+	Dim conn_str
+
+	if not amb_homologacao then
+		'ProduÁ„o
+		conn_str = "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql03.stillos.com.br;PORT=3306;DATABASE=stillos3;USER=stillos3;PASSWORD=eWbOP95_C8E@_t;OPTION=3;"
+	else
+		'HomologaÁ„o
+		conn_str = "DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=192.168.0.13;PORT=3306;DATABASE=stillos3;USER=stillos3;PASSWORD=integracao;OPTION=3;"
+
+	end if
+	'response.write conn_str
+	objConexao.Open(conn_str)
+	objConexao.Execute("SET SQL_BIG_SELECTS=1")
+
+End Sub
+
+'Sub Rotina que Fecha a Conexao
+Sub FecharConexao()
+   objConexao.Close
+   Set objConexao=nothing
+End Sub
+
+
+
+function mackenzieTemporadaAtiva(conexao_aberta)
+
+	Dim retorno, rs
+
+	if not conexao_aberta then
+		abrirConexao()
+	end if
+
+	Set rs = objConexao.Execute("SELECT cod_mack_temporada FROM TB_MACK_TEMPORADAS WHERE NOW() between inicio AND fim ")
+	if not rs.Eof Then
+		retorno = rs(0)
+	End if
+	rs.Close
+	Set rs = Nothing
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if
+
+mackenzieTemporadaAtiva = retorno
+end function
+
+
+function estoquePodeVender(cod_pedido, cod_vendedor, conexao_aberta)
+
+	dim retorno, rs
+	if not conexao_aberta then
+		abrirConexao()
+	end if
+
+	'buscamos
+
+
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if
+
+estoquePodeVender = retorno
+end function
+
+
+sub estoqueMovimentacaoVendedorRenovacao(cod_movimentacao_vendedor, dias_renovados, conexao_aberta)
+
+	if not conexao_aberta then
+		abrirConexao()
+	end if
+
+	dim data_devolucao
+	data_devolucao = dateadd("d", dias_renovados, now())
+
+	'INSERIMOS NO HISTORICO DE RENOVACOES
+	objConexao.execute("INSERT INTO TB_ESTOQUE_MOVIMENTACOES_VENDEDORES_RENOVACOES (cod_movimentacao_vendedor, dias_adicionais,renovado_ate, data_renovacao,cod_usuario) VALUES ("&sqlNumero(cod_movimentacao_vendedor)&", "&sqlNumero(dias_renovados)&", "&sqlData(data_devolucao)&","&sqlNumero(session("cod_usuario"))&")")
+
+	'ALTERAMOS A TABELA DE 
+	objConexao.execute("UPDATE TB_ESTOQUE_MOVIMENTACOES_VENDEDORES SET data_devolucao = "&sqlData(data_devolucao)&" where cod_movimentacao_vendedor = "&sqlNumero(cod_movimentacao_vendedor))
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if
+
+end sub
+
+sub estoqueMovimentacaoVendedor(tipo, cod_vendedor, cod_produto, quantidade, devolver_apos, descricao, conexao_aberta)
+
+	if not conexao_aberta then
+		abrirConexao()
+	end if
+
+	dim rs, retorno, nome_vendedor, quantidade_saida, possibilidade_saida
+	quantidade_saida = quantidade
+
+	dim data_movimentacao, data_devolucao, cod_usuario
+
+	data_movimentacao = now()
+	data_devolucao = dateadd("d",devolver_apos, data_movimentacao )
+	cod_usuario = session("cod_usuario")
+
+
+	if tipo = "S" and quantidade > 0  then
+		'Se for saida multiplicamos por -1 para que seja gravado o valor negativo
+		qtd = quantidade * (-1)
+	else
+		qtd = quantidade
+	end if
+
+	'VERIFICAMOS SE O O PRODUTO TEM PRODUTOS VINCULADOS SE HOUVER ENTAO BAIXAMOS SOMENTE OS VINCULADOS
+	Set rs1 = objConexao.Execute("SELECT * FROM TB_PRODUTOS_VINCULADOS where cod_produto_pai = "&sqlNumero(cod_produto))
+	if not rs1.Eof Then
+
+		while not rs1.Eof 
+		
+			if tipo = "S" then
+
+				'Se for do tipo saida ent„o atualizamos
+				Set rs = objConexao.execute("Select * from TB_ESTOQUE_MOVIMENTACOES_VENDEDORES WHERE tipo = 'E' AND quantidade > quantidade_saida and  cod_produto = "&sqlNumero(rs1("cod_produto_filho"))&" order by data_movimentacao")
+				if not rs.eof then
+
+					while quantidade > 0 and not rs.eof
+						'verificamos quantos podemos dar saida
+				
+						possibilidade_saida = rs("quantidade") - rs("quantidade_saida")
+
+						if (possibilidade_saida - quantidade) >= 0 then
+
+							objConexao.execute("UPDATE TB_ESTOQUE_MOVIMENTACOES_VENDEDORES SET quantidade_saida = "&sqlNumero(rs("quantidade_saida")+quantidade)&" WHERE cod_movimentacao_vendedor = "&sqlNumero(rs("cod_movimentacao_vendedor")))
+
+						else 'n„o foi possÌvel deduzir tudo de uma ˙nica
+							'deduzimos somente o possÌvel
+							objConexao.execute("UPDATE TB_ESTOQUE_MOVIMENTACOES_VENDEDORES SET quantidade_saida = "&sqlNumero(((quantidade - possibilidade_saida) - quantidade) + rs("quantidade_saida") )&" WHERE cod_movimentacao_vendedor = "&sqlNumero(rs("cod_movimentacao_vendedor")))
+						end if
+						
+					rs.MoveNext
+					Wend
+				else
+					'enviar email'
+					'de aviso pois o vendedor n„o tem estoque para dar saida
+				end if
+				rs.Close
+				set rs = nothing
+
+				if quantidade_saida > 0 then 
+					'enviar email'
+					'de aviso pois o vendedor n„o tem estoque para dar saida
+				end If
+
+			end if
+			
+			objConexao.execute("INSERT INTO TB_ESTOQUE_MOVIMENTACOES_VENDEDORES (tipo, cod_vendedor, cod_produto, quantidade, data_movimentacao, data_devolucao, cod_usuario, descricao) VALUES ("&sqlTexto(tipo)&", "&sqlNumero(cod_vendedor)&", "&sqlNumero(rs1("cod_produto_filho"))&", "&sqlNumero(quantidade)&", "&sqlData(data_movimentacao)&", "&sqlData(data_devolucao)&", "&sqlNumero(cod_usuario)&","&sqlTexto(descricao)&")")
+
+		rs1.MoveNext
+		wend
+		rs1.Close
+		set rs = nothing
+	else
+
+		if tipo = "S" then
+
+			'Se for do tipo saida ent„o atualizamos
+			Set rs = objConexao.execute("Select * from TB_ESTOQUE_MOVIMENTACOES_VENDEDORES WHERE tipo = 'E' AND quantidade > quantidade_saida and  cod_produto = "&sqlNumero(cod_produto)&" order by data_movimentacao")
+			if not rs.eof then
+
+				while quantidade > 0 and not rs.eof
+					'verificamos quantos podemos dar saida
+			
+					possibilidade_saida = rs("quantidade") - rs("quantidade_saida")
+
+					if (possibilidade_saida - quantidade) >= 0 then
+
+						objConexao.execute("UPDATE TB_ESTOQUE_MOVIMENTACOES_VENDEDORES SET quantidade_saida = "&sqlNumero(rs("quantidade_saida")+quantidade)&" WHERE cod_movimentacao_vendedor = "&sqlNumero(rs("cod_movimentacao_vendedor")))
+
+					else 'n„o foi possÌvel deduzir tudo de uma ˙nica
+						'deduzimos somente o possÌvel
+						objConexao.execute("UPDATE TB_ESTOQUE_MOVIMENTACOES_VENDEDORES SET quantidade_saida = "&sqlNumero(((quantidade - possibilidade_saida) - quantidade) + rs("quantidade_saida") )&" WHERE cod_movimentacao_vendedor = "&sqlNumero(rs("cod_movimentacao_vendedor")))
+					end if
+					
+				rs.MoveNext
+				Wend
+			else
+				'enviar email'
+				'de aviso pois o vendedor n„o tem estoque para dar saida
+			end if
+			rs.Close
+			set rs = nothing
+
+			if quantidade_saida > 0 then 
+				'enviar email'
+				'de aviso pois o vendedor n„o tem estoque para dar saida
+			end If
+		end if
+		
+		objConexao.execute("INSERT INTO TB_ESTOQUE_MOVIMENTACOES_VENDEDORES (tipo, cod_vendedor, cod_produto, quantidade, data_movimentacao, data_devolucao, cod_usuario, descricao) VALUES ("&sqlTexto(tipo)&", "&sqlNumero(cod_vendedor)&", "&sqlNumero(cod_produto)&", "&sqlNumero(quantidade)&", "&sqlData(data_movimentacao)&", "&sqlData(data_devolucao)&", "&sqlNumero(cod_usuario)&","&sqlTexto(descricao)&")")
+
+	end if
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if
+
+end sub
+
+
+function estoqueMomentoBaixa(cod_produto, conexao_aberta)
+
+	dim retorno, rs, aux
+	aux = ""
+	
+	if not conexao_aberta then
+		abrirConexao()
+	end if 
+
+	Set rs = objConexao.execute("SELECT saida_automatica FROM  TB_PRODUTOS WHERE COD_PRODUTO = "&sqlNumero(cod_produto))
+	if not rs.Eof then
+		aux = rs(0)
+	end if
+	rs.Close
+	set rs = nothing
+
+	if aux = "1" then
+		retorno  = "venda"
+
+	elseif aux = "2" then
+		retorno  = "producao"
+
+	else
+		retorno  = ""
+
+	end if
+
+
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if 
+
+	estoqueMomentoBaixa = retorno
+end function
+
+function estoqueLink(rescordSet)
+	
+	dim retorno
+
+	if rescordSet("cod_pedido") <> "" then
+		retorno = "<a target='_blank' href='adm_busca_completa_depto_foto.asp?filtro=1&TIPO_BUSCA=1&BUSCAR_TERMO='"&rescordSet("cod_pedido")&"'&Submit=+'>Pedido: "&rescordSet("cod_pedido")&"</a>"
+	elseif rescordSet("cod_pedido_compra") <> "" then
+		retorno = "<a target='_blank' href='ppv_compras_pedidos.asp?filtro=1&NUMERO_PEDIDO_COMPRAS="&rescordSet("cod_pedido_compra")&"'>Pedido de Compra: "&rescordSet("cod_pedido_compra")&"</a>"
+	elseif rescordSet("cod_vendedor") <> "" then
+		retorno = "<a target='_blank' href='dip_controle_producoes.asp'>Vendedor: "&rescordSet("cod_vendedor")&"</a>"
+	elseif rescordSet("cod_ordem_servico") <> "" then
+		retorno = "<a target='_blank' href='dip_controle_producoes.asp'>Vendedor: "&rescordSet("cod_vendedor")&"</a>"
+	else
+		retorno = "<a target='_blank' href='est_movimentacao_manual.asp?filtro_cod_movimentacao="&rescordSet("cod_movimentacao")&"'>Entrada manual: "&rescordSet("cod_movimentacao")&"</a>"
+
+	end if
+estoqueLink = retorno
+
+end function
+
+sub estoqueMovimentacao(tipo, origem_movimentacao, id, cod_produto, quantidade, descricao, conexao_aberta)
+	
+	dim rs, retorno, campo_chave, qtd, estoque_saida
+
+	if not conexao_aberta then
+		abrirConexao()	
+	end if
+
+	'primeiro verificamos qual o tipo de movimentacao
+	'E - Entrada
+	'S - Saida
+	'T - Transferencia -> existe somente na funÁ„o, na base È convertido para uma entrada e uma saida
+
+	if cod_produto = "" or cod_produto = 0 or quantidade = "" or quantidade = 0 then
+		response.write "Campos Inv·lidos "
+		response.write "<br />cod_produto : "&cod_produto
+		response.write "<br />quantidade : "&quantidade
+		response.end
+	end if
+	
+	if origem_movimentacao = "pedido" then
+		campo_chave = "cod_pedido"
+
+	elseif origem_movimentacao = "pedido_compra" then
+		campo_chave = "cod_pedido_compra"
+
+	elseif origem_movimentacao = "vendedor" then
+		campo_chave = "cod_vendedor"
+
+	elseif origem_movimentacao = "ordem_servico" then
+		campo_chave = "cod_ordem_servico"
+
+	end if	
+
+	if tipo = "S" and quantidade > 0  then
+		'Se for saida multiplicamos por -1 para que seja gravado o valor negativo
+		qtd = quantidade * (-1)
+	else
+		qtd = quantidade
+	end if
+
+	'VERIFICAMOS SE O O PRODUTO TEM PRODUTOS VINCULADOS SE HOUVER ENTAO BAIXAMOS SOMENTE OS VINCULADOS
+	Set rs = objConexao.Execute("SELECT * FROM TB_PRODUTOS_VINCULADOS where cod_produto_pai = "&sqlNumero(cod_produto))
+	if not rs.Eof Then
+
+		while not rs.Eof 
+			call logEventos("[info:movimentacao no estoque]["&campo_chave&":"&id&"][cod_usuario:"&session("COD_USUARIO")&"][tipo_operacao:"&tipo&"][cod_produto:"&rs("cod_produto_filho")&"][quantidade:"&qtd&"]" , true)
+
+			objConexao.Execute("INSERT INTO TB_ESTOQUE_MOVIMENTACOES ("&campo_chave&", cod_produto, quantidade, descricao, tipo, cod_usuario) VALUES ("&sqlNumero(id)&", "&sqlNumero(rs("cod_produto_filho"))&", "&sqlNumero(qtd)&", "&sqlTexto(descricao)&","&sqlTexto(tipo)&", "&session("cod_usuario")&")")
+
+		rs.MoveNext
+		wend
+
+	else
+		call logEventos("[info:movimentacao no estoque]["&campo_chave&":"&id&"][cod_usuario:"&session("COD_USUARIO")&"][tipo_operacao:"&tipo&"][cod_produto:"&cod_produto&"][quantidade:"&qtd&"]" , true)
+
+		objConexao.Execute("INSERT INTO TB_ESTOQUE_MOVIMENTACOES ("&campo_chave&", cod_produto, quantidade, descricao, tipo, cod_usuario) VALUES ("&sqlNumero(id)&", "&sqlNumero(cod_produto)&", "&sqlNumero(qtd)&", "&sqlTexto(descricao)&","&sqlTexto(tipo)&", "&session("cod_usuario")&")")
+
+	end if 
+	rs.Close
+	set rs = nothing
+
+	if not conexao_aberta then
+		fecharConexao
+	end if
+
+end sub
+
+function estoqueMovimentacaoManual(rescordSet)
+	
+	dim retorno
+
+	if rescordSet("cod_pedido") <> "" or rescordSet("cod_pedido_compra") <> "" or rescordSet("cod_vendedor") <> "" or rescordSet("cod_ordem_servico") <> "" then
+		retorno = false
+	else
+		retorno = true
+	end if
+estoqueMovimentacaoManual = retorno
+
+end function
+
+function estoqueVerificaManual(cod_movimentacao, conexao_aberta)
+
+	if not conexao_aberta then
+		abrirConexao()
+	end if
+
+	dim c : c = ""
+	dim cod_vendedor, cod_ordem_servico, cod_pedido, cod_pedido_compra
+
+	set rs = objConexao.Execute("SELECT cod_vendedor, cod_ordem_servico, cod_pedido, cod_pedido_compra FROM TB_ESTOQUE_MOVIMENTACOES WHERE cod_movimentacao = "&sqlNumero(cod_movimentacao))
+	if not rs.Eof then
+
+		cod_vendedor = rs("cod_vendedor")&""
+		cod_ordem_servico = rs("cod_ordem_servico")&""
+		cod_pedido = rs("cod_pedido")&""
+		cod_pedido_compra = rs("cod_pedido_compra")&""
+
+	end if
+	rs.Close
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if
+
+estoqueVerificaManual = (cod_vendedor = c) and (cod_ordem_servico = c)  and (cod_pedido_compra = c) and (cod_pedido = c)
+end function
+
+'-----------------------------------------------------------------------------------------------------------------------------------------
+
+'FunÁ„o que Prepara um Numero para ser executado no banco
+'dentro de uma express„o sql
+'Por exemplo: R$ 1.000,23  --> 1000.23
+Function sqlNumero(numero)
+   Dim temp, ultimos_3_carac, qtdUlTimosCaras
+	 temp=Replace(numero,"R$", "")  'retira o R$, se houver
+	 temp=Replace(temp, " ", "") 'retira os espaÁos, se houver
+	 ultimos_3_carac = Right(temp,3)
+	 qtdUlTimosCaras = Len(ultimos_3_carac)
+	 temp=Mid(temp,1,len(temp)-qtdUlTimosCaras)&Replace(ultimos_3_carac,".",",")
+	 temp=Replace(temp, ".", "") 'retira os pontos, se houver
+	 temp=Replace(temp, "," , ".") 'Substitui a virgula por ponto
+	 
+	 sqlNumero = temp
+End Function
+
+'Ex.: 11/06/2008 ==> '2008-6-11'
+Function sqlData(DATA)
+   Dim temp, DIA, MES, ANO, HORA, MINUTOS, SEGUNDOS
+   temp = DATA
+
+   If Len(DATA) > 2 Then
+	   	temp = formatDateTime(DATA)
+	  	DIA = Day(temp)
+	   	MES = Month(temp)
+	   	ANO = Year(temp)
+
+	 	HORA		= Cstr(""&Hour(temp))
+		MINUTOS		= Cstr(""&Minute(temp))
+		SEGUNDOS	= Cstr(""&Second(temp))
+		
+		'Response.Write(HORA&":"&MINUTOS&":"&SEGUNDOS)
+		If HORA <> "" and MINUTOS <> "" and SEGUNDOS <> "" Then
+		   	temp = "'"&ANO&"-"&MES&"-"&DIA&" "&HORA&":"&MINUTOS&":"&SEGUNDOS&"'"
+		Else
+	   	   	temp = "'"&ANO&"-"&MES&"-"&DIA&"'"
+		End If
+		
+		sqlData = temp
+
+   Else
+   		sqlData ="NULL" 
+   End If
+   
+End Function
+
+'Ex.: Campo fornece 0 a sub retira e deixa branco
+Function retiraZero(CAMPO)
+	Dim temp
+	
+	temp = formatNumber(CAMPO)
+	If temp = 0 then
+		temp = ""		
+	End if
+	
+	retiraZero = temp
+	
+End function
+
+'FuncÁ„o que prepara um texto para ser executado no banco
+'dentro de uma express„o sql
+'e coloca os apÛstrofos
+'por exemplo: Joana D'ark ---> 'Joana D''ark'
+'             Maria       ---> 'Maria'              
+Function sqlTexto(texto)
+  Dim temp
+    temp=texto
+  	temp= temp&""
+	temp=Replace(temp,"'", "''")
+	temp= "'"  & temp  & "'"
+	sqlTexto=temp
+End Function
+
+
+Function TrocarAcento(Palavra) 
+CAcento = "‡·‚„‰ËÈÍÎÏÌÓÔÚÛÙıˆ˘˙˚¸¿¡¬√ƒ»… ÀÃÕŒ“”‘’÷Ÿ⁄€‹Á«Ò—" 
+SAcento = "aaaaaeeeeiiiiooooouuuuAAAAAEEEEIIIOOOOOUUUUcCnN" 
+Texto = "" 
+If Palavra <> "" then 
+        For X = 1 To Len(Palavra) 
+               Letra = Mid(Palavra,X,1) 
+               Pos_Acento = InStr(CAcento,Letra) 
+               If Pos_Acento > 0 Then Letra = Mid(SAcento,Pos_Acento,1) 
+               Texto = Texto & Letra
+        Next 
+        TrocarAcento = Texto 
+End If 
+End Function
+ 
+Function RemoverAcento(Palavra) 
+CAcento = "‡·‚„‰ËÈÍÎÏÌÓÔÚÛÙıˆ˘˙˚¸¿¡¬√ƒ»… ÀÃÕŒ“”‘’÷Ÿ⁄€‹Á«Ò—" 
+Texto = "" 
+If Palavra <> "" Then 
+        For X = 1 to Len(Palavra) 
+               Letra = Mid(Palavra,X,1) 
+               Pos_Acento = InStr(CAcento,Letra) 
+              If Pos_Acento > 0 Then Letra = "" 
+             Texto = Texto & Letra 
+        Next 
+      RemoverAcento = Texto 
+End If 
+End Function  
+
+'QuantidadeDiasMes("2008-2-25")
+'=28
+Function QuantidadeDiasMes(DATA)
+Dim AnoBi, qtdDiasMesArray(15)
+
+AnoBi = Year(DATA) Mod 4
+		IF AnoBi = 0 then
+				AnoBi = 29		
+		else
+				AnoBi = 28
+		End If
+						
+		qtdDiasMesArray(1) = 31'Jan
+		qtdDiasMesArray(2) = AnoBi
+		qtdDiasMesArray(3) = 31'Mar
+		qtdDiasMesArray(4) = 30'Abr
+		qtdDiasMesArray(5) = 31'Mai
+		qtdDiasMesArray(6) = 30'Jun
+		qtdDiasMesArray(7) = 31'Jul
+		qtdDiasMesArray(8) = 31'Ago
+		qtdDiasMesArray(9) = 30'Set
+		qtdDiasMesArray(10) = 31'Out
+		qtdDiasMesArray(11) = 30'Nov
+		qtdDiasMesArray(12) = 31'Dez
+		
+		QuantidadeDiasMes = qtdDiasMesArray(Month(DATA))
+
+End Function  
+
+'Ex.: 1 = Sim e 2 = N„o o contr·rio È valido
+Function booleano (VALOR)
+
+	Dim temp
+	temp = VALOR
+	
+	If isNumeric(temp) Then 
+			If temp = 1 Then
+				temp = "Sim"
+			Elseif temp = 2 Then
+				temp = "N„o"
+			End If
+	Else
+		
+		If temp = "Sim" Then
+			temp = 1
+		Elseif temp = "N„o" Then
+			temp = 2
+		End If
+		'--------------------------------------------
+		If temp = "S" Then
+			temp = "Sim"
+		Elseif temp = "N" Then
+			temp = "N„o"
+		End If
+		
+	End If
+	
+	booleano = temp
+	
+End Function
+
+'Colocar 0 antes do dia e mÍs
+' Ex.: 1/1/2008 ou 1/1/08 
+' = 01/01/2008 
+Function ArrumaData(DATA)
+	dim temp
+	temp = DATA
+	temp = ""&temp
+ If temp <> Empty Then
+	
+	Dim DIA, MES, ANO, HORA, MINUTOS, SEGUNDOS
+
+	If IsDate(DATA) Then
+		DIA 		= Day(DATA)
+		MES 		= Month(DATA)
+		ANO 		= Year(DATA)
+		HORA		= Hour(DATA)
+		MINUTOS		= Minute(DATA)
+		SEGUNDOS	= Second(DATA)
+	End If
+
+If Len(DIA) = 1 then
+
+	DIA = "0"&DIA
+
+End If
+
+If Len(MES) = 1 then
+
+	MES = "0"&MES
+
+End If
+
+If Len(ANO) = 2 then
+
+	ANO = "20"&ANO
+
+End If
+	
+	If HORA <> Empty Then
+		
+			If Len(HORA) = 1 then
+				HORA = "0"&HORA
+			End If
+			
+			If Len(MINUTOS) = 1 then
+				MINUTOS = "0"&MINUTOS
+			End If
+
+			If Len(SEGUNDOS) = 1 then
+				SEGUNDOS = "0"&SEGUNDOS
+			End If
+	
+	
+		ArrumaData = DIA&"/"&MES&"/"&ANO&" "&HORA&":"&MINUTOS&":"&SEGUNDOS
+	Else
+		ArrumaData = DIA&"/"&MES&"/"&ANO
+	End If
+Else
+ 	ArrumaData = ""
+End If
+
+End Function
+
+'Formatar n˙mero Ex.: 150.87 = 150,87 ou 180 È = 180
+Function ArrumaNumero(CAMPO,RETORNASEZERO,CASASDECIMAIS)
+
+	Dim temp
+	temp = CAMPO
+
+	If isNull(temp) or temp = "" Then
+		temp = 0
+	End If
+
+	temp = formatNumber(temp,CASASDECIMAIS)
+
+	If temp <> 0 then
+		ArrumaNumero = temp
+	Else
+		ArrumaNumero = RETORNASEZERO
+	End If
+
+End Function
+
+
+'Ex.: 15151510 = 151515-0 a recÌproca È verdadeira
+Function digito(CAMPO)
+	Dim temp,qtdCarac,valorDigito, a
+	
+	temp = CAMPO
+	
+	If isNumeric(CAMPO) then
+	'Sem digito dever· colocar
+
+		qtdCarac = Len(temp)
+		valorDigito = Right(temp,1)
+		
+		a = Left(temp,Len(temp)-1)
+		
+		digito = a&"-"&valorDigito
+	else
+	'Com digito dever· tirar
+	
+		temp = Replace(temp,"-","")
+		temp = Replace(temp," ","")
+		digito = temp
+	
+	End If
+
+End Function
+
+Function criptografar(CAMPO)
+	Dim temp
+	temp = CAMPO
+	
+	
+	If isNumeric(CAMPO) Then
+	'Criptografar
+		temp = Replace(temp,".","")
+		temp = Replace(temp,",","")
+		temp = Replace(temp,"0","PyQds")
+		temp = Replace(temp,"1","qfcpG")
+		temp = Replace(temp,"2","qazpe")
+		temp = Replace(temp,"3","puyfj")
+		temp = Replace(temp,"4","mpoaq")
+		temp = Replace(temp,"5","pousW")
+		temp = Replace(temp,"6","WEOyc")
+		temp = Replace(temp,"7","qKjwe")	
+		temp = Replace(temp,"8","oirqi")
+		temp = Replace(temp,"9","IjgPb")
+		
+		criptografar = temp
+		
+	Else
+	'Descriptografar
+		temp = Replace(temp,".","")
+		temp = Replace(temp,",","")
+		temp = Replace(temp,"PyQds","0")
+		temp = Replace(temp,"qfcpG","1")
+		temp = Replace(temp,"qazpe","2")
+		temp = Replace(temp,"puyfj","3")
+		temp = Replace(temp,"mpoaq","4")
+		temp = Replace(temp,"pousW","5")
+		temp = Replace(temp,"WEOyc","6")
+		temp = Replace(temp,"qKjwe","7")	
+		temp = Replace(temp,"oirqi","8")
+		temp = Replace(temp,"IjgPb","9")
+		
+		criptografar = temp
+			
+	End If
+
+End Function
+'De 999.999.999-82 = 99999999982 o contr·rio È valido tambÈm
+Function mascaraCPF (CAMPO)
+Dim temp
+temp = CAMPO
+	If Len(temp) = 11 Then
+	'Coloca m·scara
+	
+		Dim parte1, parte2, parte3, parte4
+		
+		parte1 = Mid(CAMPO,1,3)
+		parte2 = Mid(CAMPO,4,3)
+		parte3 = Mid(CAMPO,7,3)
+		parte4 = Mid(CAMPO,10,2)
+		
+		temp = parte1&"."&parte2&"."&parte3&"-"&parte4
+	Else
+	'Retira m·scara
+	
+		temp = Replace(temp,".","")
+		temp = Replace(temp,"-","")
+		temp = Replace(temp," ","")
+
+	End If
+	
+	mascaraCPF = temp
+	
+End function
+
+Function formataData(CAMPO)
+Dim temp
+Dim dia, mes, ano
+
+temp = ""&CAMPO
+
+	If temp <> "" and isDate(temp) Then
+		dia = Day(temp)
+		mes = Month(temp)
+		ano = Year(temp)
+		
+		If Len(dia) = 1 Then
+			dia = "0"&dia
+		End if
+		
+		If Len(mes) = 1 Then
+			mes = "0"&mes
+		End if
+		
+		temp = dia&"/"&mes&"/"&ano
+	Else
+		temp = " - "
+	End If
+
+	formataData = temp
+	
+End Function
+
+'Formatar n˙mero Ex.: 150.87 = 150,87 ou 180 È = 180
+Function formatarNumero(CAMPO)
+
+Dim temp
+temp = CAMPO
+temp = formatNumber(temp)
+	
+	If temp > 0 then
+		formatarNumero = temp
+	Else		
+		formatarNumero = ""
+	End If	
+	
+End Function
+
+Function retiraLetras(CAMPO)
+Dim temp
+	
+End Function
+
+
+'"TABELA","COLUNA","CONTE⁄DO_NOVO","redirecionar para","nome da coluna da tabela chave","valor da chave"
+Sub chaveUnica(tabela,campoUnico,conteudoNovo,redirecionar,comando,campoChave,valorCampoChave)
+
+Dim duplicidadeCampo, rs, sql, validacao_label, tipoBase, campoVery, vlCampoChave, ctNovo
+
+duplicidadeCampo = ""
+vlCampoChave = valorCampoChave
+ctNovo = conteudoNovo
+
+'Corrige os campos para verificaÁ„o melhor
+vlCampoChave = Trim(Replace(vlCampoChave,Chr(9),""))
+vlCampoChave = Trim(Replace(vlCampoChave,Chr(13),""))
+ctNovo = Trim(Replace(ctNovo,Chr(9),""))
+ctNovo = Trim(Replace(ctNovo,Chr(13),""))
+
+	AbrirConexao
+		
+		If comando = "incluir" Then
+			sql = "SELECT "&campoUnico&" FROM "&tabela&" WHERE "&campoUnico&" ="&sqlTexto(ctNovo)	
+		Elseif comando = "alterar" Then
+			sql = "SELECT "&campoUnico&" FROM "&tabela&" WHERE ("&campoChave&" <> "&sqlTexto(vlCampoChave)&")  AND  "&campoUnico&" ="&sqlTexto(ctNovo)
+		End If
+		
+				
+		Set rs = objConexao.Execute(sql)
+			If not rs.Eof Then
+			'Encontrou 1 registro pelo menos
+				duplicidadeCampo = campoUnico 
+			
+			End If
+					
+		rs.Close
+		Set rs = Nothing
+	
+	FecharConexao
+	
+	If duplicidadeCampo <> "" Then
+		Response.Redirect(redirecionar&campoUnico)
+	End If
+	
+End Sub
+
+
+'campo_chave_original,tabelas_verifica,nome_que_o_campo_aparece_nas_tabelas,paginaretornar
+'Exemplo call verificaAntesExcluir(1,"tabela1;tabela2","cod_usuario_id",redirecionar_excluir)
+'NUNCA PODER¡ J¡ VIR COM A CONEX√O ABERTA!!!
+Sub verificaAntesExcluir(valorCampoChave,tabelasRelacionadas,nomeCampoNasTabelas,redirecionar)
+	
+Tabelas = Split(tabelasRelacionadas,";")
+PodeExcluir = true
+		
+		AbrirConexao()
+			
+			For i = 0 to Ubound(Tabelas)
+					Set rs = objConexao.Execute("SELECT * FROM "&Tabelas(i)&" where "&nomeCampoNasTabelas&" = "&sqlTexto(valorCampoChave))
+							
+						If not rs.Eof Then
+						'Encontrou registros, n„o È possÌvel excluir
+							PodeExcluir = False
+						End If	
+					
+					rs.Close
+					Set rs = Nothing
+			Next
+		
+		FecharConexao()
+
+		If PodeExcluir = false Then
+			Response.Redirect(redirecionar)
+		End If
+		
+End Sub
+
+'Deleta um arquivo.
+Sub deletarArquivo(arquivo_completo)
+
+	Dim FSO2
+	Set FSO2 = Server.CreateObject("Scripting.FileSystemObject")
+	If FSO2.FileExists(arquivo_completo) Then
+		FSO2.DeleteFile arquivo_completo
+	End If
+	
+	Set FSO2 = Nothing
+	
+End Sub
+
+
+sub eviarEmailAutenticado(para,copia,copiaOculta,assunto,mensagem)
+	
+
+
+	sRemetente = "webmaster@stillos.com.br"
+		sResponder = "webmaster@stillos.com.br"
+		sAssunto = assunto
+		
+		Set objCDOSYSMail = Server.CreateObject("CDO.Message") 
+		Set objCDOSYSCon = Server.CreateObject ("CDO.Configuration") 
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "smtp.stillos.com.br" 
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserverport")= 587
+		
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpconnectiontimeout") = 30
+
+
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/sendusername") = "reports@stillos.com.br"
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/sendpassword") = "re13962@87fes"
+
+
+		objCDOSYSCon.Fields.update 
+		Set objCDOSYSMail.Configuration = objCDOSYSCon 			
+	
+		'"email1@com; email2@com" 
+		objCDOSYSMail.From = sRemetente
+		objCDOSYSMail.To   = para	
+
+		If Len(copia) > 3  Then
+				objCDOSYSMail.CC = copia
+		End If
+		
+		If Len(copiaOculta) > 3 Then
+			objCDOSYSMail.BCC  = copiaOculta
+		End If
+				
+		objCDOSYSMail.ReplyTo = sResponder 
+		objCDOSYSMail.Subject = sAssunto 
+		objCDOSYSMail.HtmlBody = mensagem
+		
+		
+		If Len(para) > 3 or Len(copia) > 3 or Len(copiaOculta) Then
+		'Pelo menos 1 destes deve estar preenchido para enviar o e-mail
+			objCDOSYSMail.Send 
+		End If
+		
+		Set objCDOSYSMail = Nothing 
+		Set objCDOSYSCon = Nothing
+
+end sub
+
+
+Sub enviarEmail(para,copia,copiaOculta,assunto,mensagem)
+	
+		sRemetente = "webmaster@stillos.com.br"
+		sResponder = "webmaster@stillos.com.br"
+		sAssunto = assunto
+		
+		Set objCDOSYSMail = Server.CreateObject("CDO.Message") 
+		Set objCDOSYSCon = Server.CreateObject ("CDO.Configuration") 
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserver") = "localhost" 
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpserverport")= 25
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
+		objCDOSYSCon.Fields("http://schemas.microsoft.com/cdo/configuration/smtpconnectiontimeout") = 30
+		objCDOSYSCon.Fields.update 
+		Set objCDOSYSMail.Configuration = objCDOSYSCon 			
+	
+		'"email1@com; email2@com" 
+		objCDOSYSMail.From = sRemetente
+		objCDOSYSMail.To   = para	
+
+		If Len(copia) > 3  Then
+				objCDOSYSMail.CC = copia
+		End If
+		
+		If Len(copiaOculta) > 3 Then
+			objCDOSYSMail.BCC  = copiaOculta
+		End If
+				
+		objCDOSYSMail.ReplyTo = sResponder 
+		objCDOSYSMail.Subject = sAssunto 
+		objCDOSYSMail.HtmlBody = mensagem
+		
+		
+		If Len(para) > 3 or Len(copia) > 3 or Len(copiaOculta) Then
+		'Pelo menos 1 destes deve estar preenchido para enviar o e-mail
+			objCDOSYSMail.Send 
+		End If
+		
+		Set objCDOSYSMail = Nothing 
+		Set objCDOSYSCon = Nothing
+
+End Sub
+
+
+'Verifica se o pedido possui os produtos com valor correto, se hover retorna true
+Function pedidoProdutoValorCorreto(cod_pedido,conexao_aberta)
+
+	Dim rs, rs2, sql, produtosValoresCorretos
+	Dim valor_vendido, valor_padrao, diferenca, qtd_parcelas, cod_foto_padrao, grupo_vendedores, cod_vendedor
+	produtosValoresCorretos = True
+	
+	If not conexao_aberta Then
+		AbrirConexao()
+	End if
+	
+	Set rs=objConexao.Execute("SELECT qtd_parcelas, cod_vendedor FROM TB_PEDIDOS where cod_pedido = "&sqlTexto(cod_pedido))
+		
+		If not rs.Eof Then
+			qtd_parcelas = formatNumber(0&rs("qtd_parcelas"),0)	
+			cod_vendedor = rs("cod_vendedor")
+		End If
+
+	rs.Close
+	Set rs=Nothing
+	
+
+	Set rs=objConexao.Execute("SELECT COD_GRUPO_VENDEDORES FROM TB_VENDEDORES where COD_VENDEDOR = "&sqlTexto(cod_vendedor))
+		
+		If not rs.Eof Then
+			grupo_vendedores = formatNumber(0&rs("COD_GRUPO_VENDEDORES"),0)	
+		End If
+
+	rs.Close
+	Set rs=Nothing
+
+	If qtd_parcelas > 0 Then
+	'Verifica, por que È maior que 0
+		
+		'///////////////////////////////////////////////////////////////////////
+		'1) Seleciona todos os formandos do pedido e seus respectivos contratos
+			sql =	" SELECT TB_FICHAS_IDENTIFICACAO.COD_CONTRATO, TB_FICHAS_IDENTIFICACAO.COD_PRODUCAO,"&_
+					" TB_FICHAS_IDENTIFICACAO.FATURADO, TB_FICHAS_IDENTIFICACAO.VALOR_UN, TB_PEDIDOS_FORMANDOS.COD_FORMANDO "&_
+					" FROM TB_FICHAS_IDENTIFICACAO INNER JOIN TB_PEDIDOS_FORMANDOS ON "&_
+					" TB_FICHAS_IDENTIFICACAO.COD_FORMANDO = TB_PEDIDOS_FORMANDOS.COD_FORMANDO "&_
+					" WHERE TB_PEDIDOS_FORMANDOS.COD_PEDIDO = "&sqlTexto(cod_pedido)
+		
+			Set rs=objConexao.Execute(sql)
+		
+				While not rs.Eof
+				
+				'InÌcia v·riaveis
+				valor_vendido	= 0
+				valor_padrao	= 0
+				diferenca		= 0
+				'//////////////////
+				
+						'1.1) Verifica o ·lbum do formando, para isso È necess·rio saber a foto padr„o de acordo com a produÁ„o.
+								'1.1.1) Verifica foto padr„o de acordo com produÁ„o
+								Set rs2 = objConexao.Execute("SELECT COD_FOTO_PADRAO FROM TB_PRODUCAO WHERE COD_PRODUCAO="&rs("COD_PRODUCAO"))
+									If not rs2.Eof Then				
+										cod_foto_padrao = rs2("cod_foto_padrao")
+									Else
+										cod_foto_padrao = 2
+									End If
+								rs2.Close()
+								Set rs2 = Nothing
+								
+						
+						
+						valor_padrao = valorProdutoGeral(cod_foto_padrao,rs("COD_CONTRATO"),qtd_parcelas,true,grupo_vendedores)
+						valor_vendido = formatNumber(0&rs("VALOR_UN"))
+						
+						If valor_padrao > 0 and valor_vendido > 0 Then
+	  		
+							diferenca = (valor_vendido-valor_padrao)/1
+							diferenca = formatNumber(diferenca)
+			
+							If diferenca < 0 Then
+								'Valor fora do padr„o
+								produtosValoresCorretos = false
+							End If	
+						
+						End If		
+								
+						'1.2) Verifica nos produtos agregados deste formando.
+						sql =	" SELECT TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO, TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO_AGREGADO, TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.TIPO, "&_
+								" Sum(TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.QUANTIDADE) as QUANTIDADE, "&_
+								" TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.VENDIDO, TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.VALOR_UN, "&_
+								" TB_PRODUTOS.NOME_PRODUTO FROM TB_PRODUTOS INNER JOIN TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS "&_
+								" ON TB_PRODUTOS.COD_PRODUTO = TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO "&_
+								" WHERE TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_FORMANDO="&rs("COD_FORMANDO")&_
+								" GROUP BY TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO "
+						
+						Set rs2=objConexao.Execute(sql)
+							
+								'Pode ser mais que um produto agregado
+								While not rs2.Eof
+										
+									valor_padrao = valorProdutoGeral(rs2("COD_PRODUTO"),rs("COD_CONTRATO"),qtd_parcelas,true,grupo_vendedores)
+									valor_vendido = formatNumber(0&rs2("VALOR_UN"))
+									
+									If valor_padrao > 0 and valor_vendido > 0 Then
+						
+										diferenca = (valor_vendido-valor_padrao)/1
+										diferenca = formatNumber(diferenca)
+						
+										If diferenca < 0 Then
+											'Valor fora do padr„o
+											produtosValoresCorretos = false
+										End If	
+									
+									End If		
+											
+								rs2.MoveNext()
+								Wend
+								
+						rs2.Close
+						Set rs2=Nothing
+						
+						'1.3) Verifica nos produtos vendidos ‡ parte deste formando.
+						sql = 	" SELECT TB_PEDIDOS_PRODUTOS.COD_PRODUTO, TB_PEDIDOS_PRODUTOS.VALOR_UN "&_
+								" FROM TB_PEDIDOS_PRODUTOS "&_	
+								" WHERE COD_PEDIDO="&cod_pedido&" AND COD_FORMANDO="&rs("COD_FORMANDO")
+						
+						Set rs2=objConexao.Execute(sql)
+							
+							If not rs2.Eof Then
+								
+								While not rs2.Eof
+									
+									valor_padrao = valorProdutoGeral(rs2("COD_PRODUTO"),rs("COD_CONTRATO"),qtd_parcelas,true,grupo_vendedores)
+									valor_vendido = formatNumber(0&rs2("VALOR_UN"))
+									
+									If valor_padrao > 0 and valor_vendido > 0 Then
+						
+										diferenca = (valor_vendido-valor_padrao)/1
+										diferenca = formatNumber(diferenca)
+						
+										If diferenca < 0 Then
+											'Valor fora do padr„o
+											produtosValoresCorretos = false
+										End If	
+									
+									End If		
+									
+									
+								rs2.MoveNext()
+								Wend
+							
+							End If
+						
+						rs2.Close
+						Set rs2=Nothing
+						
+				rs.MoveNext()
+				Wend
+				
+			
+			rs.Close
+			Set rs=Nothing		
+		'///////////////////////////////////////////////////////////////////////	
+	Else
+		'Pedido n„o pode ser an·lisado, por tanto retornar true
+		produtosValoresCorretos = true
+		
+	End If
+		
+	If not conexao_aberta Then
+		FecharConexao()
+	End if
+
+	pedidoProdutoValorCorreto = produtosValoresCorretos
+
+End Function
+
+'Verifica o valor do produto de acordo com o cÛd do produto e o cÛd do contrato, esta deve ser utilizada para consultar de preÁos
+Function valorProdutoGeral(cod_produto,cod_contrato,qtd_parcelas,conexao_aberta,grupo_vendedores)
+	
+	Dim rs, rs2, sql
+	Dim verificaTabelaPadrao, cod_valor, valor
+	
+	verificaTabelaPadrao = true
+	
+	If grupo_vendedores > 0 Then
+		grupo_vendedores = 1
+	End If
+	
+	
+	'1) Verifica se h· boletim informativo, se houver busca o valor do produto de acordo com o boletim informativo, caso contr·rio busca na tabela de produtos padr„o, se n„o encontrar retorna o valor 0 indicando que o produto n„o possui preÁo em nenhum lugar erro
+	
+	If not conexao_aberta Then
+		AbrirConexao()
+	End if
+		
+		'1) Verifica se h· boletim informativo para o contrato informado
+		Set rs=objConexao.Execute("SELECT * FROM TB_BOLETIM_INFORMATIVO_CONTRATOS WHERE COD_CONTRATO = "&sqlTexto(cod_contrato))	
+			
+			If not rs.Eof Then
+				'1.2) Existe, verifica se o produto desejado est· no boletim
+				
+				sql = "SELECT * FROM TB_BOLETIM_INFORMATIVO_PRODUTOS WHERE COD_PRODUTO = "&sqlTexto(cod_produto)&" AND cod_boletim_informativo = "&rs("cod_boletim_informativo")
+								
+				Set rs2=objConexao.Execute(sql)
+					
+					If not rs2.Eof Then
+						
+						'1.3) Existe por tanto n„o È necess·rio verifica na tabela padr„o
+						verificaTabelaPadrao = false
+						
+						If int(qtd_parcelas) = 1 Then
+						'¿ vista
+							valor = formatNumber(rs2("VALOR_A_VISTA"))
+						Elseif int(qtd_parcelas) = 2 or int(qtd_parcelas) = 3 Then
+						'2X ou 3X
+							valor = formatNumber(rs2("VALOR_3X"))
+						Else
+						'Acima de 3X
+							valor = formatNumber(rs2("VALOR_PARCELADO"))
+						End If 					
+							
+					End If
+					
+				rs2.Close
+				Set rs2=Nothing
+				
+			End If
+			
+		rs.Close
+		Set rs=Nothing	
+	
+	If not conexao_aberta Then
+		FecharConexao()
+	End if
+	
+	If verificaTabelaPadrao Then
+		'2) Verifica o preÁo padr„o de acordo com o cÛdigo do produto
+		cod_valor = valorProdutoVigente(cod_produto,conexao_aberta,grupo_vendedores)
+		valor = valorProdutoCodProduto(cod_valor,qtd_parcelas,conexao_aberta)
+	End If
+	
+	valorProdutoGeral = valor
+	
+End Function
+
+
+Function valorProdutoCodProduto(cod_valor,qtd_parcelas,conexao_aberta)
+	'Retorna o valor de acordo com o cÛd do valor, se for 0 quer dizer que n„o foi encontrado.
+		
+		Dim rs, valor
+		valor = 0
+		
+		If not conexao_aberta Then
+			AbrirConexao()
+		End if
+		
+		Set rs=objConexao.Execute("SELECT * FROM TB_PRODUTOS_VALORES WHERE COD_VALOR = '"&cod_valor&"'")
+		
+			If not rs.Eof Then
+				
+				If int(qtd_parcelas) = 1 Then
+				'¿ vista
+					valor = formatNumber(rs("VALOR_A_VISTA"))
+				Elseif int(qtd_parcelas) = 2 or int(qtd_parcelas) = 3 Then
+				'2X ou 3X
+					valor = formatNumber(rs("VALOR_3X"))
+				Else
+				'Acima de 3X
+					valor = formatNumber(rs("VALOR_PARCELADO"))
+				End If 
+				
+			End If
+			
+		rs.Close
+		Set rs=Nothing
+		
+		If not conexao_aberta Then
+			FecharConexao()
+		End if	
+	
+		valorProdutoCodProduto = valor
+	
+End Function
+
+
+'FunÁ„o que procura o cod_valor vigente do produto da tabela padr„o
+Function valorProdutoVigente(cod_produto,conexao_aberta,grupo_vendedores)
+	
+	'grupo_vendedores = 0 significa vendedores comum, grupo_vendedores > 0 significa grupo repasse (normalmente 1 ou 2)
+	If grupo_vendedores > 0 Then
+		grupo_vendedores = 1
+	End If
+	
+	Dim rs, cod_valor
+	cod_valor = 0 'Por padr„o È 0, ou seja n„o encontrado nada!
+		
+		If not conexao_aberta Then
+			AbrirConexao()
+		End if
+			
+			Set rs=objConexao.Execute("SELECT TB_PRODUTOS_VALORES.*, DATEDIFF(VALIDO_ATE,NOW()) AS QTD_DIAS_PARA_VENCIMENTO  FROM TB_PRODUTOS_VALORES WHERE DATEDIFF(VALIDO_ATE,NOW()) >= 0 AND COD_PRODUTO = "&cod_produto&" AND grupo_vendedores = '"&grupo_vendedores&"' ORDER BY DATEDIFF(VALIDO_ATE,NOW()) ASC LIMIT 1")
+					
+					If not rs.Eof Then
+						cod_valor = rs("cod_valor")
+					End If
+			
+			rs.Close
+			Set rs=Nothing
+		
+		If not conexao_aberta Then
+			FecharConexao()
+		End if
+			
+		valorProdutoVigente = cod_valor
+
+End Function
+
+Function validaUsuario(tipo,cod_pagina,cod_sub_validacao,conexao_aberta)
+	'Verificamos se È o usuario admisnitrador se for garantimos acesso 
+	if Session("cod_usuario") = 1 then
+		validaUsuario = true
+	else
+		If not conexao_aberta Then
+			AbrirConexao()	
+		End If
+		
+		Dim rs, sql, retorna
+		retorna = false
+		
+		If tipo = 1 Then
+		'ValidaÁ„o de P·gina p·i
+			sql = "Select COD_PERMISSAO From TB_ADM_PERFIS_PAGINAS_HABILITADAS where COD_PAGINA = '"&cod_pagina&"' and cod_perfil = '"&Session("cod_perfil")&"'"
+		ElseIf tipo = 2 Then
+		'SubvalidaÁ„o
+			sql = "Select COD_PERMISSAO_SUB_VALIDACAO From TB_ADM_PERFIS_PAGINAS_HABILITADAS_SUB_VALIDACOES where COD_SUB_VALIDACAO = '"&cod_sub_validacao&"' and cod_perfil = '"&Session("cod_perfil")&"'"	
+		End if
+
+		Set rs=objConexao.Execute(sql)
+			
+		If not rs.Eof Then
+			retorna = true
+		End If
+			
+		rs.Close
+		Set rs=Nothing
+		
+		If not conexao_aberta Then
+			FecharConexao()
+		End If
+		
+		validaUsuario = retorna
+	end if
+
+End Function
+
+'Rotina que cria a p·ginaÁ„o nas p·ginas de listagem
+	'Exemplo da utilizaÁ„o:
+	'If rs.PageCount > 1 Then                               
+	'     <tr bgcolor="whitesmoke">
+	'      <td colspan="8">
+	'      	   call paginacao(paginacaocao,rs.PageCount) 	                    
+	'      </td>
+	'    </tr>   
+	'End if
+Sub paginacao(pagina_atual,qtd_paginas)
+
+	Dim query_string, inicio_posicao_paginacao, fim_posicao_paginacao
+	Dim paginacao_menu
+	Dim i, temp
+	
+	'1a parte corrige o query string
+	'///////////////////////////////////////
+	query_string = ""&Request.ServerVariables("QUERY_STRING")
+	
+	If query_string <> "" Then	
+	'Tira a query de paginaÁ„o
+		inicio_posicao_paginacao = InStr(query_string,"paginacao")	
+		If int(inicio_posicao_paginacao) <> 0 Then
+			'Retira a paginaÁ„o para colocar a correta
+			temp = qtd_paginas
+			For i=0 to qtd_paginas
+								
+				query_string = Replace(query_string,"paginacao="&temp,"")
+				
+				temp = (temp-1)/1
+				
+			Next
+		End If
+	
+	End If
+	
+	'Quando a query for somente a p·ginaÁ„o tira o & da string
+	
+	
+	
+	If Cstr(query_string) = Cstr("&") Then
+		query_string = ""
+	Elseif Cstr(query_string) <> "" Then
+		'Se n„o tiver somente este campo colocar o & no final	
+		query_string = "&"&query_string
+		
+		'Corrige a duplicidade de &
+		query_string = Replace(query_string,"&&","&")
+	End If
+	
+	
+	'2a parte coloca a p·ginaÁ„o se houver mais que uma p·gina
+	
+	If int(pagina_atual) > int(qtd_paginas) Then
+	'Corrige se o usu·rio colocar uma p·gina superior a qtd de p·ginas
+		pagina_atual = qtd_paginas
+	End If
+
+	If int(pagina_atual) = 0 Then
+	'Corrige se o usu·rio colocar a p·gina 0
+		pagina_atual = 1
+	End If	
+	
+	
+	If int(qtd_paginas) > 1 Then
+
+	 	Response.Write("Ir para a p·gina:<br />")
+	
+		If int(qtd_paginas) < 1171 Then
+		
+			Response.Write("<div class='menu_paginacaocao'>")
+	
+				For x=1 To qtd_paginas				
+					If int(pagina_atual) <> int(x) Then
+						Response.Write(" <a href='?paginacao="&x&query_string&"'>"&x&"</a> ")					
+					Else
+						Response.Write("<span>"&x&"</span>")
+					End If				
+				Next
+			
+			Response.Write("</div>")
+	
+		Else
+		
+			paginacao_menu = ""
+			paginacao_menu = paginacao_menu&"<table width='123' border='0' cellspacing='0' cellpadding='3'>"
+			paginacao_menu = paginacao_menu&"<tr><td width='16'>"
+			
+			'Verifica se coloca o seta da esquerda
+			If int(pagina_atual) > 1 Then
+				paginacao_menu = paginacao_menu&"<a href='#' onclick=""paginacaoIrParaPagina('"&query_string&"','"&pagina_atual&"','"&(pagina_atual-1)/1&"','"&qtd_paginas&"')""><img src='images/layout/paginacao_seta_esq.jpg' alt='Ir para p&aacute;gina anterior' width='16' height='16' /></a>"
+			
+			Else
+				paginacao_menu = paginacao_menu&"<img src='images/layout/paginacao_seta_esq_desabilitado.jpg' width='16' height='16' /></a>"
+			
+			End If
+			
+			paginacao_menu = paginacao_menu&"</td><td width='17'><div align='left'>"
+			
+			'Verifica se coloca o seta da direita
+			If int(pagina_atual) <> int(qtd_paginas) Then
+				paginacao_menu = paginacao_menu&"<a href='#' onclick=""paginacaoIrParaPagina('"&query_string&"','"&pagina_atual&"','"&(pagina_atual+1)/1&"','"&qtd_paginas&"')""><img src='images/layout/paginacao_seta_dir.jpg' alt='Ir para pr&oacute;xima p&aacute;gina' width='16' height='16' /></a>"
+			Else
+				paginacao_menu = paginacao_menu&"<img src='images/layout/paginacao_seta_dir_desabilitado.jpg' width='16' height='16' /></a>"
+			End If
+			
+			paginacao_menu = paginacao_menu&"</div></td><td width='33'><div align='right'><input onkeypress='mascara(this,soNumeros)' onblur=""paginacaoIrParaPagina('"&query_string&"','"&pagina_atual&"',this.value,'"&qtd_paginas&"')"" style='width:30px; height:20px; padding:0px;' name='paginacao_ir_para_pagina' value='"&pagina_atual&"' /></div></td>"
+			paginacao_menu = paginacao_menu&"<td width='4'>/</td>"
+			paginacao_menu = paginacao_menu&"<td width='23'><div align='left'>"&qtd_paginas&"</div></td>"
+			paginacao_menu = paginacao_menu&"</tr>"
+			paginacao_menu = paginacao_menu&"</table>"
+			
+			Response.Write(paginacao_menu)
+		
+		End If
+	
+	End If
+
+End Sub
+
+Function preencheCaracter(valor,caracter,qtd_caracteres)
+	
+	Dim retorna
+	Dim diferenca,i
+
+	retorna = valor
+
+	diferenca = (qtd_caracteres-Len(Cstr(""&valor)))/1
+	
+	If diferenca > 0 Then
+		
+		For i=1 to diferenca
+			retorna = caracter&retorna
+		Next
+		
+	End If
+	
+	preencheCaracter = retorna
+	
+End Function
+
+'Retorna o nome do usu·rio
+Function nomeUsuario(cod_usuario,conexao_aberta)
+
+	If not conexao_aberta Then
+		AbrirConexao()
+	End If
+
+	Dim rs, retorna	
+	Set rs=objConexao.Execute("SELECT NOME FROM TB_ADM_USUARIOS WHERE cod_usuario = "&sqlTexto(cod_usuario))
+		
+		If not rs.Eof Then
+			retorna = rs("nome")
+		Else
+			retorna = ""
+		End If
+		
+	rs.Close
+	Set rs=Nothing
+	
+	If not conexao_aberta Then
+		FecharConexao()
+	End If
+	
+	nomeUsuario = retorna
+	
+End Function
+
+Function padraoTELEFONE(campo)
+	Dim tmp
+	tmp = ""&trim(campo)
+	
+	If tmp <> "" Then
+	
+		If Len(tmp) > 13 Then
+		'Limpar
+			tmp = Replace(tmp,"-","")
+			tmp = Replace(tmp," ","")
+			tmp = Replace(tmp,"(","")
+			tmp = Replace(tmp,")","")
+		Elseif Len(tmp) = 10 Then
+		'Colocar mascara
+			tmp = "("&Left(tmp,2)&") "&Mid(tmp,3,4)&"-"&Right(tmp,4)
+		End If
+	
+	End If
+	
+	padraoTELEFONE = tmp
+	
+End Function
+
+Function estoqueNumeroCaixa(cod_caixa_armazenado,conexao_aberta)
+
+	If not conexao_aberta Then
+		AbrirConexao()
+	End If
+
+
+	Dim rs, retorna
+	retorna = ""
+	
+	Set rs=objConexao.Execute("SELECT NUMERO_CAIXA FROM TB_LOCAL_ARMAZENAGEM_SALA_CAIXA WHERE cod_caixa_armazenado = "&sqlTexto(cod_caixa_armazenado))
+		
+		If not rs.Eof Then
+			retorna = rs("NUMERO_CAIXA")
+		End if
+		
+	rs.Close
+	Set rs=Nothing
+
+	If not conexao_aberta Then
+		FecharConexao()
+	End If
+	
+	estoqueNumeroCaixa = retorna
+	
+End Function
+
+sub donwloadStream(caminho_completo)
+	dim blacklist, aux, vem_da_pasta_dados, whitelist
+	whitelist = false
+	vem_da_pasta_dados = false
+
+	blacklist = "asp|php|aspx|html|css|js|c|mdb"
+
+	Dim extensao
+
+	'Verificamos se o arquivo est· na blacklist
+	aux = split(caminho_completo,".")
+	if not instr(1, blacklist, aux(ubound(aux)), vbTextCompare) > 0 then
+		whitelist = true
+	end if
+	
+	'validamo se o download vem da pasta dados
+
+
+	if  whitelist then
+		Dim objFSO
+		Dim objFile
+		Dim objStream
+		
+		'-- create FSO object to check if file exists and get properties
+		Set objFSO = Server.CreateObject("Scripting.FileSystemObject")
+		'-- verificamos se o arquivo exite
+		If objFSO.FileExists(caminho_completo) Then
+			Set objFile = objFSO.GetFile(caminho_completo)
+			'-- first clear the response, and then set the appropriate headers
+			Response.Clear
+
+			'-- the filename you give it will be the one that is shown
+			' to the users by default when they save
+			
+			Response.AddHeader "Content-Disposition:", "inline; filename=" & objFile.Name
+			Response.AddHeader "Content-Length", objFile.Size
+			Response.ContentType = "application/octet-stream"
+			
+			Set objStream = Server.CreateObject("ADODB.Stream")
+			objStream.Open
+			objStream.Type = 1
+			Response.CharSet = "UTF-8"	
+			objStream.LoadFromFile(caminho_completo)
+			Response.BinaryWrite(objStream.Read)
+			objStream.Close
+			Set objStream = Nothing
+			Set objFile = Nothing
+		Else
+			Response.Clear
+			Response.Write("Arquivo n„o encontrado.")
+		End If
+		Set objFSO = Nothing
+	end if
+end sub
+
+sub downloadStreamRenomeia(caminho_completo, nome_arquivo)
+	dim blacklist, aux, vem_da_pasta_dados, whitelist
+	whitelist = false
+	vem_da_pasta_dados = false
+
+	blacklist = "asp|php|aspx|html|css|js|c|mdb"
+
+	'Verificamos se o arquivo est· na blacklist
+	aux = split(caminho_completo,".")
+	if not instr(1, blacklist, aux(ubound(aux)), vbTextCompare) > 0 then
+		whitelist = true
+	end if
+	
+	'validamo se o download vem da pasta dados
+	if lcase(left(caminho_completo,len(caminho_dados))) = lcase(caminho_dados)  then
+		vem_da_pasta_dados = true
+	end if
+
+	if vem_da_pasta_dados and whitelist then
+		Dim objFSO
+		Dim objFile
+		Dim objStream
+		
+		'-- create FSO object to check if file exists and get properties
+		Set objFSO = Server.CreateObject("Scripting.FileSystemObject")
+		'-- verificamos se o arquivo exite
+		If objFSO.FileExists(caminho_completo) Then
+			Set objFile = objFSO.GetFile(caminho_completo)
+			'-- first clear the response, and then set the appropriate headers
+			Response.Clear
+
+			'-- the filename you give it will be the one that is shown
+			' to the users by default when they save
+			Response.AddHeader "Content-Disposition", "attachment; filename=" & nome_arquivo
+			Response.AddHeader "Content-Length", objFile.Size
+			Response.ContentType = "application/octet-stream"
+			
+			Set objStream = Server.CreateObject("ADODB.Stream")
+			objStream.Open
+			objStream.Type = 1
+			Response.CharSet = "UTF-8"	
+			objStream.LoadFromFile(caminho_completo)
+			Response.BinaryWrite(objStream.Read)
+			objStream.Close
+			Set objStream = Nothing
+			Set objFile = Nothing
+		Else
+			Response.Clear
+			Response.Write("Arquivo n„o encontrado.")
+		End If
+		Set objFSO = Nothing
+	end if
+end sub
+
+
+sub logEventos(descricao, conexao_aberta)
+
+	if not conexao_aberta then
+		abrirConexao()
+	end if
+
+	dim aux
+
+	'ADICIONAMOS ALGUMAS TAGS AO LOG
+	aux = descricao & "[pagina_execucao:"&Request.ServerVariables("SERVER_NAME")&Request.ServerVariables("URL")&"]"
+	aux = aux & "[metodo:"&request.servervariables("REQUEST_METHOD")&"]"
+	aux = aux & "[query_string:"&Request.Querystring&"]"
+	aux = aux & "[pagina_anterior:"&request.servervariables("http_referer")&"]"
+	aux = aux & "[sistema:"&request.servervariables("HTTP_USER_AGENT")&"]"
+	aux = aux & "[data_log:"&now()&"]"
+
+
+	objConexao.Execute("INSERT INTO TB_ADM_LOG_ALTERACOES (COD_USUARIO,DATA_CADASTRADO,DESCRICAO) VALUES ("&session("cod_usuario")&", NOW(), "&sqlTexto(aux)&" )")
+
+	if not conexao_aberta then
+		fecharConexao()
+	end if
+
+end sub
+
+function getConfiguracoes(conexao_aberta, array_chaves) 
+
+  if not conexao_aberta then
+    abrirConexao()
+  end if
+
+  dim i : i = 0
+  dim count : count = ubound(array_chaves)
+  dim chaves : chaves = ""
+
+  while i <= count 
+    chaves = chaves & sqlTexto(array_chaves(i)) & ", "
+  i = i + 1
+  wend
+
+  chaves = left(chaves, len(chaves)-2)
+
+  set retorno = Server.CreateObject("Scripting.Dictionary")
+  set rs = objConexao.execute("SELECT chave, valor FROM TB_CONFIGURACOES WHERE chave IN (" & chaves & ")")
+    while not rs.Eof 
+      call retorno.add(rs("chave").value, rs("valor").value)
+    rs.moveNext()
+    wend
+  rs.close()
+  set rs = nothing
+
+  if not conexao_aberta then
+    fecharConexao()
+  end if 
+
+set getConfiguracoes = retorno
+end function
+
+
+%>

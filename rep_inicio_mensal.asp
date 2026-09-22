@@ -1,0 +1,478 @@
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<%
+Dim VENDEDOR_RECEBE_EM
+
+VENDEDOR_RECEBE_EM = FormatDateTime(""&Request.QueryString("VENDEDOR_RECEBE_EM"))
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
+<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
+	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
+	<script type="text/javascript">
+function confirma(cod_formando,nomeFormando,comando){
+var mensagem 
+
+	if (comando == "alterar"){
+		mensagem = "ATENÇÃO ALTERAÇÃO: \nDeseja resetar a ficha de: "+nomeFormando+" deseja continuar?\n*A ficha voltará na forma original."	
+	}	
+	else {
+		mensagem = "ATENÇÃO EXCLUSÃO: \nSe você continuar poderá perder as alterações feitas nesta página,\nalem de resetar a ficha do formando: "+nomeFormando+"  deseja continuar?"
+	}
+
+	var resposta=confirm(mensagem);
+		if (resposta==true) {
+			
+			if (comando == "excluir"){
+				//Nova confirmação, Exclui
+				var resposta2=confirm("Deseja realmente EXCLUIR?")
+					if (resposta2==true){
+						document.producao["MODIFICACOES_"+cod_formando].value = "2";
+						document.producao.submit();
+					}	
+			}
+			else{
+			//Altera
+				document.producao["MODIFICACOES_"+cod_formando].value = "1"
+				document.producao.submit();
+			}
+		}
+}
+</script>
+
+	
+	<script language="javascript">
+		function popUp(campo,URL,campoSelect,msgErro){
+			
+			if(document.producao[campo].value==1){
+				
+				if (campoSelect !== 'no'){
+					//Brinde = "Sim"
+					document.producao[campoSelect].options[1].selected = "true";
+				}
+			
+				win=window.open(URL,"","width=350,height=220,scrollbars=yes")
+				var text = "Se a janela não abrir desbloquei os Pop-ups!";
+				if(win == null) { alert(text); return; }
+				win.moveTo(350,150);
+					
+			}
+			else {
+				if (msgErro==1){alert('Para visualizar os brindes é necessário alterar a opção Brinde para Sim.')}
+			}
+		
+		}
+		
+		function fecharPopUp(){
+			if(win){
+				win.close();
+			}
+		}
+		
+		function mOvr(src, cor)
+			{
+			if (!src.contains(event.fromElement))
+					{
+						src.style.cursor = 'hand';
+						src.bgColor = cor;
+					}
+			}
+		
+		function mOut(src, cor)
+			{
+				if (!src.contains(event.toElement))
+					{
+						src.style.cursor = 'default';
+						src.bgColor = cor;
+			
+					}
+			}
+	</script>
+	
+	<script type="text/javascript" language="javascript">
+	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
+		
+	function abrir(theURL,winName,features) 
+	{ 
+	
+		window.open(theURL,winName,features);
+	}
+	
+		
+	function abre(url)
+	{    
+				//if(event.srcElement.tagName=='TD')
+				//	{
+				//		src.children.tags('A')[0].click(); 
+				//	}
+	location.href = url;
+
+	}	
+		
+		
+	
+
+	function buscaIni(){
+	d = document.buscaForm
+	d.busca.focus()
+	d.busca.select();
+	}
+	function mudacorBusca(CAMPO){
+	CAMPO.style.backgroundColor = '#F5ECBA'
+	}
+	function mudacorBusca2(CAMPO){
+	CAMPO.style.backgroundColor = '#FFFFFF'
+	}
+
+ function Verificar()
+ {
+  var tecla=window.event.keyCode;
+  if (tecla==17) {
+    buscaIni();
+	}
+ }
+ 
+
+
+
+
+
+	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
+	</script>
+	
+	<script>
+
+function mascara(o,f){
+    v_obj=o
+    v_fun=f
+    setTimeout("execmascara()",1)
+}
+
+function execmascara(){
+    v_obj.value=v_fun(v_obj.value)
+}
+
+function leech(v){
+    v=v.replace(/o/gi,"0")
+    v=v.replace(/i/gi,"1")
+    v=v.replace(/z/gi,"2")
+    v=v.replace(/e/gi,"3")
+    v=v.replace(/a/gi,"4")
+    v=v.replace(/s/gi,"5")
+    v=v.replace(/t/gi,"7")
+    return v
+}
+
+function soNumeros(v){
+    return v.replace(/\D/g,"")
+}
+
+function telefone(v){
+    v=v.replace(/\D/g,"")
+    v=v.replace(/^(\d\d)(\d)/g,"($1) $2") 
+    v=v.replace(/(\d{4})(\d)/,"$1-$2")   
+    return v
+}
+
+function cpf(v){
+    v=v.replace(/\D/g,"")                   
+    v=v.replace(/(\d{3})(\d)/,"$1.$2")      
+    v=v.replace(/(\d{3})(\d)/,"$1.$2")      
+                                            
+    v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
+    return v
+}
+
+function cep(v){
+    v.replace(/\D/g,"")               
+    v=v.replace(/^(\d{5})(\d)/,"$1-$2") 
+    return v
+}
+
+function cnpj(v){
+    v=v.replace(/\D/g,"")                           
+    v=v.replace(/^(\d{2})(\d)/,"$1.$2")             
+    v=v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3") 
+    v=v.replace(/\.(\d{3})(\d)/,".$1/$2")         
+    v=v.replace(/(\d{4})(\d)/,"$1-$2")              
+    return v
+}
+
+function focusFormando(){
+	document.producao.<%="ALBUM_"&Request.QueryString("cod_form")%>.focus()
+}
+</script>
+	
+		<!-- CALENDÁRIO SCRIPTS
+	<script type="text/javascript">
+	DHTMLSuite.include("calendar");
+	</script>
+	<script type="text/javascript">
+	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
+	
+		 
+	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
+	
+	function myOtherFunction()
+	{
+		
+		
+	}
+	function pickDate(buttonObj,inputObject)
+	{
+		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
+		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
+		
+		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
+		
+		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
+		if(calendarObjForForm.isVisible()){
+			calendarObjForForm.hide();
+		}else{
+			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
+			calendarObjForForm.display();
+		}		
+	}	
+	/* inputArray is an associative array with the properties
+	year
+	month
+	day
+	hour
+	minute
+	calendarRef - Reference to the DHTMLSuite.calendar object.
+	*/
+	function getDateFromCalendar(inputArray)
+	{
+		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
+		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
+//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
+		calendarObjForForm.hide();	
+		
+	}	
+	</script>
+	-->
+	<script language="javascript">
+	function confirmaFinalizarProducao(){
+	
+	var pergunta = confirm('Tem certeza que deseja finalizar está produção?\nObs.: Esta produção não poderá ser alterada posteriormente somente com senha especial.')
+		if(pergunta==true){
+		abre('?cod_prod=<%=Request.QueryString("cod_prod")%>&comando=finalizar_producao')
+		}
+	}
+	function confirmaExclusao(){
+	var perguntaq = confirm('EXCLUIR PRODUÇÃO:\nAtenção caso queira continuar lembre-se que todas as fichas(se houver) serão excluídas completamente, deseja continuar?')
+		if (perguntaq==true){
+			var perguntadeNovo = confirm("CONFIRMA EXCLUSÃO DESTA PRODUÇÃO E SUAS RESPECTIVAS FICHAS?")
+			if (perguntadeNovo==true){
+			abre('?cod_prod=<%=Request.QueryString("cod_prod")%>&comando=excluir_producao')
+			}
+		}
+	
+	}
+	</script>
+</head>
+
+<body>
+
+<table cellpadding="9px" cellspacing="0" width="100%">
+<tr>
+<td>
+  <!-- #include file="includes/topo.asp" -->
+  <table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+  <tr>
+    <td><table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+	<!-- #include file="includes/menu.asp" -->	  </td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="10">
+  <tr>
+  <td>
+   <%
+  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
+  BTN_VOLTAR = 2
+  BTN_IMPRIMIR = 2
+  BTN_FONTE = 2
+  BTN_IMPRIMIR_LINK = "#"
+  %>
+  <!-- #include file="includes/sub_menu.asp" -->
+  
+  <table width="100%" border="0" cellspacing="0" cellpadding="5">
+  <tr>
+    <td valign="top" style="border:dotted 1px #999999">
+	
+	  <h2>VENDAS DE REPASSES</h2>
+
+		  
+		<p>&nbsp;</p>
+		
+        
+        <h3 align="center">Relat&oacute;rios de Vendas do Grupo de Repasse<br />
+       <%=MonthName(Month(VENDEDOR_RECEBE_EM))%> / <%=Year(VENDEDOR_RECEBE_EM)%> 
+          <br />
+        </h3>
+	 <table width="90%" border="1" align="center" 	cellpadding="7" style="border-collapse:collapse">
+			        <tr bgcolor="whitesmoke">
+                      <td width="20%"  style="border-bottom:dashed 1px #999999"><div align="center"><strong>Vendedor</strong></div></td>
+                <td width="10%"><div align="center"><strong>Qtd. Pedidos</strong></div></td>
+                <td width="13%"><div align="center"><strong>Pedidos &Agrave; Vista</strong></div></td>
+			        <td width="14%"><div align="center"><strong>Pedidos Prazo</strong></div></td>
+			        <td width="14%"><div align="center"><strong>Qtd. &Aacute;lbuns</strong></div></td>
+			        <td width="15%"><div align="center"><strong>Valor Total Arrecadado</strong></div></td>
+			        <td width="14%"><div align="center"><strong>Atingiu Meta Individual</strong></div></td>
+                    </tr>
+			        
+              <%
+			  AbrirConexao()
+			  
+			  Dim sql, rs, COORDENADOR, qtdVendedores
+			  Dim COD_GRUPO_VENDEDORES, XTOTAL_ALBUNS_VENDIDOS
+			  
+				If int(COD_USUARIO_INTERNO_LOGADO) = 20 Then
+				'Renato
+						COD_GRUPO_VENDEDORES = 1
+				Elseif int(COD_USUARIO_INTERNO_LOGADO) = 21 Then
+				'Mário
+						COD_GRUPO_VENDEDORES = 2
+				End If
+			  
+			  
+			  Set rs=objConexao.Execute("SELECT TB_VENDEDORES.NOME_VENDEDOR, TB_PEDIDOS.COD_VENDEDOR, COUNT(TB_PEDIDOS.COD_PEDIDO) AS QTD_PEDIDOS FROM TB_VENDEDORES INNER JOIN TB_PEDIDOS ON TB_VENDEDORES.COD_VENDEDOR = TB_PEDIDOS.COD_VENDEDOR WHERE TB_PEDIDOS.COD_GRUPO_VENDEDORES = "&COD_GRUPO_VENDEDORES&" AND TB_PEDIDOS.VENDEDOR_RECEBE_EM = "&sqlData(VENDEDOR_RECEBE_EM)&" AND TB_PEDIDOS.FINALIZA_CORRECAO = 1  GROUP BY TB_PEDIDOS.COD_VENDEDOR ORDER BY TB_VENDEDORES.NOME_VENDEDOR", qtdVendedores)
+			  
+			  Dim NOME_VENDEDOR, QTD_PEDIDOS, PEDIDOS_A_VISTA, PEDIDOS_A_PRAZO, QTD_ALBUNS, VALOR_TOTAL_ARRECADADO
+			  Dim QTD_ALBUNS_GRUPO
+			  
+			  QTD_ALBUNS_GRUPO = 0
+			  
+			  While not rs.Eof
+			  
+			  	COD_VENDEDOR			= rs("COD_VENDEDOR")
+				NOME_VENDEDOR			= rs("NOME_VENDEDOR")
+				QTD_PEDIDOS				= rs("QTD_PEDIDOS") 
+				
+				PEDIDOS_A_VISTA			= 0
+				PEDIDOS_A_PRAZO			= 0
+				QTD_ALBUNS				= 0
+				VALOR_TOTAL_ARRECADADO	= 0
+			  	
+				sql = "SELECT TB_PEDIDOS.FORMA_PAGAMENTO, COUNT(TB_PEDIDOS.COD_PEDIDO) AS QTD_PEDIDOS FROM TB_PEDIDOS WHERE TB_PEDIDOS.COD_GRUPO_VENDEDORES = "&COD_GRUPO_VENDEDORES&" AND TB_PEDIDOS.COD_VENDEDOR = "&COD_VENDEDOR&" AND VENDEDOR_RECEBE_EM = "&sqlData(VENDEDOR_RECEBE_EM)&" AND TB_PEDIDOS.FINALIZA_CORRECAO = 1 GROUP BY TB_PEDIDOS.FORMA_PAGAMENTO ORDER BY TB_PEDIDOS.FORMA_PAGAMENTO"
+				
+				'Response.Write(sql)
+				
+				Set rs2=objConexao.Execute(sql)
+					
+					While not rs2.Eof
+						
+						If int(rs2("FORMA_PAGAMENTO")) = 1 Then
+						'A vista
+								PEDIDOS_A_VISTA	= rs2("QTD_PEDIDOS")
+						Elseif  int(rs2("FORMA_PAGAMENTO")) = 2 Then
+						'A prazo
+								PEDIDOS_A_PRAZO	= rs2("QTD_PEDIDOS")
+						End If
+						
+					rs2.MoveNext()
+					Wend
+					
+				rs2.Close
+				Set rs2=Nothing
+				
+				Set rs2 = objConexao.Execute("SELECT SUM(VW_QTD_FORMANDOS_POR_PEDIDO.QTD_FORMANDOS) AS QTD_ALBUNS FROM VW_QTD_FORMANDOS_POR_PEDIDO INNER JOIN TB_PEDIDOS ON VW_QTD_FORMANDOS_POR_PEDIDO.COD_PEDIDO = TB_PEDIDOS.COD_PEDIDO WHERE TB_PEDIDOS.COD_VENDEDOR = "&COD_VENDEDOR&" AND TB_PEDIDOS.VENDEDOR_RECEBE_EM = "&sqlData(VENDEDOR_RECEBE_EM)&" AND TB_PEDIDOS.FINALIZA_CORRECAO = 1 AND TB_PEDIDOS.COD_GRUPO_VENDEDORES = "&COD_GRUPO_VENDEDORES&" GROUP BY TB_PEDIDOS.COD_VENDEDOR")
+					If not rs2.Eof Then
+						
+						QTD_ALBUNS	= formatNumber(0&rs2("QTD_ALBUNS"),0)
+						
+					End If
+					
+					
+				rs2.Close
+				Set rs2 = Nothing
+				
+				
+				Set rs2 = objConexao.Execute("SELECT SUM(VW_PEDIDOS_TOTAL_RECEBIDO.PAGAMENTO_EM_DINHEIRO) AS TOTAL_DINHEIRO, SUM(VW_PEDIDOS_TOTAL_RECEBIDO.XTOTAL_CHEQUE) AS TOTAL_CHEQUE, SUM(VW_PEDIDOS_TOTAL_RECEBIDO.XTOTAL_CARTAO) AS TOTAL_CARTAO FROM VW_PEDIDOS_TOTAL_RECEBIDO INNER JOIN TB_PEDIDOS ON VW_PEDIDOS_TOTAL_RECEBIDO.COD_PEDIDO = TB_PEDIDOS.COD_PEDIDO 				WHERE TB_PEDIDOS.COD_VENDEDOR = "&COD_VENDEDOR&" AND TB_PEDIDOS.VENDEDOR_RECEBE_EM = "&sqlData(VENDEDOR_RECEBE_EM)&" AND TB_PEDIDOS.FINALIZA_CORRECAO = 1 AND TB_PEDIDOS.COD_GRUPO_VENDEDORES = "&COD_GRUPO_VENDEDORES&" GROUP BY TB_PEDIDOS.COD_VENDEDOR")
+					If not rs2.Eof Then
+					Dim TOTAL_DINHEIRO, TOTAL_CHEQUE, TOTAL_CARTAO
+						
+						TOTAL_DINHEIRO	= 0
+						TOTAL_CHEQUE	= 0
+						TOTAL_CARTAO	= 0
+						
+						
+						TOTAL_DINHEIRO	= formatNumber(0&rs2("TOTAL_DINHEIRO"))/1
+						TOTAL_CHEQUE	= formatNumber(0&rs2("TOTAL_CHEQUE"))/1
+						TOTAL_CARTAO	= formatNumber(0&rs2("TOTAL_CARTAO"))/1
+						
+						VALOR_TOTAL_ARRECADADO	= formatCurrency(TOTAL_DINHEIRO + TOTAL_CHEQUE + TOTAL_CARTAO)
+						
+					End If
+					
+					
+				rs2.Close
+				Set rs2 = Nothing
+				
+				QTD_ALBUNS_GRUPO		= (QTD_ALBUNS_GRUPO + QTD_ALBUNS)/1
+			  %>
+			
+       <tr>
+			          <td  style="border-bottom:dashed 1px #999999"><div align="left"><%=NOME_VENDEDOR%></div></td>
+			          <td><div align="center"><%=QTD_PEDIDOS%></div></td>
+			          <td><div align="center"><%=PEDIDOS_A_VISTA%></div></td>
+			          <td><div align="center"><%=PEDIDOS_A_PRAZO%></div></td>
+			          <td><div align="center"><%=QTD_ALBUNS%></div></td>
+			          <td><div align="right"><%=VALOR_TOTAL_ARRECADADO%></div></td>
+			          <td><div align="right">
+					  <%
+					  If int(QTD_ALBUNS) > 29 Then
+					  	Response.Write("SIM")
+					  Else
+					  	Response.Write("NÃO")
+					  End If
+					  %>
+                      </div></td>
+			          </tr>
+			  <%
+			  rs.MoveNext()
+				Wend
+				
+				Dim qtdVendedores2
+				
+				qtdVendedores2 = formatNumber(0&qtdVendedores)
+				%>
+                 <tr bgcolor="whitesmoke">
+         <td colspan="6"><div align="right"><strong>M&eacute;dia de &Aacute;lbuns Vendidos</strong></div></td>
+         <td><div align="right"><strong><%=formatNumber(QTD_ALBUNS_GRUPO/qtdVendedores2)%></strong></div></td>
+        </tr
+                
+				>
+				<%
+				
+				rs.Close
+				Set rs=Nothing
+				
+				FecharConexao()
+			%>
+        </table>
+		<p align="center">&nbsp;</p>
+	    </td>
+    </tr>
+</table>
+
+  
+  
+  
+  </td>
+    </tr>
+</table>  </td>
+  </tr>
+</table>
+<!-- #include file="includes/rodape.asp" -->
+
+  </td>
+</tr>
+</table>
+</body>
+</html>

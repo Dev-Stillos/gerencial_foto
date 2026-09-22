@@ -1,0 +1,1 @@
+<?php echo gethostbyname('stillosg.ddns.net'); ?>

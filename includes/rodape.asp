@@ -1,0 +1,2 @@
+<div align="center" class="textoCinza"><a href="#" class="linkCinza">Inicio</a> | <a class="linkCinza" href="#" onclick="buscaIni()">Busca</a> | <a href="#" class="linkCinza">Topo</a><br />
+  StillosWeb sistema administrativo interno - Desenvolvido pelo departamento de T.I. 2008 - <%=Year(now())%></div> 

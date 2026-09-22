@@ -1,0 +1,1010 @@
+<%
+Response.Charset = "UTF-8"
+Response.CodePage = 65001
+%>
+<%
+Sub impressaoPedidoPDF(COD_PEDIDO,IMPRESSAO_A_OU_B)
+	'//////////////////////////////////////////////////////////////////////////////////////////////////
+	'Vari�veis
+	'/////
+	Dim COD_PEDIDO_PDF, DATA_VENDA, NOME_VENDEDOR, REPASSE, VENDEDOR_RECEBE_EM, PEDIDO_EXTRA
+	Dim TOTAL_EM_PRODUTOS, TOTAL_RECEBIDO, TOTAL_CARTAO, TOTAL_CHEQUE, TOTAL_DINHEIRO, TOTAL_CREDITO
+	Dim diferenca_y
+	
+	If IMPRESSAO_A_OU_B = "B" Then
+		diferenca_y = 413
+	Else
+		diferenca = 0
+	End If
+	
+			
+	'//////////////////////////////////////////////////////////////////////////////////////////////////	
+	'1� Parte - Descri��o pedido
+						sql = "SELECT "&_
+						"TB_VENDEDORES.NOME_VENDEDOR, "&_
+						"TB_PEDIDOS.ERRO_LISTA, "&_
+						"TB_PEDIDOS.DATA_VENDA, "&_
+						"TB_PEDIDOS.DATA_CADASTRO, "&_
+						"TB_PEDIDOS.PEDIDO_EXTRA, "&_
+						"TB_PEDIDOS.FINALIZA_CORRECAO, "&_
+						"TB_PEDIDOS.FINALIZA_DIRETORIA, "&_
+						"TB_PEDIDOS.DATA_CORRIGIDO_DEP_FOTO, "&_
+						"TB_PEDIDOS.DATA_DESCEU_DIRETORIA, "&_
+						"TB_PEDIDOS.DATA_CORRIGIDO_DIRETORIA, "&_
+						"TB_PEDIDOS.OBSERVACAO, "&_
+						"TB_PEDIDOS.VALOR_AJUDA_CUSTO, "&_
+						"TB_PEDIDOS.VENDEDOR_RECEBE_EM, "&_
+						"TB_PEDIDOS.PAGAMENTO_EM_DINHEIRO "&_
+						"FROM TB_VENDEDORES INNER JOIN TB_PEDIDOS ON TB_VENDEDORES.COD_VENDEDOR = TB_PEDIDOS.COD_VENDEDOR "&_
+						"WHERE COD_PEDIDO="&COD_PEDIDO
+						
+						Set rs2=objConexao.Execute(sql)
+						
+						If not rs2.Eof Then
+							
+							COD_PEDIDO_PDF				= "<B>"&COD_PEDIDO&"</B>"
+							NOME_VENDEDOR				= "<B>"&Ucase(rs2("NOME_VENDEDOR"))&"</B>"
+							DATA_VENDA					= "<B>"&ArrumaData(rs2("DATA_VENDA"))&"</B>"
+							OBSERVACAO					= ""&rs2("OBSERVACAO")
+							VENDEDOR_RECEBE_EM			= "<B>"&Day(rs2("VENDEDOR_RECEBE_EM"))&"/"&Ucase(Left(MonthName(Month(rs2("VENDEDOR_RECEBE_EM"))),3))&"/"&Year(rs2("VENDEDOR_RECEBE_EM"))
+							PAGAMENTO_EM_DINHEIRO		= formatNumber(0&rs2("PAGAMENTO_EM_DINHEIRO"))
+							PEDIDO_EXTRA				= rs2("PEDIDO_EXTRA")
+														
+						End If
+								
+						
+						rs2.Close
+						Set rs2=Nothing
+	
+		
+		'//////////////////////////////////////////////////////////////////////////////////////////////////////
+		
+
+						'/////////////////////////////////////////////////////////////////////////////
+						'PEDIDO EXTRA CORRE��O DE PDF
+						If int(PEDIDO_EXTRA) = 1 Then
+						
+							Set Image = Doc.OpenImage("e:\home\stillos\web\gerencial_foto\documentos\pedido_extra.jpg")
+							'Imagem em branco
+							Page.Canvas.DrawImage Image, "x=396.2, y="&(716-diferenca_y)/1
+							
+							'Texto
+							Param.Add("x=430, y="&(760-diferenca_y)/1&", size=15")
+							Page.Canvas.DrawText "PEDIDO EXTRA", Param, Font
+						
+						End If
+						'/////////////////////////////////////////////////////////////////////////////
+						
+						
+						
+						Set rs3=objConexao.Execute("SELECT TIPO_VENDA FROM TB_PEDIDOS WHERE COD_PEDIDO="&COD_PEDIDO)
+							
+								If not rs3.Eof Then
+								
+									If int(rs3("TIPO_VENDA")) = 1 Then
+										REPASSE	= "<b>NÃO</b>"
+									Elseif int(rs3("TIPO_VENDA")) = 2 Then
+										REPASSE	= "<b>SIM NORMAL</b>"
+									ElseIf int(rs3("TIPO_VENDA")) = 3 Then
+										REPASSE	= "<b>SIM GRUPO</b>"
+									End If
+								Else
+									REPASSE	= "<b>ERROOOOOOOOO</b>"
+								End If
+						
+						rs3.Close
+						Set rs3=Nothing
+						
+						'/////////////
+						'C�d. Pedido
+						Param.Add("x=18, y="&(816-diferenca_y)/1&", size=9")
+						Page.Canvas.DrawText COD_PEDIDO_PDF, Param, Font
+				
+						'Data Venda
+						Param.Add("x=81, y="&(816-diferenca_y)/1&", size=9")
+						Page.Canvas.DrawText DATA_VENDA, Param, Font
+				
+						'Nome do Vendedor
+						Param.Add("x=153, y="&(816-diferenca_y)/1&", size=9")
+						Page.Canvas.DrawText NOME_VENDEDOR, Param, Font
+						
+						'Venda Repasse
+						Param.Add("x=450, y="&(816-diferenca_y)/1&", size=9")
+
+						Page.Canvas.DrawText REPASSE, Param, Font
+						
+						'Vendedor Recebe em
+						Param.Add("x=523, y="&(816-diferenca_y)/1&", size=9")
+						Page.Canvas.DrawText VENDEDOR_RECEBE_EM, Param, Font
+						'/////////////
+						
+						'2� Parte - Dados dos Formandos
+						'/////////////
+						sql =	"SELECT "&_
+								"TB_PEDIDOS_FORMANDOS.COD_FORMANDO, "&_
+								"TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO, "&_
+								"TB_FICHAS_IDENTIFICACAO.ALBUM, "&_
+								"TB_FICHAS_IDENTIFICACAO.COD_CONTRATO, "&_
+								"TB_FICHAS_IDENTIFICACAO.COD_PRODUCAO, "&_
+								"TB_FICHAS_IDENTIFICACAO.NOME_CURSO, "&_
+								"TB_FICHAS_IDENTIFICACAO.INICIAL, "&_
+								"TB_FICHAS_IDENTIFICACAO.FATURADO, "&_
+								"TB_FICHAS_IDENTIFICACAO.ENCADERNACOES_EXTRAS, "&_
+								"TB_FICHAS_IDENTIFICACAO.VALOR_UN, "&_
+								"TB_FICHAS_IDENTIFICACAO.RETIRADO, "&_
+								"TB_FICHAS_IDENTIFICACAO.COMISSAO, "&_								
+								"TB_FICHAS_IDENTIFICACAO.BRINDE, "&_								
+								"TB_FICHAS_IDENTIFICACAO.PRODUTO_AGREGADO, "&_								
+								"TB_FICHAS_IDENTIFICACAO.COMISSAO "&_								
+								"FROM TB_PEDIDOS_FORMANDOS INNER JOIN TB_FICHAS_IDENTIFICACAO ON "&_
+								"TB_PEDIDOS_FORMANDOS.COD_FORMANDO = TB_FICHAS_IDENTIFICACAO.COD_FORMANDO "&_
+								"WHERE TB_PEDIDOS_FORMANDOS.COD_PEDIDO = "&COD_PEDIDO&" ORDER BY NOME_FORMANDO"
+						
+						Set rs4 = objConexao.Execute(sql)
+						Dim QTD_BRINDE, QTD_RETIRADA
+				
+						w = 0													
+						
+						While not rs4.Eof
+						
+						ww = (((782-diferenca_y)/1)-w)/1
+								
+								'/////
+									Set rs4_1 = objConexao.Execute("SELECT DESCRICAO FROM TB_ENTIDADES WHERE COD_CONTRATO= '"&rs4("COD_CONTRATO")&"'")
+									Dim DESCRICAO
+										If not rs4_1.Eof Then
+											DESCRICAO = rs4_1("DESCRICAO")
+										End If
+									rs4_1.Close
+									Set rs4_1 = Nothing
+								
+								'/////
+								
+								'/////
+								'Total Cr�dito
+									
+									sql =	" SELECT SUM(IFNULL(TB_FICHAS_IDENTIFICACAO.CREDITO_EM_VALOR,0)) AS TOTAL_CREDITO "&_
+											" FROM TB_PEDIDOS_FORMANDOS INNER JOIN TB_FICHAS_IDENTIFICACAO ON "&_
+											" TB_PEDIDOS_FORMANDOS.COD_FORMANDO =  "&_
+											" TB_FICHAS_IDENTIFICACAO.COD_FORMANDO WHERE  "&_
+											" TB_PEDIDOS_FORMANDOS.COD_PEDIDO = "&COD_PEDIDO&" GROUP BY TB_PEDIDOS_FORMANDOS.COD_PEDIDO"
+									
+									Set rsCredito = objConexao.Execute(sql) 
+					
+										If not rsCredito.Eof Then
+											TOTAL_CREDITO = formatNumber(0&rsCredito("TOTAL_CREDITO"))
+										End If
+										
+									
+									rsCredito.Close
+									Set rsCredito = Nothing
+									
+									If int(PEDIDO_EXTRA) = 1 Then
+										'Se for pedido extra n�o tem cr�dito de jeito algum!
+											TOTAL_CREDITO = 0
+									End If
+									
+								'/////
+								
+								
+								Param.Add("x=30, y="&ww&", size=7")							
+								Page.Canvas.DrawText mid(DESCRICAO,1 ,35), Param, Font
+								
+								Param.Add("x=191, y="&ww&", size=7")
+								Page.Canvas.DrawText Ucase(Left(rs4("NOME_FORMANDO"),32)), Param, Font
+								
+								Param.Add("x=346, y="&ww&", size=7")
+								Page.Canvas.DrawText Ucase(booleano(rs4("COMISSAO"))), Param, Font
+								
+								Param.Add("x=373, y="&ww&", size=7")
+								
+								If rs4("ENCADERNACOES_EXTRAS") = 1 Then
+									Page.Canvas.DrawText Replace(rs4("ALBUM"),".","")&" D", Param, Font
+								Else
+									Page.Canvas.DrawText Replace(rs4("ALBUM"),".",""), Param, Font
+								End If
+															
+								If int(PEDIDO_EXTRA) = 2 Then
+								
+												Param.Add("x=408, y="&ww&", size=7")
+												Page.Canvas.DrawText rs4("INICIAL"), Param, Font
+											
+											'///
+											Dim rsProducao, rsBrindesAlbum
+							
+											'Consulta a produ��o desta ficha para verificar qual o c�digo padr�o do �lbum
+											Set rsProducao = objConexao.Execute("SELECT COD_FOTO_PADRAO FROM TB_PRODUCAO WHERE COD_PRODUCAO="&rs4("COD_PRODUCAO"))
+											If not rsProducao.Eof Then
+													COD_FOTO_PADRAO = rsProducao("COD_FOTO_PADRAO")
+											End If		
+																				
+											rsProducao.Close()
+											Set rsProducao = Nothing
+											
+											'Todos os pedidos que n�o tiverem foto padr�o a foto passar� a ser FOTO
+											If COD_FOTO_PADRAO = Empty Then
+												COD_FOTO_PADRAO = 2
+											End If
+											
+											'Consulta a quantidade de brinde, agora com a foto padr�o do �lbum
+											If COD_FOTO_PADRAO <> Empty Then
+											Set rsBrindesAlbum = objConexao.Execute("SELECT Sum(QUANTIDADE) as QUANTIDADE FROM TB_FICHAS_IDENTIFICACAO_BRINDES WHERE COD_FORMANDO="&rs4("COD_FORMANDO")&" AND COD_PRODUTO="&COD_FOTO_PADRAO&" GROUP BY COD_PRODUTO")
+											
+												If not rsBrindesAlbum.Eof then
+													QTD_BRINDE = formatNumber(0&rsBrindesAlbum("QUANTIDADE"),0)
+												Else
+													QTD_BRINDE = 0
+												End If
+																
+											rsBrindesAlbum.Close()
+											Set rsBrindesAlbum = Nothing
+											End If
+											'///
+											
+											Param.Add("x=435, y="&ww&", size=7")
+											Page.Canvas.DrawText QTD_BRINDE, Param, Font
+											
+											'//
+											Dim  rsVALOR_UN, rsFATURADO, rsVALOR_TOTAL
+											rsVALOR_UN = 0
+											rsFATURADO = 0
+											rsVALOR_UN = formatNumber(0&rs4("VALOR_UN"))
+											rsFATURADO = formatNumber(0&rs4("FATURADO"),0)
+											rsVALOR_TOTAL = formatNumber(rsVALOR_UN * rsFATURADO)
+											QTD_RETIRADA = (0&rs4("INICIAL")) - (QTD_BRINDE/1 + rsFATURADO/1)						
+											'//
+											
+											Param.Add("x=462, y="&ww&", size=7")
+											Page.Canvas.DrawText rs4("FATURADO"), Param, Font
+									  
+											Param.Add("x=489, y="&ww&", size=7")
+											Page.Canvas.DrawText QTD_RETIRADA, Param, Font
+																		
+											Param.Add("x=516, y="&ww&", size=7")
+											Page.Canvas.DrawText rsVALOR_UN, Param, Font	
+											
+											Param.Add("x=543, y="&ww&", size=7")
+											Page.Canvas.DrawText rsVALOR_TOTAL, Param, Font		
+								
+								End If					
+							
+						w = w + 9
+						
+						rs4.MoveNext()
+						Wend
+						
+						rs4.Close
+						Set rs4=Nothing
+						'/////////////
+											
+						'3� Parte - Produtos � parte
+						'/////////////
+						
+						'Os produtos poder�o ser (todos os formandos juntos):
+							'a) Outros Brindes
+							'b) Produtos Agregados Vendidos � parte
+							'c) Produtos pedidos no ato da compra
+							
+							'///
+							'1 - Seleciona todos os formandos do pedido	
+							'2 - Verifica em cada formando os itens a, b e c
+							'3 - Exibe na tela
+							'///	
+				
+						Dim QTD_PRODUTOS
+						QTD_PRODUTOS = 0
+							 						
+		
+							w  = 0
+							ww = 0
+							'///
+										If int(PEDIDO_EXTRA) = 2 Then
+												
+											Set rs5 = objConexao.Execute("SELECT * FROM TB_PEDIDOS_FORMANDOS WHERE COD_PEDIDO="&COD_PEDIDO)
+											
+											While not rs5.Eof
+												
+												'a) INICIO ----------
+												sql = " SELECT Sum(TB_FICHAS_IDENTIFICACAO_BRINDES.QUANTIDADE) as QUANTIDADE, "&_
+												" TB_PRODUTOS.NOME_PRODUTO FROM TB_PRODUTOS INNER JOIN TB_FICHAS_IDENTIFICACAO_BRINDES "&_
+												" ON TB_PRODUTOS.COD_PRODUTO = TB_FICHAS_IDENTIFICACAO_BRINDES.COD_PRODUTO "&_
+												" WHERE TB_FICHAS_IDENTIFICACAO_BRINDES.COD_FORMANDO="&rs5("COD_FORMANDO")&" AND TB_FICHAS_IDENTIFICACAO_BRINDES.COD_PRODUTO <> "& COD_FOTO_PADRAO&_
+												" GROUP BY TB_FICHAS_IDENTIFICACAO_BRINDES.COD_PRODUTO "
+											
+												Set rsBrindes = objConexao.Execute(sql)
+													
+													While not rsBrindes.Eof	
+		
+													QTD_PRODUTOS = QTD_PRODUTOS + 1	
+													
+													'//ADD PRODUTO
+													'Instru��es: Sempre verifica se deve ser colocado na 1� ou na 2� coluna
+														
+														'Coluna 1	
+														If int(QTD_PRODUTOS) < 6 Then
+														ww = (((732-diferenca_y)/1)-w)/1
+														
+														w  = w + 9
+															Param.Add("x=30, y="&ww&", size=7")
+															Page.Canvas.DrawText rsBrindes("NOME_PRODUTO"), Param, Font
+															
+															Param.Add("x=174, y="&ww&", size=7")
+															Page.Canvas.DrawText "Sim", Param, Font
+															
+															Param.Add("x=200, y="&ww&", size=7")
+															Page.Canvas.DrawText rsBrindes("QUANTIDADE"), Param, Font
+															
+															Param.Add("x=228, y="&ww&", size=7")
+															Page.Canvas.DrawText "---", Param, Font
+															
+															Param.Add("x=264, y="&ww&", size=7")
+															Page.Canvas.DrawText "---", Param, Font
+														 
+														 Else
+															 'Zera o contador para iniciar a coluna
+															 If QTD_PRODUTOS = 5 Then
+																w  = 0
+															 Else
+																w  = w + 9	 
+															 End If 
+															 
+															 ww = 732-w
+														 
+																											
+															Param.Add("x=309, y="&ww&", size=7")
+															Page.Canvas.DrawText rsBrindes("NOME_PRODUTO"), Param, Font
+															
+															Param.Add("x=453, y="&ww&", size=7")
+															Page.Canvas.DrawText "Sim", Param, Font
+															
+															Param.Add("x=479, y="&ww&", size=7")
+															Page.Canvas.DrawText rsBrindes("QUANTIDADE"), Param, Font
+															
+															Param.Add("x=507, y="&ww&", size=7")
+															Page.Canvas.DrawText "---", Param, Font
+															
+															Param.Add("x=543, y="&ww&", size=7")
+															Page.Canvas.DrawText "---", Param, Font
+															
+														 End If
+														 'Coluna 2
+		
+													'//ADD PRODUTO
+													
+													rsBrindes.MoveNext()
+													Wend
+																								
+												rsBrindes.Close
+												Set rsBrindes = Nothing
+												'a) FIM -------------		
+												
+												
+												'b) INICIO ----------
+												
+												Dim rsAgregados
+												
+												sql  =	" SELECT TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO_AGREGADO, "&_
+														" Sum(TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.QUANTIDADE) as QUANTIDADE, "&_
+														" TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.VENDIDO, TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.VALOR_UN, "&_
+														" TB_PRODUTOS.NOME_PRODUTO FROM TB_PRODUTOS INNER JOIN TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS "&_
+														" ON TB_PRODUTOS.COD_PRODUTO = TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO "&_
+														" WHERE TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_FORMANDO="&rs5("COD_FORMANDO")&"  AND TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.VENDIDO = 1"&_
+														" GROUP BY TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS.COD_PRODUTO "
+												
+												Set rsAgregados = objConexao.Execute(sql)
+		
+												Dim UN_1, UN_TOTAL_1, UN_QUANTIDADE_1
+											
+																
+													While not rsAgregados.Eof													
+													
+													QTD_PRODUTOS = QTD_PRODUTOS + 1			
+														
+													UN_1 = formatNumber(0&rsAgregados("VALOR_UN"))/1
+													UN_QUANTIDADE_1	= formatNumber(0&rsAgregados("QUANTIDADE"))/1
+													UN_TOTAL_1		= formatNumber(UN_QUANTIDADE_1*UN_1)/1	
+															
+													'//ADD PRODUTO
+													'Instru��es: Sempre verifica se deve ser colocado na 1� ou na 2� coluna
+														
+														'Coluna 1	
+														If int(QTD_PRODUTOS) < 6 Then
+														
+														ww = (((732-diferenca_y)/1)-w)/1
+														w  = w + 9
+															Param.Add("x=30, y="&ww&", size=7")
+															Page.Canvas.DrawText rsAgregados("NOME_PRODUTO"), Param, Font
+															
+															Param.Add("x=174, y="&ww&", size=7")
+															Page.Canvas.DrawText "NÃO", Param, Font
+															
+															Param.Add("x=200, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_QUANTIDADE_1,0), Param, Font
+															
+															Param.Add("x=228, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_1), Param, Font
+															
+															Param.Add("x=264, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_TOTAL_1), Param, Font
+														 
+														 Else
+															 'Zera o contador para iniciar a coluna
+															 If QTD_PRODUTOS = 5 Then
+																w  = 0
+															 Else
+																w  = w + 9	 
+															 End If 
+															 
+															 ww = 732-w
+														 
+																											
+															Param.Add("x=309, y="&ww&", size=7")
+															Page.Canvas.DrawText rsAgregados("NOME_PRODUTO"), Param, Font
+															
+															Param.Add("x=453, y="&ww&", size=7")
+															Page.Canvas.DrawText "NÃO", Param, Font
+															
+															Param.Add("x=479, y="&ww&", size=7")
+															age.Canvas.DrawText formatNumber(UN_QUANTIDADE_1,0), Param, Font
+															
+															Param.Add("x=507, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_1), Param, Font
+															
+															Param.Add("x=543, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_TOTAL_1), Param, Font
+															
+														 End If
+														 'Coluna 2
+		
+													'//ADD PRODUTO
+															
+													rsAgregados.MoveNext()
+													Wend
+		
+												
+												rsAgregados.Close
+												Set rsAgregados = Nothing
+												
+												'b) FIM -------------		
+												
+											'///									
+												
+											rs5.MoveNext()
+											Wend
+												
+											rs5.Close
+											Set rs5 = Nothing
+												
+										'Fim da chave do pedido extra
+										End IF
+										
+										'c) INICIO ----------
+																					
+										Dim rsProdutosAparte
+										Dim aux_desc, aux_text
+										Dim desconto_aparte
+
+										sql =	" SELECT TB_PEDIDOS_PRODUTOS.COD_PEDIDO_PRODUTO, TB_PRODUTOS.NOME_PRODUTO, TB_PEDIDOS_PRODUTOS.VALOR_UN, SUM(TB_PEDIDOS_PRODUTOS.QUANTIDADE) AS QUANTIDADE, SUM(TB_PEDIDOS_PRODUTOS.QUANTIDADE * TB_PEDIDOS_PRODUTOS.VALOR_UN) AS VALOR_TOTAL , TB_PEDIDOS_PRODUTOS.aliquota,  TB_PEDIDOS_PRODUTOS.COD_PRODUCAO_DESCONTO FROM TB_PRODUTOS INNER JOIN TB_PEDIDOS_PRODUTOS ON TB_PRODUTOS.COD_PRODUTO = TB_PEDIDOS_PRODUTOS.COD_PRODUTO WHERE COD_PEDIDO="&COD_PEDIDO&" GROUP BY TB_PEDIDOS_PRODUTOS.COD_PRODUTO, TB_PEDIDOS_PRODUTOS.VALOR_UN, TB_PEDIDOS_PRODUTOS.aliquota, TB_PEDIDOS_PRODUTOS.COD_PRODUCAO_DESCONTO ORDER BY NOME_PRODUTO"
+										
+										Set rsProdutosAparte = objConexao.Execute(sql)
+
+										if not 	rsProdutosAparte.Eof then
+											aux_desc = formatNumber(0&rsProdutosAparte("aliquota"))
+
+											if instr(rsProdutosAparte("COD_PRODUCAO_DESCONTO"),desconto_aparte) = 0 and int(rsProdutosAparte("COD_PRODUCAO_DESCONTO")) <> "0" then
+
+												desconto_aparte = desconto_aparte & desconto_aparte & ", "
+											end if
+
+											if aux_desc > 0 then
+												aux_text = " ** "
+											Else
+												aux_text = ""
+											end if
+
+												UN_1 			= 0
+												UN_QUANTIDADE_1	= 0
+												UN_TOTAL_1		= 0
+
+												While not rsProdutosAparte.Eof
+												
+												QTD_PRODUTOS = QTD_PRODUTOS + 1
+
+												UN_1 = (formatNumber(0&rsProdutosAparte("VALOR_UN"))/1)
+												UN_QUANTIDADE_1	= formatNumber(0&rsProdutosAparte("QUANTIDADE"))/1
+												UN_TOTAL_1		= (formatNumber(UN_QUANTIDADE_1*UN_1)/1)
+
+													'//ADD PRODUTO
+													'Instru��es: Sempre verifica se deve ser colocado na 1� ou na 2� coluna
+														'Coluna 1	
+														If int(QTD_PRODUTOS) < 6 Then
+														ww = (((732-diferenca_y)/1)-w)/1
+														w  = w + 9
+															Param.Add("x=30, y="&ww&", size=7")
+															Page.Canvas.DrawText rsProdutosAparte("NOME_PRODUTO") & aux_text, Param, Font
+															
+															Param.Add("x=174, y="&ww&", size=7")
+															Page.Canvas.DrawText "NÂO", Param, Font
+															
+															Param.Add("x=200, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_QUANTIDADE_1,0), Param, Font
+															
+															Param.Add("x=228, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_1), Param, Font
+															
+															Param.Add("x=264, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_TOTAL_1), Param, Font
+														 	
+														Else
+															'Zera o contador para iniciar a coluna
+															If QTD_PRODUTOS = 6 Then
+																w  = 0
+															Else
+																w  = w + 9	 
+															End If 
+															
+															ww = (((732-diferenca_y)/1)-w)/1
+														 
+																											
+															Param.Add("x=309, y="&ww&", size=7")
+															Page.Canvas.DrawText rsProdutosAparte("NOME_PRODUTO") & aux_text, Param, Font
+															
+															Param.Add("x=453, y="&ww&", size=7")
+															Page.Canvas.DrawText "NÃO", Param, Font
+															
+															Param.Add("x=479, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_QUANTIDADE_1,0), Param, Font
+															
+															Param.Add("x=507, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_1), Param, Font
+															
+															Param.Add("x=543, y="&ww&", size=7")
+															Page.Canvas.DrawText formatNumber(UN_TOTAL_1), Param, Font
+															
+														 End If
+														 'Coluna 2
+		
+													'//ADD PRODUTO
+												
+															
+												rsProdutosAparte.MoveNext()
+												Wend	
+											end if
+										rsProdutosAparte.Close
+										Set rsProdutosAparte = Nothing	
+											
+										'c) FIM -------------
+										
+										'd) Descontos Aplicados
+										if desconto_aparte&"" <> "" then
+
+											response.write (desconto_aparte) 
+											desconto_aparte = mid(desconto_aparte,1, len(desconto_aparte)-1)
+
+											Set rsDescontos = objConexao.Execute("SELECT descricao from tb_producao_descontos where cod_producao_desconto in ("&desconto_aparte&") ")
+											While not rsDescontos.Eof 
+
+												If int(QTD_PRODUTOS) < 6 Then
+												ww = (((732-diferenca_y)/1)-w)/1
+												w  = w + 9
+
+													Param.Add("x=30, y="&ww&", size=7")
+													Page.Canvas.DrawText rsDescontos("DESCRICAO") & aux_text, Param, Font
+													
+													Param.Add("x=174, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+													Param.Add("x=200, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+													Param.Add("x=228, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+													Param.Add("x=264, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+												 	
+												Else
+													'Zera o contador para iniciar a coluna
+													If QTD_PRODUTOS = 6 Then
+														w  = 0
+													Else
+														w  = w + 9	 
+													End If 
+													
+													ww = (((732-diferenca_y)/1)-w)/1
+												 
+																									
+													Param.Add("x=309, y="&ww&", size=7")
+													Page.Canvas.DrawText rsProdutosAparte("DESCRICAO") & aux_text, Param, Font
+													
+													Param.Add("x=453, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+													Param.Add("x=479, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+													Param.Add("x=507, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+													Param.Add("x=543, y="&ww&", size=7")
+													Page.Canvas.DrawText "---", Param, Font
+													
+												 End If
+												 'Coluna 2
+												rsDescontos.MoveNext
+												Wend
+											rsDescontos.Close
+											set rsDescontos = Nothing
+
+										end if
+										
+										
+						
+						
+'/////////////
+'Forma de Pagamento
+
+w = 0
+count_xx = 0
+boleto_fator_x = 139
+
+' Conta total de parcelas
+Set rsCount = objConexao.Execute("SELECT COUNT(*) AS total FROM TB_PEDIDOS_BOLETOS WHERE COD_PEDIDO = " & COD_PEDIDO)
+
+If Not rsCount.EOF Then
+    If IsNull(rsCount("total")) Or rsCount("total") = "" Then
+        totalParcelas = 0
+    Else
+        totalParcelas = CLng(rsCount("total"))
+    End If
+Else
+    totalParcelas = 0
+End If
+
+rsCount.Close
+Set rsCount = Nothing
+
+
+If totalParcelas > 12 Then
+    ' Busca a primeira parcela
+    Set rsPrimeira = objConexao.Execute("SELECT * FROM TB_PEDIDOS_BOLETOS WHERE COD_PEDIDO = " & COD_PEDIDO & " ORDER BY parcela ASC LIMIT 1")
+    If Not rsPrimeira.EOF Then
+        ww = 658 - diferenca_y - w
+        Param.Add("x=" & 32 & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText rsPrimeira("parcela") & "", Param, Font
+
+        Param.Add("x=" & 51 & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText ArrumaData(rsPrimeira("data_vencimento")), Param, Font
+
+        Param.Add("x=" & 95 & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText "R$ " & arrumaNumero(rsPrimeira("valor"), "0,00", 2), Param, Font
+    End If
+    rsPrimeira.Close
+    Set rsPrimeira = Nothing
+
+    ' Busca a última parcela
+    w = w + 8
+    Set rsUltima = objConexao.Execute("SELECT * FROM TB_PEDIDOS_BOLETOS WHERE COD_PEDIDO = " & COD_PEDIDO & " ORDER BY parcela DESC LIMIT 1")
+    If Not rsUltima.EOF Then
+        ww = 658 - diferenca_y - w
+        Param.Add("x=" & 32 & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText rsUltima("parcela") & "", Param, Font
+
+        Param.Add("x=" & 51 & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText ArrumaData(rsUltima("data_vencimento")), Param, Font
+
+        Param.Add("x=" & 95 & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText "R$ " & arrumaNumero(rsUltima("valor"), "0,00", 2), Param, Font
+    End If
+    rsUltima.Close
+    Set rsUltima = Nothing
+
+Else
+    ' Mantém seu loop original se tiver 12 ou menos parcelas
+    Set rsBoleto = objConexao.Execute("SELECT * FROM TB_PEDIDOS_BOLETOS WHERE COD_PEDIDO = " & COD_PEDIDO)
+    While Not rsBoleto.Eof
+        If (count_xx Mod 3) = 0 Then
+            w = 0
+        End If
+
+        ww = 658 - diferenca_y - w
+        Param.Add("x=" & 32 + (boleto_fator_x * Int(count_xx / 3)) & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText rsBoleto("parcela"), Param, Font
+
+        Param.Add("x=" & 51 + (boleto_fator_x * Int(count_xx / 3)) & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText ArrumaData(rsBoleto("data_vencimento")), Param, Font
+
+        Param.Add("x=" & 95 + (boleto_fator_x * Int(count_xx / 3)) & ", y=" & ww & ", size=7")
+        Page.Canvas.DrawText "R$ " & arrumaNumero(rsBoleto("valor"), "0,00", 2), Param, Font
+
+        w = w + 8
+        count_xx = count_xx + 1
+        rsBoleto.MoveNext
+    Wend
+    rsBoleto.Close
+    Set rsBoleto = Nothing
+End If
+
+
+
+
+
+
+
+						'Cart�o
+						Set rsCartao = objConexao.Execute("SELECT * FROM TB_PEDIDOS_CARTAO WHERE COD_PEDIDO="&COD_PEDIDO&" ORDER BY NOME_TITULAR") 
+							
+							Dim QTD_CARTOES
+							QTD_CARTOES = 0
+
+							W  = 0
+							ww = 0
+
+							While not rsCartao.Eof
+										
+							QTD_CARTOES = QTD_CARTOES + 1
+
+
+													
+								If int(QTD_CARTOES) < 3 Then
+													
+										ww = (((617-diferenca_y)/1)-w)/1
+										w  = w + 9
+		
+										Param.Add("x=30, y="&ww&", size=7")
+										Page.Canvas.DrawText Ucase(Left(rsCartao("NOME_TITULAR"),17)) , Param, Font
+										
+										Param.Add("x=110, y="&ww&", size=7")
+										Page.Canvas.DrawText Left(rsCartao("CARTAO"),8), Param, Font
+										
+										Param.Add("x=156, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCartao("DOCUMENTO"), Param, Font
+										
+										Param.Add("x=201, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCartao("AUTENTICACAO"), Param, Font
+										
+										Param.Add("x=245, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCartao("PARCELAS"), Param, Font
+								
+										Param.Add("x=264, y="&ww&", size=7")
+										Page.Canvas.DrawText formatNumber(rsCartao("VALOR_TOTAL")), Param, Font
+								
+								Else
+																									 'Zera o contador para iniciar a coluna
+										If QTD_CARTOES = 3 Then
+											w  = 0
+										Else
+											w  = w + 9	 
+										End If 
+															 
+										ww = (((617-diferenca_y)/1)-w)/1
+										
+										Param.Add("x=309, y="&ww&", size=7")
+										Page.Canvas.DrawText Ucase(Left(rsCartao("NOME_TITULAR"),17)) , Param, Font
+										
+										Param.Add("x=389, y="&ww&", size=7")
+										Page.Canvas.DrawText Left(rsCartao("CARTAO"),8), Param, Font
+										
+										Param.Add("x=435, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCartao("DOCUMENTO"), Param, Font
+										
+										Param.Add("x=480, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCartao("AUTENTICACAO"), Param, Font
+										
+										Param.Add("x=524, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCartao("PARCELAS"), Param, Font
+								
+										Param.Add("x=543, y="&ww&", size=7")
+										Page.Canvas.DrawText formatNumber(rsCartao("VALOR_TOTAL")), Param, Font
+
+								End If
+
+							rsCartao.MoveNext()
+							Wend
+
+						rsCartao.Close
+						Set rsCartao = Nothing
+
+						'////////////////////
+						'Cheques
+						Dim QTD_CHEQUES
+						QTD_CHEQUES = 0
+
+						Set rsCheque = objConexao.Execute("SELECT * FROM TB_PEDIDOS_CHEQUE WHERE COD_PEDIDO="&COD_PEDIDO&" ORDER BY BOM_PARA") 
+
+							w  = 0
+							ww = 0
+
+							While not rsCheque.Eof
+							QTD_CHEQUES = QTD_CHEQUES + 1
+
+										'//
+										Dim MES_CHEQUE, DIA_CHEQUE
+										DIA_CHEQUE = Day(rsCheque("BOM_PARA"))
+										MES_CHEQUE = Month(rsCheque("BOM_PARA"))
+										
+										
+										If Len(DIA_CHEQUE) = 1 Then
+											DIA_CHEQUE = "0"&DIA_CHEQUE
+										End if 
+										
+										If Len(MES_CHEQUE) = 1 Then
+											MES_CHEQUE = "0"&MES_CHEQUE
+										End if 
+										
+										'//
+							
+							
+								If int(QTD_CHEQUES) < 8 Then
+													
+										ww = (((581-diferenca_y)/1)-w)/1
+										w  = w + 9
+										
+										Param.Add("x=30, y="&ww&", size=7")
+										Page.Canvas.DrawText Ucase(Left(rsCheque("NOME"),17)), Param, Font
+										
+										Param.Add("x=110, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCheque("NUMERO_CHEQUE"), Param, Font
+										
+										Param.Add("x=145, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCheque("AGENCIA"), Param, Font
+										
+										Param.Add("x=174, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCheque("CONTA_CORRENTE"), Param, Font
+										
+										Param.Add("x=227, y="&ww&", size=7")									
+										Page.Canvas.DrawText DIA_CHEQUE&"/"&MES_CHEQUE&"/"&Right(Year(rsCheque("BOM_PARA")),2), Param, Font
+								
+										Param.Add("x=264, y="&ww&", size=7")
+										Page.Canvas.DrawText formatNumber(0&rsCheque("VALOR")), Param, Font
+										
+										
+								Else
+								
+										If QTD_CHEQUES = 8 Then
+											w  = 0
+										Else
+											w  = w + 9	 
+										End If 
+										
+										ww = (((581-diferenca_y)/1)-w)/1
+										
+										Param.Add("x=309, y="&ww&", size=7")
+										Page.Canvas.DrawText Ucase(Left(rsCheque("NOME"),17)), Param, Font
+										
+										Param.Add("x=389, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCheque("NUMERO_CHEQUE"), Param, Font
+										
+										Param.Add("x=424, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCheque("AGENCIA"), Param, Font
+										
+										Param.Add("x=453, y="&ww&", size=7")
+										Page.Canvas.DrawText rsCheque("CONTA_CORRENTE"), Param, Font
+										
+										Param.Add("x=509, y="&ww&", size=7")
+										Page.Canvas.DrawText DIA_CHEQUE&"/"&MES_CHEQUE&"/"&Right(Year(rsCheque("BOM_PARA")),2), Param, Font
+								
+										Param.Add("x=543, y="&ww&", size=7")
+										Page.Canvas.DrawText formatNumber(0&rsCheque("VALOR")), Param, Font
+										
+								
+								End If
+									
+							
+							rsCheque.MoveNext()
+							Wend
+								
+						rsCheque.Close
+						Set rsCheque = Nothing
+				
+						
+						
+						
+						
+						'////////////////////////////
+						
+						'6� Parte
+						'///////////
+						
+						'Totais
+						
+						Dim rsProdutosTotal, QTD_EM_PRODUTOS, XTOTAL_AGREGADOS, XTOTAL_ALBUNS, XTOTAL_PRODUTOS_A_PARTE
+						AbrirConexao()
+						
+						QTD_EM_PRODUTOS = 0
+						
+							Set rsProdutosTotal = objConexao.Execute("SELECT * FROM VW_PEDIDOS_PRODUTOS_TOTAL_PRODUTOS WHERE COD_PEDIDO="&COD_PEDIDO)
+							
+								if not rsProdutosTotal.Eof Then
+									
+									XTOTAL_AGREGADOS = formatNumber(0&rsProdutosTotal("XTOTAL_AGREGADOS"))/1
+									XTOTAL_ALBUNS = formatNumber(0&rsProdutosTotal("XTOTAL_ALBUNS"))/1
+									XTOTAL_PRODUTOS_A_PARTE = formatNumber(0&rsProdutosTotal("XTOTAL_PRODUTOS_A_PARTE"))/1
+									
+									If int(PEDIDO_EXTRA) = 2 Then
+										QTD_EM_PRODUTOS = formatNumber(XTOTAL_AGREGADOS + XTOTAL_ALBUNS + XTOTAL_PRODUTOS_A_PARTE)
+									Else
+										QTD_EM_PRODUTOS = formatNumber(XTOTAL_PRODUTOS_A_PARTE)
+									End If
+									
+								Else
+									
+									QTD_EM_PRODUTOS = 0
+									
+								End If
+							
+							
+							rsProdutosTotal.Close()
+							Set rsProdutosTotal = Nothing
+
+
+							Set rsProdutosTotal = objConexao.Execute("select SUM(valor_total_com_desconto) as valor_total_com_desconto from(SELECT SUM(faturado * (valor_un-(valor_un * (1-(ifnull(aliquota_desconto_foto,0)/100))))) as valor_total_com_desconto FROM TB_FICHAS_IDENTIFICACAO WHERE COD_FORMANDO in (SELECT cod_formando FROM TB_PEDIDOS_FORMANDOS WHERE cod_pedido =  "&cod_pedido&") union all SELECT SUM(quantidade * (valor_un-(valor_un * (1-(ifnull(aliquota,0)/100))))) as valor_total_com_desconto  FROM TB_PEDIDOS_PRODUTOS WHERE COD_PEDIDO = "&cod_pedido&") as total_desconto")
+							if not rsProdutosTotal.Eof Then
+								XTOTAL_DESCONTO = formatNumber(0&rsProdutosTotal(0))/1
+							End If
+							rsProdutosTotal.Close()
+							Set rsProdutosTotal = Nothing
+						
+							Set rs7 = objConexao.Execute("SELECT PAGAMENTO_EM_DINHEIRO, XTOTAL_CHEQUE, XTOTAL_CARTAO , XTOTAL_BOLETO FROM VW_PEDIDOS_TOTAL_RECEBIDO WHERE COD_PEDIDO = "&COD_PEDIDO&" LIMIT 1")
+							
+								If not rs7.Eof Then
+									
+									PAGAMENTO_EM_DINHEIRO = formatNumber(0&rs7("PAGAMENTO_EM_DINHEIRO"))
+									XTOTAL_CHEQUE = formatNumber(0&rs7("XTOTAL_CHEQUE"))/1
+									XTOTAL_CARTAO = formatNumber(0&rs7("XTOTAL_CARTAO"))/1
+									XTOTAL_BOLETO = formatNumber(0&rs7("XTOTAL_BOLETO"))/1
+									VALOR_TOTAL = (PAGAMENTO_EM_DINHEIRO/1 + XTOTAL_CHEQUE/1 +  XTOTAL_CARTAO/1 + XTOTAL_BOLETO/1 )
+
+								End IF
+								
+							rs7.Close()
+							Set rs7 = Nothing
+						
+						'Soma o cr�dito no valor total
+						VALOR_TOTAL = (VALOR_TOTAL+TOTAL_CREDITO)/1
+
+						if XTOTAL_DESCONTO > 0 then
+							TOTAL_EM_PRODUTOS = "<b>"&formatNumber(QTD_EM_PRODUTOS - XTOTAL_DESCONTO) &" ("&QTD_EM_PRODUTOS&" - "&XTOTAL_DESCONTO&") </b>"
+						Else
+							TOTAL_EM_PRODUTOS	= "<b>"&formatNumber(QTD_EM_PRODUTOS) &"</b>"
+						end if
+
+						TOTAL_RECEBIDO		= "<b>"&formatNumber(VALOR_TOTAL)&"</b>"
+						TOTAL_CARTAO		= "<b>"&formatNumber(XTOTAL_CARTAO)&"</b>"
+						TOTAL_CHEQUE		= "<b>"&formatNumber(XTOTAL_CHEQUE)&"</b>"
+						TOTAL_BOLETO		= "<b>"&formatNumber(XTOTAL_BOLETO)&"</b>"
+						TOTAL_DINHEIRO		= "<b>"&PAGAMENTO_EM_DINHEIRO&"</b>"
+						TOTAL_CREDITO		= "<b>"&TOTAL_CREDITO&"</b>"
+						
+						Param.Add("x=102, y="&(495-diferenca_y)/1&", size=9")
+						Page.Canvas.DrawText TOTAL_EM_PRODUTOS, Param, Font
+						
+						Param.Add("x=102, y="&(483-diferenca_y)/1&", size=9")
+						Page.Canvas.DrawText TOTAL_RECEBIDO, Param, Font
+					
+						Param.Add("x=203, y="&(483-diferenca_y)/1&", size=8")
+						Page.Canvas.DrawText TOTAL_CARTAO, Param, Font
+					
+						Param.Add("x=301, y="&(483-diferenca_y)/1&", size=8")
+						Page.Canvas.DrawText TOTAL_CHEQUE, Param, Font
+						
+						Param.Add("x=401, y="&(483-diferenca_y)/1&", size=8")
+						Page.Canvas.DrawText "<b>"&PAGAMENTO_EM_DINHEIRO&"</b>", Param, Font
+						
+
+						Param.Add("x=446, y="&(495-diferenca_y)/1&", size=8")
+						Page.Canvas.DrawText "Total Boleto: "&TOTAL_BOLETO, Param, Font
+
+
+						Param.Add("x=536, y="&(483-diferenca_y)/1&", size=8")
+						Page.Canvas.DrawText TOTAL_CREDITO, Param, Font
+							
+						If Len(OBSERVACAO) > 2 Then
+							Param.Add("x=18, y="&(458-diferenca_y)/1&", size=7")
+							Page.Canvas.DrawText "Observa&ccedil;&atilde;o: "&OBSERVACAO, Param, Font		
+						End If
+						
+						Param.Add("x=18, y="&(447-diferenca_y)/1&", size=7")
+						Page.Canvas.DrawText "Impresso em: "& Now(), Param, Font
+End Sub
+%>

@@ -1,0 +1,11 @@
+1)Instale a pasta etiquetas no raiz do C:
+
+2) Compartilhe para web a pasta etiquetas com o nome etiquetas mesmo
+
+3) Verifique a segurança nas ferramentas administrativas IIS se está habilitada
+
+4)Altere a segurança do Internet Explorer no modo que baixa arquivos sem bloquear
+
+5)Autorizar Pop-ups para stillos.com.br
+
+6)Instalar a impressora com compartinhamento e alterar no bat

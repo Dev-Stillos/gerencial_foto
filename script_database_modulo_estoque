@@ -1,0 +1,286 @@
+ALTER TABLE TB_PRODUTOS ADD SAIDA_AUTOMATICA INT NOT NULL; 
+ALTER TABLE TB_PRODUTOS ADD PERMITE_NEGATIVO INT NOT NULL;
+
+/*Removendo Tabelas */
+
+DROP TABLE `tb_est_baixa_automatica_producao_log`;
+DROP TABLE `tb_est_itens_movimentacao`;
+DROP TABLE `tb_est_itens_pedidos`;
+DROP TABLE `tb_est_local_armazenamento`;
+DROP TABLE `tb_est_movimentacao`;
+DROP TABLE `tb_est_movimento_pedido`;
+DROP TABLE `tb_est_pedidos`;
+DROP TABLE `tb_est_resumo`;
+DROP TABLE `tb_est_rel_vendedor_local`;
+
+
+
+/*Criando Tabelas */
+CREATE TABLE `tb_est_baixa_automatica_producao_log` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_pedido` INT(11) DEFAULT NULL,
+  `cod_movimentacao` INT(11) DEFAULT NULL,
+  `data` DATETIME DEFAULT NULL,
+  tipo VARCHAR(255) NULL,
+  PRIMARY KEY (`id`)
+);
+
+
+CREATE TABLE `tb_est_itens_movimentacao` (
+  `cod_itens_movimentacao` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_movimentacao` INT(11) NOT NULL,
+  `cod_item` INT(11) NOT NULL,
+  `quantidade` INT(11) NOT NULL,
+  PRIMARY KEY (`cod_itens_movimentacao`),
+  KEY `COD_PRODUTO` (`cod_item`),
+  KEY `cod_movimentacao` (`cod_movimentacao`)
+);
+
+
+CREATE TABLE `tb_est_itens_pedidos` (
+  `cod_itens_pedidos` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_pedido` INT(11) NOT NULL,
+  `cod_item` INT(11) NOT NULL,
+  `quantidade` INT(11) NOT NULL,
+  `valor` FLOAT NOT NULL,
+  PRIMARY KEY (`cod_itens_pedidos`),
+  KEY `cod_pedido` (`cod_pedido`),
+  KEY `COD_PRODUTO` (`cod_item`)
+);
+
+CREATE TABLE `tb_est_local_armazenamento` (
+  `cod_local_armazenamento` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(255) DEFAULT NULL,
+  `descricao` VARCHAR(400) DEFAULT NULL,
+  `data` DATETIME NOT NULL,
+  PRIMARY KEY (`cod_local_armazenamento`)
+);
+INSERT INTO tb_est_local_armazenamento VALUES (0,'Estoque Padrão','',now());
+
+CREATE TABLE `tb_est_movimentacao` (
+  `cod_movimentacao` INT(11) NOT NULL AUTO_INCREMENT,
+  `tipo` VARCHAR(3) NOT NULL,
+  `descricao` VARCHAR(4000) DEFAULT NULL,
+  `cod_local_armazenamento` INT(11) NOT NULL,
+  `data` DATETIME NOT NULL,
+  `cod_usuario` INT(11) NOT NULL,
+  PRIMARY KEY (`cod_movimentacao`),
+  KEY `cod_local_armazenamento` (`cod_local_armazenamento`)
+);
+
+CREATE TABLE `tb_est_movimento_pedido` (
+  `cod_movimento_pedido` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_movimentacao` INT(11) NOT NULL,
+  `cod_pedido` INT(11) NOT NULL,
+  PRIMARY KEY (`cod_movimento_pedido`),
+  KEY `cod_movimentacao` (`cod_movimentacao`),
+  KEY `cod_pedido` (`cod_pedido`)
+);
+
+
+CREATE TABLE `tb_est_pedidos` (
+  `cod_pedido` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_fornecedor` INT(11) NOT NULL,
+  `cod_usuario` INT(11) NOT NULL,
+  `status` VARCHAR(3) NOT NULL,
+  `data_pedido` DATE NOT NULL,
+  `data_previsao` DATE DEFAULT NULL,
+  `data_entrega` DATE DEFAULT NULL,
+  `descricao` VARCHAR(4000) DEFAULT NULL,
+  PRIMARY KEY (`cod_pedido`),
+  KEY `COD_FORNECEDOR` (`cod_fornecedor`)
+);
+
+CREATE TABLE `tb_est_resumo` (
+  `cod_resumo` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_item` INT(11) NOT NULL,
+  `cod_local_armazenamento` INT(11) NOT NULL,
+  `quantia` INT(11) NOT NULL,
+  `data` DATETIME NOT NULL,
+  PRIMARY KEY (`cod_resumo`),
+  KEY `COD_PRODUTO` (`cod_item`),
+  KEY `cod_local_armazenamento` (`cod_local_armazenamento`)
+);
+
+CREATE TABLE `tb_est_rel_vendedor_local` (
+  `cod_rel_vendedor_local` INT(11) NOT NULL AUTO_INCREMENT,
+  `cod_local_armazenamento` INT(11) DEFAULT NULL,
+  `cod_vendedor` INT(11) NOT NULL,
+  `nome_vendedor` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`cod_rel_vendedor_local`)
+);
+
+
+
+
+
+/* Drop Procedures */
+DROP PROCEDURE `baixa_auto_producao_proc`;
+DROP PROCEDURE `baixa_auto_autenticacao_proc`;
+DROP PROCEDURE `atualizarEstoque`;
+DROP TRIGGER `baixa_automatica_producao`;
+DROP TRIGGER `baixa_automatica_autenticacao`;
+
+
+/* Create Procedures */
+delimiter $$
+
+CREATE PROCEDURE `atualizarEstoque`()
+BEGIN
+	DECLARE done INT DEFAULT FALSE;
+
+	DECLARE cod , cod_local INT; 
+	DECLARE nome VARCHAR(255);	
+	DECLARE quantidade_out, quantidade_in, quantidade_sum INT;
+	DECLARE cur_itens CURSOR FOR SELECT DISTINCT A.COD_PRODUTO, C.cod_local_armazenamento FROM TB_PRODUTOS A INNER JOIN tb_est_itens_movimentacao B ON A.COD_PRODUTO = B.cod_item INNER JOIN tb_est_movimentacao C ON B.cod_movimentacao = C.cod_movimentacao;
+
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+	DELETE FROM tb_est_resumo WHERE cod_resumo >= 0;
+	OPEN cur_itens;
+	READ_LOOP: LOOP
+		FETCH cur_itens INTO cod, cod_local;
+		IF done THEN
+			LEAVE READ_LOOP;
+		END IF;
+		SET quantidade_in =  (SELECT SUM(A.quantidade) FROM tb_est_itens_movimentacao A INNER JOIN tb_est_movimentacao B ON A.cod_movimentacao = B.cod_movimentacao WHERE B.tipo = 'IN'  AND A.cod_item = cod AND B.cod_local_armazenamento = cod_local) + 0;
+		SET quantidade_out = (SELECT SUM(A.quantidade) FROM tb_est_itens_movimentacao A INNER JOIN tb_est_movimentacao B ON A.cod_movimentacao = B.cod_movimentacao WHERE B.tipo = 'OUT' AND A.cod_item = cod AND B.cod_local_armazenamento = cod_local) + 0;
+
+		IF quantidade_in IS NULL THEN SET quantidade_in = 0; END IF;
+		IF quantidade_out IS NULL THEN SET quantidade_out = 0; END IF;
+		SET quantidade_sum := quantidade_in - quantidade_out;
+		INSERT INTO tb_est_resumo VALUES (NULL,cod,cod_local,quantidade_sum,NOW());
+
+	END LOOP READ_LOOP;
+
+	CLOSE cur_itens;
+END$$
+
+
+delimiter $$
+
+CREATE PROCEDURE `baixa_auto_producao_proc`(cod_pedido INT,tipo VARCHAR(255))
+BEGIN
+	DECLARE done INT DEFAULT FALSE;
+	DECLARE cod_usuario,cod_local_antigo,cod_item,quantidade,cod_local,quantidade_item, quantidade_item_composto, cod_movimentacao INT;	
+	DECLARE cur_itens CURSOR FOR SELECT A.cod_produto,B.quantidade FROM TB_PRODUTOS A INNER JOIN TB_ORDENS_SERVICO B ON B.cod_produto = A.cod_produto WHERE A.SAIDA_AUTOMATICA = 1 AND B.cod_pedido = cod_pedido;
+
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+	SET cod_usuario = (SELECT TB_ADM_USUARIOS.COD_USUARIO  FROM TB_ADM_USUARIOS WHERE NOME = 'Sistema' AND SENHA = '-------' AND LOGIN = 'sistema' LIMIT 0,1);
+  
+    SET cod_local_antigo = 0;
+    SET cod_local = 1;
+	OPEN cur_itens;
+	READ_LOOP: LOOP
+		FETCH cur_itens INTO cod_item, quantidade;
+		IF done THEN
+			LEAVE READ_LOOP;
+		END IF;
+        IF cod_local_antigo <> cod_local THEN
+            INSERT INTO tb_est_movimentacao VALUES(0,'OUT',CONCAT('Baixa automatica -',tipo,' : ',cod_pedido),cod_local,NOW(),cod_usuario);
+            SET cod_movimentacao = LAST_INSERT_ID();
+            SET cod_local_antigo = cod_local;
+            INSERT INTO tb_est_baixa_automatica_producao_log (cod_pedido,cod_movimentacao,data,tipo) VALUES (cod_pedido,cod_movimentacao, NOW(),tipo);
+        END IF;  
+        INSERT INTO tb_est_itens_movimentacao VALUES (0,cod_movimentacao,cod_item,quantidade);
+
+	END LOOP READ_LOOP;
+	CLOSE cur_itens;
+END$$
+
+
+DELIMITER $$
+
+CREATE TRIGGER `baixa_automatica_producao`
+AFTER UPDATE ON `TB_ORDENS_SERVICO`
+FOR EACH ROW
+BEGIN
+    DECLARE cod_pedido INT;
+    DECLARE quantProd INT;
+    DECLARE quantProdDesp INT;
+    DECLARE existBefore INT;
+    SET cod_pedido = new.cod_pedido;
+    
+    SELECT COUNT(A.cod_ordem_servico) INTO quantProd FROM TB_ORDENS_SERVICO A WHERE A.cod_pedido = cod_pedido;
+    SELECT COUNT(A.cod_ordem_servico) INTO quantProdDesp FROM TB_ORDENS_SERVICO A WHERE A.cod_pedido = cod_pedido AND A.status_ordem_servico = 2;
+    SELECT COUNT(A.id) INTO existBefore FROM tb_est_baixa_automatica_producao_log A WHERE A.cod_pedido = cod_pedido AND A.tipo = 'pedido';
+    
+    IF quantProd = quantProdDesp AND existBefore = 0 AND new.status_ordem_servico = 2 THEN         
+        CALL baixa_auto_producao_proc (cod_pedido,'producao');
+    END IF;
+END$$
+
+
+
+DELIMITER $$
+CREATE PROCEDURE `baixa_auto_autenticacao_proc`(cod_pedido INT,tipo VARCHAR(255))
+BEGIN
+	DECLARE done INT DEFAULT FALSE;
+	DECLARE cod_usuario, cod_local_vendedor,cod_local_antigo,cod_item,quantidade,cod_local,quantidade_item, quantidade_item_composto, cod_movimentacao INT;	
+	DECLARE cur_itens CURSOR FOR SELECT A.cod_item, A.quantidade FROM TB_ProdutosByPedido A; 
+
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+	SET cod_usuario = (SELECT TB_ADM_USUARIOS.COD_USUARIO  FROM TB_ADM_USUARIOS WHERE NOME = 'Sistema' AND SENHA = '-------' AND LOGIN = 'sistema' LIMIT 0,1);
+  
+    SET cod_local_antigo = 0;
+    SET cod_local = 1;
+    /*
+        Verificando a existencia de itens em posse do vendedor.
+        Caso confirmado, o saída será registrada neste local.
+    */
+    IF EXISTS ( SELECT A.COD_LOCAL_ARMAZENAMENTO FROM tb_est_local_armazenamento  A INNER JOIN  tb_est_rel_vendedor_local B ON A.cod_local_armazenamento = B.cod_local_armazenamento INNER JOIN TB_PEDIDOS C ON C.COD_VENDEDOR = B.cod_vendedor WHERE C.COD_PEDIDO = cod_pedido LIMIT 0,1) THEN
+            SELECT A.COD_LOCAL_ARMAZENAMENTO INTO cod_local FROM tb_est_local_armazenamento  A INNER JOIN  tb_est_rel_vendedor_local B ON A.cod_local_armazenamento = B.cod_local_armazenamento INNER JOIN TB_PEDIDOS C ON C.COD_VENDEDOR = B.cod_vendedor WHERE C.COD_PEDIDO = cod_pedido LIMIT 0,1;
+        END IF;
+
+    /*
+        Abrindo cursor para registrar a saída dos itens
+    */
+	OPEN cur_itens;
+	READ_LOOP: LOOP
+		FETCH cur_itens INTO cod_item, quantidade;
+		IF done THEN
+			LEAVE READ_LOOP;
+		END IF;
+        IF cod_local_antigo <> cod_local THEN
+            INSERT INTO tb_est_movimentacao VALUES(0,'OUT',CONCAT('Baixa automatica -',tipo,' : ',cod_pedido),cod_local,NOW(),cod_usuario);
+            SET cod_movimentacao = LAST_INSERT_ID();
+            SET cod_local_antigo = cod_local;
+            INSERT INTO tb_est_baixa_automatica_producao_log (cod_pedido,cod_movimentacao,data,tipo) VALUES (cod_pedido,cod_movimentacao, NOW(),tipo);
+        END IF;  
+
+        INSERT INTO tb_est_itens_movimentacao VALUES (0,cod_movimentacao,cod_item,quantidade);
+
+	END LOOP READ_LOOP;
+	CLOSE cur_itens;
+
+END$$
+
+
+DELIMITER $$
+
+CREATE TRIGGER `baixa_automatica_autenticacao`
+AFTER UPDATE ON `TB_PEDIDOS`
+FOR EACH ROW
+BEGIN
+    DECLARE existBefore, CODIGO_PEDIDO INT;
+    SET CODIGO_PEDIDO = new.cod_pedido;
+    SELECT COUNT(A.id) INTO existBefore FROM tb_est_baixa_automatica_producao_log A WHERE A.cod_pedido = CODIGO_PEDIDO AND A.tipo = 'venda';
+
+    IF old.DATA_DESCEU_DIRETORIA <> new.DATA_DESCEU_DIRETORIA  AND existBefore = 0 THEN
+        DROP TEMPORARY TABLE IF EXISTS TB_ProdutosByPedido;
+        CREATE TEMPORARY TABLE IF NOT EXISTS TB_ProdutosByPedido(
+            cod_item INT,
+            quantidade INT
+        );
+        SET @COD_FORMANDO := 0;
+        SELECT COD_FORMANDO INTO @COD_FORMANDO FROM TB_PEDIDOS_FORMANDOS WHERE COD_PEDIDO = CODIGO_PEDIDO LIMIT 1;
+        INSERT INTO  TB_ProdutosByPedido (cod_item,quantidade)  SELECT A.cod_produto, B.quantidade FROM TB_FICHAS_IDENTIFICACAO_BRINDES B INNER JOIN TB_PRODUTOS A ON A.COD_PRODUTO = B.COD_PRODUTO  WHERE B.COD_FORMANDO = @COD_FORMANDO AND B.VENDIDO = 1 AND A.SAIDA_AUTOMATICA = 2;
+        INSERT INTO  TB_ProdutosByPedido (cod_item,quantidade)  SELECT A.cod_produto, B.quantidade FROM TB_FICHAS_IDENTIFICACAO_PRODUTOS_AGREGADOS B INNER JOIN TB_PRODUTOS A ON A.COD_PRODUTO = B.COD_PRODUTO  WHERE B.COD_FORMANDO = @COD_FORMANDO AND B.VENDIDO = 1 AND A.SAIDA_AUTOMATICA = 2;
+        INSERT INTO  TB_ProdutosByPedido (cod_item,quantidade)  SELECT A.COD_PRODUTO, B.quantidade FROM TB_PEDIDOS_PRODUTOS B INNER JOIN TB_PRODUTOS A ON A.COD_PRODUTO = B.COD_PRODUTO  WHERE A.SAIDA_AUTOMATICA = 2 AND B.COD_PEDIDO = CODIGO_PEDIDO;
+        CALL baixa_auto_autenticacao_proc (CODIGO_PEDIDO,'venda');
+    END IF;
+   
+END$$
+
+
+

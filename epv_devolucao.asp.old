@@ -1,0 +1,376 @@
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<%
+Dim comando, TXT_DEVOLUCAO, ERROR_LINHA, pronto, CONT_ITENS
+pronto = Request.QueryString("pronto")
+ERROR_LINHA = 1
+comando = Request.QueryString("comando")
+TXT_DEVOLUCAO = Request.Form("TXT_DEVOLUCAO")
+TXT_DEVOLUCAO = Replace(TXT_DEVOLUCAO," ","")
+CONT_ITENS = 0
+
+If comando = "nova" Then
+'Apaga tudo da base do determinado usuário
+AbrirConexao()
+	objConexao.Execute("DELETE FROM TB_FICHAS_IDENTIFICACAO_DEVOLUCAO_TEMPORARIA WHERE COD_USUARIO = "&Session("COD_USUARIO"))
+FecharConexao()
+End If
+
+If comando = "excluir" Then
+	AbrirConexao()
+		objConexao.Execute("DELETE FROM TB_FICHAS_IDENTIFICACAO_DEVOLUCAO_TEMPORARIA WHERE COD_ETIQUETA = "&Request.QueryString("cod_etiqueta"))
+		Response.Redirect("epv_devolucao.asp")
+	FecharConexao()
+End If
+
+If comando = "efetuar_devolucao" Then
+'Faz os UPDATES com a data de hoje,
+		AbrirConexao()
+		Dim rsUp, COD_FORMANDO_UP, TIPO_UP
+		Dim COD_MOVIMENTACAO_UP
+		lista_cod_movimentacao = ""
+		count = 1
+		Set rsUp = objConexao.Execute("SELECT COD_ETIQUETA FROM TB_FICHAS_IDENTIFICACAO_DEVOLUCAO_TEMPORARIA WHERE COD_USUARIO="&Session("COD_USUARIO")&" GROUP BY COD_ETIQUETA")
+
+			While not rsUP.Eof
+			COD_MOVIMENTACAO_UP = 0
+			TIPO_UP				= Right(rsUP("COD_ETIQUETA"),1)
+			COD_FORMANDO_UP 	= Mid(rsUP("COD_ETIQUETA"),1,Len(rsUP("COD_ETIQUETA"))-1)
+			COD_MOVIMENTACAO_UP	= Request.Form("COD_MOVIMENTACAO_"&COD_FORMANDO_UP&"_"&TIPO_UP)
+				 
+				 'Adicionado pelo Luiz
+				 lista_cod_movimentacao  = lista_cod_movimentacao & " '"&COD_MOVIMENTACAO_UP&"',"
+				 count = count + 1
+					
+					'Removido pelo Luiz
+					'sql = "UPDATE TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES SET DATA_RETORNO = NOW( ) WHERE "&_
+					'"COD_MOVIMENTACAO ="&COD_MOVIMENTACAO_UP&" LIMIT 1"
+					'Response.Write(sql)
+				 'objConexao.Execute(sql)
+
+			rsUp.MoveNext()
+			Wend
+		
+		''Executando o update - Adicionado pelo Luiz
+		lista_cod_movimentacao = Left(lista_cod_movimentacao,Len(lista_cod_movimentacao)-1)
+		sql = "UPDATE TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES SET DATA_RETORNO = NOW( ) WHERE COD_MOVIMENTACAO IN ("&lista_cod_movimentacao&") LIMIT "&count
+		'Response.Write(sql)
+		objConexao.Execute(sql)
+		
+		rsUp.Close()
+		Set rsUp = Nothing
+
+	 Response.Redirect("epv_devolucao_imprimir.asp")
+End If
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
+<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
+<!-- #include virtual="gerencial_foto/files/includes/scripts.asp" -->
+<!-- #include virtual="gerencial_foto/files/includes/functions_local.asp" -->
+   <script type="text/javascript">
+	function carregaListagem(){
+			var caminho = 'epv_movimentacoes_estoque_ajax.asp?ts=listar';
+			ajax_loadContent('containerListagem',caminho,true,false,false);
+			
+			/*
+			displayCarregando();
+			$("#containerListagem").load(caminho,function(){
+				displayCarregandoClose();
+			})
+		
+			
+			displayCarregando();
+				
+				var html = $.ajax({
+		  			url: caminho,
+		  			async: false
+				}).responseText;
+				
+			*/			
+				
+				
+					
+			//$("#containerListagem").load(caminho);
+			//$("#containerListagem").html(html);
+			$("#TXT_DEVOLUCAO").val('');
+			$("#TXT_DEVOLUCAO").focus();
+		}
+		function gravarItem(){
+			var etiqueta = $("#TXT_DEVOLUCAO").val();
+			if(etiqueta !== ''){
+				var caminho = 'epv_movimentacoes_estoque_ajax.asp?ts=incluir&p1='+etiqueta;
+				ajax_loadContent('retorna_div',caminho,false,false,true);
+				
+				/*
+				displayCarregando();
+				
+				var html = $.ajax({
+		  			url: caminho,
+		  			async: false
+				}).responseText;
+				
+				var arrayPrincipal;
+				
+				if(html.indexOf('erro#') == 0){
+					arrayPrincipal = html.split('#')
+					//Executa tarefas, verifica se está habilitado	
+					if(arrayPrincipal[1] !== ""){
+							eval(arrayPrincipal[1]);
+					}
+				}else{
+					arrayPrincipal = html.split('#')
+					//Parametros de sucesso
+					if(arrayPrincipal[1] == "true" ){
+						eval(arrayPrincipal[2]);
+					}
+				}			
+						
+				$("#retorna_div").html(html);
+				
+				displayCarregandoClose();
+				*/
+			}			
+		}
+	</script>
+    
+       <script type="text/javascript">		 
+	   /*
+		function beep(){
+			document.getElementById('beepFrame').contentWindow.alertBeep();
+		}
+*/
+		
+		function runScript(e,campo) {
+			
+			mascara(campo,soNumeros);
+			
+			if (e.keyCode == 13) {
+				gravarItem();
+				return false;
+			}
+		}
+		
+		
+		
+		function displayLeitura(tipo,msg){
+			$('#sucesso_msg').hide();
+			$('#erro_msg').hide();
+			
+			if(tipo == 'erro'){
+				$('#erro_msg').show();
+				$('#erro_msg').html(msg)	
+			}else{
+				$('#sucesso_msg').show();
+				$('#sucesso_msg').html(msg);
+				//beep();
+			}
+			$("#TXT_DEVOLUCAO").val('');		
+		}
+		
+        </script>
+
+		<script type="text/javascript" language="javascript">
+<!--
+<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
+		
+	function abrir(theURL,winName,features) 
+	{ 
+	  window.open(theURL,winName,features);
+	}
+
+		
+	function abre(url)
+	{    
+				//if(event.srcElement.tagName=='TD')
+				//	{
+				//		src.children.tags('A')[0].click(); 
+				//	}
+	location.href = url;
+
+	}	
+		
+		
+	
+
+	function buscaIni(){
+	d = document.buscaForm
+	d.busca.focus()
+	d.busca.select();
+	}
+	function mudacorBusca(CAMPO){
+	CAMPO.style.backgroundColor = '#F5ECBA'
+	}
+	function mudacorBusca2(CAMPO){
+	CAMPO.style.backgroundColor = '#FFFFFF'
+	}
+
+ function Verificar()
+ {
+  var tecla=window.event.keyCode;
+  if (tecla==17) {
+    buscaIni();
+	}
+ }
+ 
+
+
+	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
+</script>
+<script>
+function confirmaDevolucao() {
+	var msg
+	msg = "Tem certeza que deseja gravar a devolução destes itens?";
+	if(YNconfirm(msg)){
+			return true;
+			//document.DEVOLUCAO.submit();			
+	}else{
+			return false;
+	}	
+}
+</script>
+<script language="javascript">
+function YNconfirm(txt){
+return typeof(suporteVBscript)=="undefined"?confirm(txt):VBconfirm(txt)==6
+}
+</script>
+<script language="vbscript">
+suporteVBscript=1
+function VBconfirm(mensagem)
+
+ VBconfirm=msgbox(mensagem,vbyesno)
+end function
+
+</script>
+<body>
+<div id="ajaxCarregandoContainer" class="ajaxCarregando" style="visibility:hidden">
+	<table height="100%" width="100%" id="ajaxCarregando_loading">
+    	<tr>
+       	  <td align="center">
+          	<strong>Aguarde carregando informações...</strong><br /><br />
+           	  <table width="128" border="0" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td>
+                    <div id="ajaxCarregandoImg"></div></td>
+                  </tr>
+				</table>
+            </td>
+        </tr>
+        
+        
+    </table>
+</div>
+<table cellpadding="9px" cellspacing="0" width="100%">
+<tr> 
+<td>
+<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
+  <tr>
+    <td>
+		<!-- #include file="includes/topo.asp" -->
+<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td>
+	<!-- #include file="includes/menu.asp" -->
+	  </td>
+  </tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="10">
+  <tr>
+  <td>
+   <%
+  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
+  BTN_VOLTAR = 1
+  BTN_IMPRIMIR = 2
+  BTN_FONTE = 1
+  BTN_IMPRIMIR_LINK = "#"
+  %>
+  <!-- #include file="includes/sub_menu.asp" -->
+  
+  <!-- include file="includes/estoque_bip.asp" -->
+
+  <table width="100%" border="0" cellspacing="0" cellpadding="5">
+  <tr>
+    <td valign="top" style="border:dotted 1px #999999">
+
+	  <h2>EPV - Devolu&ccedil;&atilde;o de Produtos </h2>
+      
+      	<div id="retorna_div"></div>
+      
+	  <div class="subMenu">
+Sub-Menu: <a href="epv_devolucao.asp?comando=nova">Iniciar devolu&ccedil;&atilde;o de Vendedor</a> | <a href="epv_saida_inicio.asp?comando=nova">Sa&iacute;da de &Aacute;lbuns do Estoque</a></div>
+	  <div class="msg" align="center">
+	    <p><%=Request.QueryString("msg")%></p>
+	  </div>
+
+			  <table width="98%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td style="padding:5px;">
+    <div class="msgGrandeSucesso" style="display:none" id="sucesso_msg"></div>
+    <div class="msgGrandeErro" style="display:none"  id="erro_msg"></div>
+    <div align="center">
+      	<input onkeypress="return runScript(event,this);" maxlength="8" style="height:50px; width:200px; font-size:34px; border:" type="text" name="FORM_TXT_DEVOLUCAO" id="TXT_DEVOLUCAO" />
+      
+    </div></td>
+    </tr>
+  <tr>
+    <td><div align="center">
+      <input class="btnGravar " type="button" onclick="gravarItem()" id="botaoGravar" value=" " />
+      <br />
+      	
+<br />
+    </div></td>
+    </tr>
+</table>
+
+			
+		<%
+		AbrirConexao()
+		
+		'1) Verifica se há pendencias de devolução
+		'2) Verifica seleciona todas as fichas
+		
+		%>	
+		<form action="epv_devolucao.asp?comando=efetuar_devolucao" method="post" name="DEVOLUCAO_ITENS" style="margin:0px" onsubmit="return confirmaDevolucao()">
+			<div id="containerListagem"></div>
+            
+            
+		</form>
+						
+			                
+						
+		<p>&nbsp;</p>			
+				
+						
+		<p align="center">&nbsp;</p>
+		</td>
+
+    </tr>
+</table>
+
+ 
+  
+  </td>
+    </tr>
+</table>
+
+  
+  </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	carregaListagem();
+});
+
+</script>
+<!-- #include file="includes/rodape.asp" -->
+  </td>
+</tr>
+</table>
+<!--<iframe src="flash/beep.html" id="beepFrame" frameborder="1" width="1" scrolling="auto" height="1"></iframe>-->
+</body>
+</html>

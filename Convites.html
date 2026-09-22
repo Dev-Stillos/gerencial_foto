@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Convites</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+
+  header {
+    background: #2f2f44;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    background-image: url('images/logoparafundopreto.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: left center;
+  }
+ 
+  .container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+
+  textarea {
+    height: 120px;
+    resize: vertical;
+  }
+
+  button {
+    background-color:  #ff007f;
+    color: white;
+    text-align: center;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #2f2f44;
+  }
+
+  /* LAYOUT DA PÁGINA DE CONVITES */
+  .convite-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  /* --- TAMANHO REAL DO PAPEL-MOEDA --- */
+  .convite {
+    display: flex;
+    border: 1px solid #000;
+    padding: 5px;
+    font-size: 12px;
+    background: white;
+    position: relative;
+
+    /* TAMANHO REAL EM MILÍMETROS */
+    width: 195mm;   /* NOVO */
+    height: 75mm;   /* NOVO */
+  }
+
+  .atencao {
+    border: 1px solid #000;
+    padding: 5px;
+    width: 35%;
+    font-size: 8.5px;
+    text-align: center;
+    white-space: pre-line; /* Mantém quebras de linha do textarea */
+  }
+
+  .conteudo {
+    padding-left: 10px;
+    width: 70%;
+  }
+
+  .titulo {
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .faculdade {
+    font-weight: bold;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 3px;
+  }
+
+  .data {
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 4px;
+    text-align: center;
+    margin-bottom: 3px;
+  }
+
+  .individual {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  /* IMPRESSÃO */
+  @media print {
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area { position: absolute; top: 0; left: 0; width: 100%; }
+    .convite { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Gerador de Convites</h1>
+  <p>Preencha os campos e clique em “Gerar Convite”</p>
+</header>
+
+<div class="container">
+
+  <div class="form-group">
+    <label>Título:</label>
+    <input id="titulo" placeholder="Ex: Convite - Colação de Grau">
+  </div>
+
+  <div class="form-group">
+    <label>Faculdade:</label>
+    <input id="faculdade" placeholder="Ex: Colégio Mackenzie Ensino Fundamental - Dez/25">
+  </div>
+
+  <div class="form-group">
+    <label>Data:</label>
+    <input id="data" placeholder="Ex: 02/12/2025">
+  </div>
+
+  <div class="form-group">
+    <label>Local:</label>
+    <input id="local" placeholder="Ex: Auditório">
+  </div>
+
+  <div class="form-group">
+    <label>Endereço:</label>
+    <input id="endereco" placeholder="Ex: Rua X, 123">
+  </div>
+
+  <div class="form-group">
+    <label>Horário:</label>
+    <input id="horario" placeholder="Ex: 15h30">
+  </div>
+
+  <div class="form-group">
+    <label>Turmas:</label>
+    <input id="turmas" placeholder="Ex: A, B, C e D">
+  </div>
+
+  <!-- NOVO -->
+  <div class="form-group">
+    <label>Texto da caixa ATENÇÃO (editável):</label>
+    <textarea id="textoAtencao">Em razão da Exclusividade Fotográfica, é proibida a entrada de máquinas fotográficas antes do término da 3ª valsa. É obrigatório traje social completo. Objetos pessoais são de responsabilidade de seus proprietários.</textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Quantidade de folhas:</label>
+    <input id="quantidade" type="number" min="1" value="1">
+  </div>
+
+  <div style="text-align:center;">
+    <button onclick="gerarConvites()">Gerar Convite</button>
+  </div>
+
+</div>
+
+<div id="print-area" class="container" style="display:none;">
+  <h2 style="text-align:center;">Prévia dos Convites</h2>
+  <div id="convitesContainer"></div>
+
+  <div style="text-align:center;margin-top:20px;">
+    <button onclick="window.print()">Imprimir</button>
+  </div>
+</div>
+
+<script>
+function gerarConvites() {
+  const dados = {
+    titulo: document.getElementById('titulo').value || "CONVITE - COLAÇÃO DE GRAU",
+    faculdade: document.getElementById('faculdade').value,
+    data: document.getElementById('data').value,
+    local: document.getElementById('local').value,
+    endereco: document.getElementById('endereco').value,
+    horario: document.getElementById('horario').value,
+    turmas: document.getElementById('turmas').value,
+    atencao: document.getElementById('textoAtencao').value /* NOVO */
+  };
+
+  const qtd = parseInt(document.getElementById('quantidade').value) || 1;
+  const container = document.getElementById('convitesContainer');
+  container.innerHTML = "";
+
+  for (let f = 0; f < qtd; f++) {
+    const page = document.createElement('div');
+    page.className = 'convite-page';
+
+    for (let i = 0; i < 4; i++) {
+      const convite = document.createElement('div');
+      convite.className = 'convite';
+
+      convite.innerHTML = `
+        <div class="atencao"><strong>ATENÇÃO</strong><br><br>${dados.atencao}</div>
+
+        <div class="conteudo">
+          <div class="titulo">${dados.titulo}</div>
+          <div class="faculdade">${dados.faculdade}</div>
+          <div class="data">Data: ${dados.data}</div>
+          <div><strong>Local:</strong> ${dados.local}</div>
+          <div><strong>Endereço:</strong> ${dados.endereco}</div>
+          <div><strong>Horário:</strong> ${dados.horario}</div>
+          <div><strong>Turmas:</strong> ${dados.turmas}</div>
+          <div class="individual">INDIVIDUAL</div>
+        </div>
+      `;
+
+      page.appendChild(convite);
+    }
+
+    container.appendChild(page);
+  }
+
+  document.getElementById('print-area').style.display = "block";
+  window.scrollTo(0, document.body.scrollHeight);
+}
+</script>
+
+</body>
+</html>
