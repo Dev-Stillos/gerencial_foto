@@ -16,7 +16,7 @@ POSSUI_BUSCA = False
 If IsNumeric(Session("COD_PERFIL")) Then
     Set rs = objConexao.Execute("SELECT COD_PERFIL, COD_SUB_VALIDACAO FROM TB_ADM_PERFIS_PAGINAS_HABILITADAS_SUB_VALIDACOES WHERE COD_PERFIL=" & Session("COD_PERFIL") & " order by COD_SUB_VALIDACAO asc")
 Else
-    Response.Write "Erro: COD_PERFIL inválido ou não definido na sessão."
+    Response.Write "Erro: COD_PERFIL inv&aacute;lido ou n&atilde;o definido na sess&atilde;o."
     Response.End
 End If
 
@@ -77,9 +77,9 @@ End If
                 BUSCA_90 = True
                 POSSUI_BUSCA = True
 
-            'Se quiser deixar CPF como padrão ao abrir
+            'Se quiser deixar CPF como padrao ao abrir
                 If int(TIPO_BUSCA) = 0 Then
-                    TIPO_BUSCA = 9  ' Ou outro número livre
+                    TIPO_BUSCA = 9  ' Ou outro numero livre
                 End If
             End if    
 			
@@ -96,22 +96,22 @@ FecharConexao()
     <select aria-label="Tipo de busca" name="TIPO_BUSCA" class="form-select"
         style="background-color: white; color: black;">
         <% If BUSCA_35 = True Then %>
-            <option <% If TIPO_BUSCA = 1 Then %> selected="selected" <% End If %> value="1">CÓD. PEDIDO</option>
+            <option <% If TIPO_BUSCA = 1 Then %> selected="selected" <% End If %> value="1">C&oacute;d. pedido</option>
         <% End If %>
         <% If BUSCA_36 = True Then %>
-            <option <% If TIPO_BUSCA = 2 Then %> selected="selected" <% End If %> value="2">NOME FORMANDO</option>
+            <option <% If TIPO_BUSCA = 2 Then %> selected="selected" <% End If %> value="2">Nome do formando</option>
         <% End If %>
         <% If BUSCA_37 = True Then %>
-            <option <% If TIPO_BUSCA = 8 Then %> selected="selected" <% End If %> value="8">CÓD. FORMANDO FICHA</option>
+            <option <% If TIPO_BUSCA = 8 Then %> selected="selected" <% End If %> value="8">C&oacute;d. formando (ficha)</option>
         <% End If %>
         <% If BUSCA_38 = True Then %>
-            <option <% If TIPO_BUSCA = 3 Then %> selected="selected" <% End If %> value="3">NÚM. ÁLBUM</option>
+            <option <% If TIPO_BUSCA = 3 Then %> selected="selected" <% End If %> value="3">N&uacute;m. &aacute;lbum</option>
         <% End If %>
         <% If BUSCA_39 = True Then %>
-            <option <% If TIPO_BUSCA = 5 Then %> selected="selected" <% End If %> value="5">CONTRATO</option>
+            <option <% If TIPO_BUSCA = 5 Then %> selected="selected" <% End If %> value="5">Contrato</option>
         <% End If %>
         <% If BUSCA_40 = True Then %>
-            <option <% If TIPO_BUSCA = 7 Then %> selected="selected" <% End If %> value="7">CÓD. PRODUÇÃO</option>
+            <option <% If TIPO_BUSCA = 7 Then %> selected="selected" <% End If %> value="7">C&oacute;d. produ&ccedil;&atilde;o</option>
         <% End If %>
         <% If BUSCA_90 = True Then %>
             <option <% If TIPO_BUSCA = 9 Then %> selected="selected" <% End If %> value="9">CPF</option>
