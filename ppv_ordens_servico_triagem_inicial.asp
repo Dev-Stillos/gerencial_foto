@@ -211,7 +211,11 @@ Sub ExibirPainelTriagem(ByVal modo)
             <div><label for="triage-modal-search">Buscar contrato</label><input class="form-control" id="triage-modal-search" name="busca" maxlength="30" value="<%=Server.HTMLEncode(termo)%>"></div>
             <button class="btn btn-primary" type="submit">Buscar</button>
         </form>
-        <% If modo = "concluidos" Then %><p>Contratos sem ordens aguardando triagem e com conclus&atilde;o registrada nas ordens que seu perfil pode consultar.</p><% End If %>
+        <% If modo = "concluidos" Then %>
+        <p>Contratos sem ordens aguardando triagem e com conclus&atilde;o registrada nas ordens que seu perfil pode consultar.</p>
+        <% Else %>
+        <p>A quantidade ao lado de cada contrato indica quantas ordens ainda aguardam triagem.</p>
+        <% End If %>
         <% If registros.Eof Then %><p>Nenhum contrato encontrado.</p><% End If %>
         <ul class="triage-modal-list">
         <% exibidos = 0
@@ -596,10 +600,19 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .triage-count { padding:4px 9px; border-radius:6px; background:#f3eaf3; color:#714064; font-weight:650; }
 .triage-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; }
 .triage-filter label { display:block; margin-bottom:5px; font-weight:600; }
-.triage-browser { width:min(760px, calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:0; overflow:hidden; }
+.triage-browser {
+  box-sizing:border-box;
+  width:min(1180px, calc(100% - 48px));
+  max-width:none;
+  height:min(820px, 88vh);
+  height:min(820px, 88dvh);
+  max-height:none;
+  padding:0;
+  overflow:hidden;
+}
 .triage-browser[open] { display:flex; flex-direction:column; }
 .triage-browser-header { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:16px 20px; border-bottom:1px solid var(--line); }
-.triage-browser-content { overflow:auto; min-height:0; padding:16px 20px; }
+.triage-browser-content { flex:1; overflow:auto; overscroll-behavior:contain; min-height:0; padding:20px 24px; }
 .triage-modal-actions { display:flex; flex-wrap:wrap; gap:8px; }
 .triage-panel-search { margin-bottom:14px; }
 .triage-modal-list, .triage-history-steps { list-style:none; padding:0; }
@@ -628,6 +641,18 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
   .triage-order td { display:block; border:0; }
   .triage-order td:last-child { grid-column:1/-1; }
   .triage-order td::before { content:attr(data-label); display:block; margin-bottom:4px; color:#66586e; font-size:.85em; font-weight:700; }
+}
+@media(max-width:640px) {
+  .triage-browser {
+    width:calc(100% - 16px);
+    height:calc(100vh - 16px);
+    height:calc(100dvh - 16px);
+  }
+  .triage-browser-header, .triage-browser-content { padding:12px 14px; }
+  .triage-browser-header h2 { min-width:0; overflow-wrap:anywhere; }
+  .triage-browser .triage-modal-list li { flex-direction:column; align-items:stretch; }
+  .triage-browser .triage-modal-list .triage-modal-actions > .btn { flex:1 1 130px; }
+  .triage-browser .triage-history-steps li { flex-direction:column; }
 }
 @media(max-width:420px) {
   .triage-filter > div, .triage-filter > button { width:100%; }
@@ -691,7 +716,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
       <section class="dashboard-panel triage-panel" aria-labelledby="triage-pending">
         <div class="triage-heading">
           <h2 id="triage-pending">Contratos por situa&ccedil;&atilde;o</h2>
-          <span class="triage-count"><%=qtd_geral_triagem%> OS aguardando triagem</span>
+          <span class="triage-count">Total na fila: <%=qtd_geral_triagem%> OS</span>
         </div>
         <div class="triage-modal-actions">
           <button class="btn btn-primary" type="button" aria-haspopup="dialog" data-triage-mode="pendentes">Triagem pendente</button>
