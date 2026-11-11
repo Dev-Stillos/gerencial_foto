@@ -120,6 +120,137 @@ End If
 Dim acesso_inclusao_exclusao_os_manual
 acesso_inclusao_exclusao_os_manual = validaUsuario(2,,51,false)
 %>
+<%
+Dim triageView
+triageView = Request.QueryString("painel_triagem") & ""
+If Request.ServerVariables("REQUEST_METHOD") = "GET" And (triageView = "pendentes" Or triageView = "concluidos" Or triageView = "historico") Then
+    ExibirPainelTriagem triageView
+    Response.End
+End If
+
+Sub ExibirPainelTriagem(ByVal modo)
+    Dim digitosPagina, registros, consulta, filtro, codigo, termo, pagina, inicio, tamanho, exibidos, urlBase, condPendente, condConcluida, escopo, podeVerTodas, osAnterior, osAtual
+    Response.CodePage = 65001
+    Response.Charset = "utf-8"
+    Response.CacheControl = "no-cache"
+    Response.AddHeader "X-Triagem-Painel", "1"
+    codigo = Left(Trim(Request.QueryString("contrato") & ""), 30)
+    termo = Left(Trim(Request.QueryString("busca") & ""), 30)
+    pagina = Request.QueryString("pagina") & ""
+    Set digitosPagina = New RegExp
+    digitosPagina.Pattern = "^[0-9]{1,5}$"
+    If Not digitosPagina.Test(pagina) Then pagina = "1"
+    pagina = CLng(pagina)
+    If pagina < 1 Then pagina = 1
+    tamanho = 30
+    condPendente = "(o.status_ordem_servico = 1 AND o.descricao = 'triagem')"
+    podeVerTodas = validaUsuario(2,,57,false)
+    escopo = "1=1"
+    If Not podeVerTodas Then escopo = "o.cod_usuario_responsavel = " & sqlNumero(Session("COD_USUARIO"))
+    condConcluida = "(t.data_termino >= '1000-01-01' AND NOT " & condPendente & " AND " & escopo & ")"
+    urlBase = "?painel_triagem=" & modo & "&contrato=" & Server.URLEncode(codigo) & "&busca=" & Server.URLEncode(termo)
+    AbrirConexao()
+    If modo = "historico" Then
+        tamanho = 10
+        inicio = (pagina - 1) * tamanho
+        consulta = "SELECT ordens.cod_ordem_servico, e.numero_etapa, e.descricao, e.data_inicio, e.data_termino, u.nome AS responsavel " & _
+            "FROM (SELECT o.cod_ordem_servico FROM VW_TB_ORDENS_SERVICO o WHERE o.cod_contrato = " & sqlTexto(codigo) & " AND " & escopo & _
+            " AND EXISTS (SELECT 1 FROM TB_ORDENS_SERVICO_ETAPAS h WHERE h.cod_ordem_servico = o.cod_ordem_servico)" & _
+            " GROUP BY o.cod_ordem_servico ORDER BY o.cod_ordem_servico DESC LIMIT " & inicio & "," & (tamanho + 1) & ") ordens " & _
+            "INNER JOIN TB_ORDENS_SERVICO_ETAPAS e ON e.cod_ordem_servico = ordens.cod_ordem_servico " & _
+            "LEFT JOIN TB_ADM_USUARIOS u ON u.cod_usuario = e.cod_usuario_responsavel ORDER BY ordens.cod_ordem_servico DESC, e.numero_etapa"
+        Set registros = objConexao.Execute(consulta)
+%>
+        <h3>Contrato <%=Server.HTMLEncode(codigo)%></h3>
+        <p>In&iacute;cio, t&eacute;rmino e respons&aacute;vel registrado em cada etapa. As ordens seguem as permiss&otilde;es do seu perfil.</p>
+        <% If registros.Eof Then %><p>Nenhuma etapa dispon&iacute;vel para exibi&ccedil;&atilde;o.</p><% End If %>
+        <% osAnterior = ""
+           exibidos = 0
+           Do While Not registros.Eof
+               osAtual = registros("cod_ordem_servico") & ""
+               If osAtual <> osAnterior Then
+                   If exibidos = tamanho Then Exit Do
+                   If exibidos > 0 Then Response.Write "</ul></details>"
+                   exibidos = exibidos + 1
+                   osAnterior = osAtual
+        %>
+        <details class="triage-history-os"<%If exibidos = 1 Then%> open<%End If%>>
+            <summary>OS <%=Server.HTMLEncode(moduloPPVOSMascara(osAtual,"",true) & "")%></summary>
+            <a href="ppv_ordens_servico_formulario.asp?comando=visualizar&amp;cod_ordem_servico=<%=Server.URLEncode(osAtual)%>">Abrir ficha da OS e anota&ccedil;&otilde;es</a>
+            <ul class="triage-history-steps">
+        <% End If %>
+            <li>
+                <strong><%=Server.HTMLEncode(registros("numero_etapa") & ". " & registros("descricao"))%></strong>
+                <span>In&iacute;cio <%=TextoPainelTriagem(registros("data_inicio"))%></span>
+                <span>T&eacute;rmino <%=TextoPainelTriagem(registros("data_termino"))%></span>
+                <span>Respons&aacute;vel <%=TextoPainelTriagem(registros("responsavel"))%></span>
+            </li>
+        <%     registros.MoveNext()
+           Loop
+           If exibidos > 0 Then Response.Write "</ul></details>"
+        %>
+<%
+    Else
+        inicio = (pagina - 1) * tamanho
+        filtro = "o.cod_contrato IS NOT NULL AND o.cod_contrato <> ''"
+        If termo <> "" Then filtro = filtro & " AND INSTR(UPPER(o.cod_contrato), " & sqlTexto(UCase(termo)) & ") > 0"
+        If modo = "pendentes" Then
+            consulta = "SELECT o.cod_contrato, COUNT(*) AS quantidade, NULL AS ultima FROM VW_TB_ORDENS_SERVICO o WHERE " & filtro & _
+                " AND " & condPendente & " GROUP BY o.cod_contrato ORDER BY o.cod_contrato LIMIT " & inicio & "," & (tamanho + 1)
+        Else
+            consulta = "SELECT o.cod_contrato, COUNT(DISTINCT CASE WHEN " & condConcluida & " THEN o.cod_ordem_servico END) AS quantidade, " & _
+                "MAX(CASE WHEN " & condConcluida & " THEN t.data_termino END) AS ultima " & _
+                "FROM VW_TB_ORDENS_SERVICO o LEFT JOIN TB_ORDENS_SERVICO_ETAPAS t ON t.cod_ordem_servico = o.cod_ordem_servico AND t.numero_etapa = 1 AND t.descricao = 'triagem' " & _
+                "WHERE " & filtro & " GROUP BY o.cod_contrato HAVING quantidade > 0 AND SUM(CASE WHEN " & condPendente & _
+                " THEN 1 ELSE 0 END) = 0 ORDER BY ultima DESC, o.cod_contrato LIMIT " & inicio & "," & (tamanho + 1)
+        End If
+        Set registros = objConexao.Execute(consulta)
+%>
+        <form class="triage-filter triage-panel-search" method="get">
+            <input type="hidden" name="painel_triagem" value="<%=modo%>">
+            <div><label for="triage-modal-search">Buscar contrato</label><input class="form-control" id="triage-modal-search" name="busca" maxlength="30" value="<%=Server.HTMLEncode(termo)%>"></div>
+            <button class="btn btn-primary" type="submit">Buscar</button>
+        </form>
+        <% If modo = "concluidos" Then %><p>Contratos sem ordens aguardando triagem e com conclus&atilde;o registrada nas ordens que seu perfil pode consultar.</p><% End If %>
+        <% If registros.Eof Then %><p>Nenhum contrato encontrado.</p><% End If %>
+        <ul class="triage-modal-list">
+        <% exibidos = 0
+           While Not registros.Eof And exibidos < tamanho
+               codigo = registros("cod_contrato") & ""
+        %>
+            <li>
+                <div><strong><%=Server.HTMLEncode(codigo)%></strong> <span class="triage-count"><%=registros("quantidade")%> OS</span>
+                <% If modo = "concluidos" Then %><small>&Uacute;ltima triagem <%=TextoPainelTriagem(registros("ultima"))%></small><% End If %></div>
+                <div class="triage-modal-actions">
+                    <a class="btn btn-outline-secondary btn-sm" data-triage-load href="?painel_triagem=historico&amp;contrato=<%=Server.URLEncode(codigo)%>">Ver etapas</a>
+                    <% If modo = "pendentes" Then %><a class="btn btn-primary btn-sm" href="?filtro1=1&amp;COD_CONTRATO=<%=Server.URLEncode(codigo)%>">Abrir triagem</a><% End If %>
+                </div>
+            </li>
+        <%     exibidos = exibidos + 1
+               registros.MoveNext()
+           Wend %>
+        </ul>
+<%
+    End If
+%>
+        <nav class="triage-modal-actions" aria-label="P&aacute;ginas dos resultados">
+            <% If pagina > 1 Then %><a class="btn btn-outline-secondary btn-sm" data-triage-load href="<%=Server.HTMLEncode(urlBase & "&pagina=" & (pagina - 1))%>">Anterior</a><% End If %>
+            <% If Not registros.Eof Then %><a class="btn btn-outline-secondary btn-sm" data-triage-load href="<%=Server.HTMLEncode(urlBase & "&pagina=" & (pagina + 1))%>">Pr&oacute;xima</a><% End If %>
+        </nav>
+<%
+    registros.Close
+    Set registros = Nothing
+    FecharConexao()
+End Sub
+
+Function TextoPainelTriagem(ByVal valor)
+    If Len(Trim(valor & "")) = 0 Then
+        TextoPainelTriagem = "&mdash;"
+    Else
+        TextoPainelTriagem = Server.HTMLEncode(valor & "")
+    End If
+End Function
+%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -465,11 +596,20 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .triage-count { padding:4px 9px; border-radius:6px; background:#f3eaf3; color:#714064; font-weight:650; }
 .triage-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; }
 .triage-filter label { display:block; margin-bottom:5px; font-weight:600; }
-.triage-contracts { display:flex; flex-wrap:wrap; align-content:flex-start; gap:8px; max-height:200px; overflow:auto; padding:5px; margin:10px -5px 0; }
-.triage-contracts a { display:inline-flex; align-items:center; min-height:36px; padding:5px 10px; border:1px solid #e4dfeb; border-radius:7px; background:#faf8fc; color:#594660; text-decoration:none; font-weight:600; }
-.triage-contracts a:hover, .triage-contracts a[aria-current] { border-color:#b20b61; background:#faeaf3; color:#88134f; }
-.triage-contracts [hidden] { display:none; }
-.triage-contract-search { max-width:290px; }
+.triage-browser { width:min(760px, calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:0; overflow:hidden; }
+.triage-browser[open] { display:flex; flex-direction:column; }
+.triage-browser-header { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:16px 20px; border-bottom:1px solid var(--line); }
+.triage-browser-content { overflow:auto; min-height:0; padding:16px 20px; }
+.triage-modal-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.triage-panel-search { margin-bottom:14px; }
+.triage-modal-list, .triage-history-steps { list-style:none; padding:0; }
+.triage-modal-list li { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 0; border-bottom:1px solid var(--line); }
+.triage-modal-list small { display:block; margin-top:4px; color:#55475e; }
+.triage-history-os { padding:12px; margin:10px 0; border:1px solid var(--line); border-radius:8px; }
+.triage-history-os summary { font-weight:700; cursor:pointer; }
+.triage-history-steps { margin:8px 0 0; }
+.triage-history-steps li { display:flex; flex-wrap:wrap; gap:6px 16px; padding:8px 0; border-top:1px solid var(--line); }
+.triage-history-steps strong { flex-basis:100%; }
 .triage-table { margin-bottom:0; }
 .triage-table th, .triage-table td { padding:12px 8px; vertical-align:top; overflow-wrap:anywhere; }
 .triage-table thead th, .triage-table .triage-order-group th { background:#f4f1f7; color:#42364e; }
@@ -490,7 +630,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
   .triage-order td::before { content:attr(data-label); display:block; margin-bottom:4px; color:#66586e; font-size:.85em; font-weight:700; }
 }
 @media(max-width:420px) {
-  .triage-filter > div, .triage-filter > button, .triage-contract-search { width:100%; }
+  .triage-filter > div, .triage-filter > button { width:100%; }
 }
 </style>
 </head>
@@ -550,32 +690,24 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 
       <section class="dashboard-panel triage-panel" aria-labelledby="triage-pending">
         <div class="triage-heading">
-          <h2 id="triage-pending">Contratos com triagem pendente</h2>
-          <span class="triage-count"><%=qtd_geral_triagem%> OS no total</span>
+          <h2 id="triage-pending">Contratos por situa&ccedil;&atilde;o</h2>
+          <span class="triage-count"><%=qtd_geral_triagem%> OS aguardando triagem</span>
         </div>
-        <%
-        Dim codigoContratoTriagem
-        Set rsCont = objConexao.Execute("SELECT COD_CONTRATO FROM VW_TB_ORDENS_SERVICO WHERE descricao = 'triagem' AND status_ordem_servico = 1 GROUP BY COD_CONTRATO ORDER BY COD_CONTRATO ASC")
-        If rsCont.Eof Then%>
-        <p class="mb-0">Nenhuma ordem aguardando triagem.</p>
-        <%Else%>
-        <label class="form-label" for="triage-contract-search">Buscar na lista de contratos</label>
-        <input class="form-control triage-contract-search" id="triage-contract-search" type="search" autocomplete="off">
-        <nav class="triage-contracts" id="triage-contracts" aria-label="Contratos com triagem pendente">
-          <%While Not rsCont.Eof
-            codigoContratoTriagem = rsCont("COD_CONTRATO") & ""
-            If Len(Trim(codigoContratoTriagem)) > 0 Then%>
-          <a href="?filtro1=1&amp;COD_CONTRATO=<%=Server.URLEncode(codigoContratoTriagem)%>"<%If StrComp(codigoContratoTriagem, busca_COD_CONTRATO & "", 1) = 0 Then%> aria-current="true"<%End If%>><%=Server.HTMLEncode(codigoContratoTriagem)%></a>
-          <%End If
-            rsCont.MoveNext()
-          Wend%>
-        </nav>
-        <p id="triage-contract-empty" role="status" hidden>Nenhum contrato corresponde &agrave; busca.</p>
-        <%End If
-        rsCont.Close
-        Set rsCont = Nothing
-        %>
+        <div class="triage-modal-actions">
+          <button class="btn btn-primary" type="button" aria-haspopup="dialog" data-triage-mode="pendentes">Triagem pendente</button>
+          <button class="btn btn-outline-secondary" type="button" aria-haspopup="dialog" data-triage-mode="concluidos">Triagem completa</button>
+        </div>
       </section>
+      <dialog class="triage-dialog triage-browser" id="triage-browser" aria-labelledby="triage-browser-title">
+        <header class="triage-browser-header">
+          <h2 id="triage-browser-title" tabindex="-1">Contratos</h2>
+          <form method="dialog"><button class="btn btn-outline-secondary" autofocus>Fechar</button></form>
+        </header>
+        <div class="triage-browser-content">
+          <button class="btn btn-outline-secondary btn-sm" id="triage-browser-back" type="button" hidden>Voltar aos contratos</button>
+          <div id="triage-browser-results" aria-busy="false"></div>
+        </div>
+      </dialog>
         <%If Request.QueryString("filtro1") <> Empty  Then%>
             
         <%
@@ -802,20 +934,60 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
     var submenuLink = document.querySelector('.ppv-module a[href="ppv_ordens_servico_triagem_inicial.asp"]');
     if (submenuLink) submenuLink.setAttribute('aria-current', 'page');
 
-    var search = document.getElementById('triage-contract-search');
-    if (search) {
-        var links = document.querySelectorAll('#triage-contracts a');
-        var empty = document.getElementById('triage-contract-empty');
-        search.addEventListener('input', function () {
-            var term = search.value.trim().toUpperCase();
-            var hasMatch = false;
-            links.forEach(function (link) {
-                link.hidden = !link.textContent.trim().toUpperCase().includes(term);
-                if (!link.hidden) hasMatch = true;
-            });
-            empty.hidden = hasMatch;
-        });
+    var browser = document.getElementById('triage-browser');
+    var title = document.getElementById('triage-browser-title');
+    var results = document.getElementById('triage-browser-results');
+    var back = document.getElementById('triage-browser-back');
+    var lastList, controller;
+    var titles = { pendentes: 'Triagem pendente', concluidos: 'Triagem completa', historico: 'Hist\u00f3rico de etapas' };
+
+    async function loadPanel(url) {
+        var mode = url.searchParams.get('painel_triagem');
+        if (mode !== 'historico') lastList = url;
+        if (controller) controller.abort();
+        controller = new AbortController();
+        var signal = controller.signal;
+        title.textContent = titles[mode];
+        back.hidden = mode !== 'historico';
+        results.setAttribute('aria-busy', 'true');
+        title.focus();
+        results.textContent = 'Carregando\u2026';
+        try {
+            var response = await fetch(url, { signal: signal, cache: 'no-store' });
+            if (!response.ok || response.headers.get('X-Triagem-Painel') !== '1') throw new Error();
+            var html = await response.text();
+            if (signal.aborted) return;
+            results.innerHTML = html;
+            results.parentNode.scrollTop = 0;
+        } catch (error) {
+            if (!signal.aborted) results.textContent = 'N\u00e3o foi poss\u00edvel carregar os dados. Feche o painel e tente novamente.';
+        } finally {
+            if (!signal.aborted) results.setAttribute('aria-busy', 'false');
+        }
     }
+
+    document.querySelectorAll('[data-triage-mode]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            browser.showModal();
+            loadPanel(new URL('?painel_triagem=' + button.dataset.triageMode, location.href));
+        });
+    });
+    browser.addEventListener('close', function () {
+        if (controller) controller.abort();
+    });
+    back.addEventListener('click', function () { loadPanel(lastList); });
+    results.addEventListener('click', function (event) {
+        var link = event.target.closest('a[data-triage-load]');
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        loadPanel(new URL(link.href));
+    });
+    results.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var url = new URL(location.href);
+        url.search = new URLSearchParams(new FormData(event.target)).toString();
+        loadPanel(url);
+    });
 
     var review = document.getElementById('triage-review');
     if (review) {
