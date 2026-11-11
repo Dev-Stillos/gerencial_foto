@@ -11,7 +11,7 @@ VALIDA_PAG = Replace(VALIDA_PAG,"/loja2/","")
 VALIDA_PAG = Replace(VALIDA_PAG,"/gerencial_foto/","")
 
 'Verifica se o usuário está logado
-if COD_USUARIO_INTERNO_LOGADO=Empty OR VALIDA_PAG=Empty then
+If COD_USUARIO_INTERNO_LOGADO = Empty Or COD_PERFIL_LOGADO = Empty Then
 Session.Abandon()
 Response.Redirect(redirecionaUsuario)		
 end if
@@ -26,11 +26,12 @@ If Not rsADM2.eof Then
 	COD_PAGINA_USUARIO = formatNumber(0&rsADM2("COD_PAGINA"),0)
 	ENTRAR_Zz5487iO8Tttt = True
 	ADM_HABILITADA_PARA_TODOS_AAS = rsADM2("habilitada_para_todos")
-else 
-		Session.Abandon()
-		Response.Redirect(redirecionaUsuario)	
-			
-end if
+Else
+    rsADM2.Close
+    Set rsADM2 = Nothing
+    FecharConexao()
+    ExibirAcessoNegadoGerencial
+End If
 rsADM2.Close
 Set rsADM2=Nothing
 
@@ -71,8 +72,10 @@ if ENTRAR_Zz5487iO8Tttt = True Then
 			
 		ElseIf int(ADM_HABILITADA_PARA_TODOS_AAS) = 2 Then 
 		'Se ela não for habilitada para todos então bloqueia
-			Session.Abandon()
-			Response.Redirect(redirecionaUsuario)	
+            rsADM.Close
+            Set rsADM = Nothing
+            FecharConexao()
+            ExibirAcessoNegadoGerencial
 
 		end if
 
@@ -81,11 +84,33 @@ if ENTRAR_Zz5487iO8Tttt = True Then
 
 Else
 
-	Session.Abandon()
-	Response.Redirect(redirecionaUsuario)	
+    FecharConexao()
+    ExibirAcessoNegadoGerencial
 
 end if 
 FecharConexao()
 
 
+Sub ExibirAcessoNegadoGerencial()
+    Response.Clear
+    Response.Status = "403 Forbidden"
+    Response.CacheControl = "no-cache"
+    Response.ContentType = "text/html"
+    Response.Write "<!doctype html><html lang='pt-BR'><head>"
+    Response.Write "<meta name='viewport' content='width=device-width, initial-scale=1'>"
+    Response.Write "<title>Acesso restrito | Gerencial Foto</title>"
+    Response.Write "<style>"
+    Response.Write "body{margin:0;font:1rem system-ui,sans-serif;background:#f6f3f7;color:#29243a}"
+    Response.Write ".fundo{box-sizing:border-box;min-height:100vh;display:grid;place-items:center;padding:20px}"
+    Response.Write ".aviso{box-sizing:border-box;width:100%;max-width:420px;background:white;border:1px solid #e6dfeb;border-radius:16px;padding:28px;box-shadow:0 12px 36px #29243a1a}"
+    Response.Write "h1{font-size:1.4rem;margin:0 0 12px}p{line-height:1.5;margin:0 0 20px}"
+    Response.Write "a{display:inline-block;background:#9e125c;color:white;text-decoration:none;border-radius:8px;padding:10px 14px}a:focus-visible{outline:3px solid #29243a;outline-offset:3px}"
+    Response.Write "</style></head><body><main class='fundo'>"
+    Response.Write "<section class='aviso' role='alertdialog' aria-modal='true' aria-labelledby='titulo' aria-describedby='mensagem'>"
+    Response.Write "<h1 id='titulo'>Acesso restrito</h1>"
+    Response.Write "<p id='mensagem'>Seu perfil n&atilde;o tem permiss&atilde;o para acessar esta p&aacute;gina.</p>"
+    Response.Write "<a href='/gerencial_foto/adm_index.asp' id='voltar'>Voltar ao painel</a></section></main>"
+    Response.Write "<script>document.getElementById('voltar').focus();</script></body></html>"
+    Response.End
+End Sub
 %>
