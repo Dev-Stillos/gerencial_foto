@@ -133,7 +133,10 @@ End If
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Detalhes do formando | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
 <style type="text/css">
 	/* CSS for the demo. CSS needed for the scripts are loaded dynamically by the scripts */
 	#mainContainer{
@@ -383,50 +386,80 @@ function popUp(URL){
 .style1 {font-weight: bold}
 -->
 </style>
+<style>
+.graduate-page .graduate-content { min-width:0; color:#292738; }
+.graduate-page .graduate-heading { align-items:flex-start; }
+.graduate-page .graduate-heading h1 { margin-bottom:0; }
+.graduate-page .graduate-actions, .graduate-page .graduate-jump { display:flex; flex-wrap:wrap; gap:8px; }
+.graduate-page .graduate-jump { margin:0 0 20px; }
+.graduate-page .graduate-jump a { padding:6px 12px; border:1px solid #e4dfeb; bgraduate-radius:8px; background:#fff; color:#6d1749; font-weight:650; text-decoration:none; }
+.graduate-page .graduate-content table[border="1"] { border:1px solid #e4dfeb; background:#fff; }
+.graduate-page .graduate-content table[border="1"] > tbody > tr > td { padding:8px 10px; bgraduate-color:#eeeaf2; overflow-wrap:anywhere; }
+.graduate-page .graduate-content tr[bgcolor="whitesmoke"] > td { background:#f1edf6; color:#3e344e; }
+.graduate-page .graduate-content .graduate-summary { height:auto; margin:0; }
+.graduate-page .graduate-summary h2, .graduate-page .graduate-section-heading { color:#292738; font:700 clamp(17px,2vw,23px)/1.3 system-ui,sans-serif; margin:0 0 12px; }
+.graduate-page .graduate-section-heading { margin-top:28px; scroll-margin-top:18px; }
+.graduate-page .graduate-summary table { width:100%; bgraduate-collapse:collapse; }
+.graduate-page .graduate-summary table > tbody > tr > td:first-child:not([colspan]) { background:#f8f6fa; }
+.graduate-page .graduate-scroll { max-width:100%; overflow-x:auto; }
+.graduate-page .graduate-scroll table { min-width:680px; }
+.graduate-page .graduate-content :is(input,select,textarea,iframe,.btnGeral,table) { max-width:100%; }
+.graduate-page .graduate-content .btnGeral { display:inline-block; padding:7px 10px; margin:3px 0; border:1px solid #ddd5e5; bgraduate-radius:7px; background:#fff; color:#7c174e; font-weight:650; white-space:normal; }
+.graduate-page .graduate-content a:focus-visible { outline:2px solid #9e125c; outline-offset:2px; }
+.graduate-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
+.graduate-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+@media (max-width:650px) {
+    .graduate-page .graduate-summary > table,
+    .graduate-page .graduate-summary > table > tbody,
+    .graduate-page .graduate-summary > table > tbody > tr,
+    .graduate-page .graduate-summary > table > tbody > tr > td { display:block; width:100%; }
+    .graduate-page .graduate-content { overflow-wrap:anywhere; }
+}
+.graduate-page .graduate-content textarea[name="mensagem"] { width:100%; min-height:86px; padding:8px; border:1px solid #ded5e5; border-radius:8px; background:#fff; }
+.graduate-page .graduate-content .graduate-submit { width:auto; min-width:78px; height:auto; }
+.graduate-page .graduate-content .graduate-summary { margin-bottom:20px; }
+</style>
 </head>
 
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 2
-  BTN_IMPRIMIR_LINK = " href=""javascript:popUp('lca_busca_detalhamento_pedido_IMPRIMIR.asp?cod_pedido="&COD_PEDIDO&""" )"">"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-
-	  <h2>DIP - Busca / Detalhe de Formando </h2>
-      <div class="subMenu">
-	Sub-Menu:
-    <%If qtdEnderecos > 1 and VALIDA_SUB7 Then%><a href="#">Visualizar endere&ccedil;o(s) anterior(es)</a> | <%End If%>
-    	<% '<a href="#">Cadastrar novo endere&ccedil;o</a> %>
-    </div>
-	  <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
-	  	  
-		  	<h3 align="center">Detalhes do formando n&ordm; <%=digito(COD_FORMANDO)%></h3>
-				<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
+<body class="graduate-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Detalhes do formando</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="graduate-content">
+        <div class="dashboard-heading graduate-heading">
+          <div>
+            <p class="eyebrow">FORMANDOS</p>
+            <h1><%=Server.HTMLEncode(NOME_FORMANDO & "")%></h1>
+            <p class="panel-description">Ficha n&ordm; <%=digito(COD_FORMANDO)%></p>
+          </div>
+          <a class="btn btn-outline-secondary" href="adm_index.asp" id="orderBack">Voltar</a>
+        </div>
+        <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+        <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+        <nav class="graduate-jump" aria-label="Se&ccedil;&otilde;es da ficha">
+          <a href="#dados_formando">Dados do formando</a>
+          <%If VALIDA_SUB7 <> 0 or VENDIDO = 1 Then%><a href="#endereco_formando">Endere&ccedil;o e contato</a><%End If%>
+          <a href="#historico_formando">Hist&oacute;rico</a>
+          <a href="#movimentacoes_formando">Movimenta&ccedil;&otilde;es</a>
+        </nav>
+        <%If qtdEnderecos > 1 and VALIDA_SUB7 Then%>
+          <div class="subMenu"><a href="#">Visualizar endere&ccedil;o(s) anterior(es)</a></div>
+        <%End If%>
+        <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
+        <section class="dashboard-panel graduate-summary" aria-labelledby="dados_formando">
+          <h2 id="dados_formando">Dados do formando</h2>
+          <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
   		<tr>
             <td width="17%"><div align="left"><strong>Nome Formando:</strong></div></td>
             <td width="83%"><%=NOME_FORMANDO%></td>
@@ -441,7 +474,7 @@ function popUp(URL){
 			  AbrirConexao()
 			  
 			  
-			  Response.Write(COD_PRODUCAO2)
+			  
 			  
 			  Set rsProducao = objConexao.Execute("SELECT * FROM TB_PRODUCAO WHERE COD_PRODUCAO='"&COD_PRODUCAO2&"'")
 			  
@@ -745,8 +778,10 @@ function popUp(URL){
             
 			</table>
 			
-			<%If VALIDA_SUB7 <> 0  or VENDIDO = 1 Then%>
-			<h3 align="center">Endere&ccedil;o do Formando  </h3>
+			</section>
+            <%If VALIDA_SUB7 <> 0  or VENDIDO = 1 Then%>
+            <section class="dashboard-panel graduate-summary" aria-labelledby="endereco_formando">
+              <h2 id="endereco_formando">Endere&ccedil;o e contato</h2>
 				<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
   <tr>
             <td width="17%"><div align="left"><strong>Endere&ccedil;o:</strong></div></td>
@@ -783,11 +818,12 @@ function popUp(URL){
 			   
 			  </tr>
 			</table>
-			<%End If%>
-			
-            <h3 align="center">Hist&oacute;rico</h3>
+			</section>
+            <%End If%>
+            <h2 class="graduate-section-heading" id="historico_formando">Hist&oacute;rico</h2>
            <form action="dip_busca_detalhamento_formando.asp?cod_formando=<%=COD_FORMANDO%>&comando=gravar_msg" style="margin:0px" method="post">
-            <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
+            <div class="graduate-scroll" role="region" aria-label="Hist&oacute;rico" tabindex="0">
+<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
                   <tr>
                     <td width="12%"><div align="center"><strong>Gravado por</strong></div></td>
                     <td width="67%"><div align="center"><strong>Mensagem</strong></div></td>
@@ -807,7 +843,7 @@ function popUp(URL){
     
                       Marcar para retornar contato</p>
                     </div></td>
-                    <td><div align="center"><input type="submit" class="btnGravar" value=" " /></div></td>
+                    <td><div align="center"><button type="submit" class="btn btn-primary graduate-submit">Gravar</button></div></td>
                     </tr>
 				  <%
 				  AbrirConexao()
@@ -847,12 +883,13 @@ function popUp(URL){
 				  
 				  FecharConexao()
 				  %>
-                </table>
+                </table></div>
                 </form>
             
-	  	        <h3 align="center">Movimenta&ccedil;&otilde;es</h3>
+	  	        <h2 class="graduate-section-heading" id="movimentacoes_formando">Movimenta&ccedil;&otilde;es</h2>
 				<%If SISTEMA_NOVO = 1 Then%>
-	  	        <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
+	  	        <div class="graduate-scroll" role="region" aria-label="Movimenta&ccedil;&otilde;es" tabindex="0">
+<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
                   <tr>
                     <td width="10%"><div align="center"><strong>Item</strong></div></td>
                     <td width="28%"><div align="center"><strong>Vendedor Respons&aacute;vel</strong></div></td>
@@ -1033,7 +1070,7 @@ function popUp(URL){
 				  
 				  FecharConexao()
 				  %>
-                </table>
+                </table></div>
                 <br />
 <strong>Legenda Movimenta&ccedil;&otilde;es:</strong><br /><br />
 
@@ -1051,24 +1088,39 @@ function popUp(URL){
 				  </div>
 	  	          <%End If%>
 	  	          
-	  	        <p align="center">&nbsp; </p></td>
-  </tr>
-</table>
-
- 
-  
-  </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+	  	      
+      </div>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="dip_formandos.asp"]');
+    var back = document.getElementById('orderBack');
+    back.addEventListener('click', function (event) {
+        if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+            event.preventDefault();
+            window.history.back();
+        }
+    });
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
 </body>
 </html>
