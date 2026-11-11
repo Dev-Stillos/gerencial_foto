@@ -389,34 +389,49 @@ function popUp(URL){
 <style>
 .graduate-page .graduate-content { min-width:0; color:#292738; }
 .graduate-page .graduate-heading { align-items:flex-start; }
-.graduate-page .graduate-heading h1 { margin-bottom:0; }
+.graduate-page .graduate-heading h1 { margin:0; padding:0; color:#242738; font:700 clamp(23px,3vw,34px)/1.18 system-ui,sans-serif; overflow-wrap:anywhere; }
+.graduate-page .graduate-heading { padding:20px; border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.graduate-page .graduate-heading .eyebrow { margin:0 0 6px; }
 .graduate-page .graduate-actions, .graduate-page .graduate-jump { display:flex; flex-wrap:wrap; gap:8px; }
 .graduate-page .graduate-jump { margin:0 0 20px; }
-.graduate-page .graduate-jump a { padding:6px 12px; border:1px solid #e4dfeb; bgraduate-radius:8px; background:#fff; color:#6d1749; font-weight:650; text-decoration:none; }
+.graduate-page .graduate-jump a { padding:6px 12px; border:1px solid #e4dfeb; border-radius:8px; background:#fff; color:#6d1749; font-weight:650; text-decoration:none; }
 .graduate-page .graduate-content table[border="1"] { border:1px solid #e4dfeb; background:#fff; }
-.graduate-page .graduate-content table[border="1"] > tbody > tr > td { padding:8px 10px; bgraduate-color:#eeeaf2; overflow-wrap:anywhere; }
+.graduate-page .graduate-content table[border="1"] > tbody > tr > td { padding:8px 10px; border-color:#eeeaf2; overflow-wrap:anywhere; }
 .graduate-page .graduate-content tr[bgcolor="whitesmoke"] > td { background:#f1edf6; color:#3e344e; }
 .graduate-page .graduate-content .graduate-summary { height:auto; margin:0; }
-.graduate-page .graduate-summary h2, .graduate-page .graduate-section-heading { color:#292738; font:700 clamp(17px,2vw,23px)/1.3 system-ui,sans-serif; margin:0 0 12px; }
-.graduate-page .graduate-section-heading { margin-top:28px; scroll-margin-top:18px; }
-.graduate-page .graduate-summary table { width:100%; bgraduate-collapse:collapse; }
-.graduate-page .graduate-summary table > tbody > tr > td:first-child:not([colspan]) { background:#f8f6fa; }
+.graduate-page .graduate-content .graduate-summary h2, .graduate-page .graduate-content h2.graduate-section-heading { color:#292738; font:700 clamp(17px,2vw,23px)/1.3 system-ui,sans-serif; margin:0 0 12px; }
+.graduate-page .graduate-panel { height:auto; margin-bottom:20px; }
+.graduate-page .graduate-panel h2 { scroll-margin-top:18px; }
+.graduate-page .graduate-summary table { width:100%; border-collapse:collapse; }
+.graduate-page .graduate-summary > table > tbody > tr > td:first-child:not([colspan]) { background:#f8f6fa; width:26%; }
+.graduate-page .graduate-summary > table > tbody > tr > td:nth-child(2) { width:74%; }
+.graduate-page .graduate-summary > table > tbody > tr > td { border-bottom:1px solid #eeeaf2; }
 .graduate-page .graduate-scroll { max-width:100%; overflow-x:auto; }
 .graduate-page .graduate-scroll table { min-width:680px; }
 .graduate-page .graduate-content :is(input,select,textarea,iframe,.btnGeral,table) { max-width:100%; }
-.graduate-page .graduate-content .btnGeral { display:inline-block; padding:7px 10px; margin:3px 0; border:1px solid #ddd5e5; bgraduate-radius:7px; background:#fff; color:#7c174e; font-weight:650; white-space:normal; }
+.graduate-page .graduate-content .btnGeral { display:inline-block; padding:7px 10px; margin:3px 0; border:1px solid #ddd5e5; border-radius:7px; background:#fff; color:#7c174e; font-weight:650; white-space:normal; }
 .graduate-page .graduate-content a:focus-visible { outline:2px solid #9e125c; outline-offset:2px; }
 .graduate-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
 .graduate-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
-@media (max-width:650px) {
+@media (max-width:560px) {
     .graduate-page .graduate-summary > table,
     .graduate-page .graduate-summary > table > tbody,
     .graduate-page .graduate-summary > table > tbody > tr,
     .graduate-page .graduate-summary > table > tbody > tr > td { display:block; width:100%; }
+    .graduate-page .graduate-summary > table > tbody > tr > td:first-child:not([colspan]),
+    .graduate-page .graduate-summary > table > tbody > tr > td:nth-child(2) { width:100%; }
     .graduate-page .graduate-content { overflow-wrap:anywhere; }
 }
 .graduate-page .graduate-content textarea[name="mensagem"] { width:100%; min-height:86px; padding:8px; border:1px solid #ded5e5; border-radius:8px; background:#fff; }
+.graduate-page .graduate-compose { padding:14px; margin-bottom:16px; border:1px solid #e4dfeb; border-radius:10px; background:#faf8fc; }
+.graduate-page .graduate-compose label[for="graduateMessage"] { display:block; margin-bottom:7px; font-weight:700; }
+.graduate-page .graduate-compose-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; }
+.graduate-page .graduate-compose-actions label { display:flex; align-items:center; gap:6px; margin:0; }
 .graduate-page .graduate-content .graduate-submit { width:auto; min-width:78px; height:auto; }
+.graduate-page .graduate-panel .graduate-scroll table { min-width:560px; }
+.graduate-page .graduate-panel .graduate-scroll table > tbody > tr:first-child > td { background:#f1edf6; }
+.graduate-page .graduate-panel .graduate-scroll table > tbody > tr > td { border-bottom:1px solid #eeeaf2; }
+.graduate-page .graduate-movement-legend { margin-top:14px; }
 .graduate-page .graduate-content .graduate-summary { margin-bottom:20px; }
 </style>
 </head>
@@ -820,8 +835,17 @@ function popUp(URL){
 			</table>
 			</section>
             <%End If%>
+            <section class="dashboard-panel graduate-panel" aria-labelledby="historico_formando">
             <h2 class="graduate-section-heading" id="historico_formando">Hist&oacute;rico</h2>
            <form action="dip_busca_detalhamento_formando.asp?cod_formando=<%=COD_FORMANDO%>&comando=gravar_msg" style="margin:0px" method="post">
+            <div class="graduate-compose">
+                <label for="graduateMessage">Anota&ccedil;&atilde;o do formando</label>
+                <textarea class="inputTamanho3" id="graduateMessage" name="mensagem" rows="3"></textarea>
+                <div class="graduate-compose-actions">
+                    <label for="checkbox"><input checked="checked" class="inputRadio" type="checkbox" value="1" name="retornar_contato" id="checkbox" /> Marcar para retornar contato</label>
+                    <button type="submit" class="btn btn-primary graduate-submit">Gravar</button>
+                </div>
+            </div>
             <div class="graduate-scroll" role="region" aria-label="Hist&oacute;rico" tabindex="0">
 <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
                   <tr>
@@ -831,20 +855,7 @@ function popUp(URL){
                         <div align="center"><strong>Data Cadastro</strong></div>
                       </div></td>
                   </tr>
-                    <tr>
-                    <td>&nbsp;</td>
-                    <td><div align="left">
-               
-                      <textarea class="inputTamanho3" name="mensagem" cols="3" rows="3"></textarea>
-                   
-                      <p>
 
-                        <input checked="checked" class="inputRadio" type="checkbox" value="1" name="retornar_contato" id="checkbox" />
-    
-                      Marcar para retornar contato</p>
-                    </div></td>
-                    <td><div align="center"><button type="submit" class="btn btn-primary graduate-submit">Gravar</button></div></td>
-                    </tr>
 				  <%
 				  AbrirConexao()
 				  
@@ -863,7 +874,7 @@ function popUp(URL){
 							
 							If not rs4.Eof Then
 							
-									Response.Write(Left(rs4("nome"),3))							
+									Response.Write(Server.HTMLEncode(rs4("nome") & ""))							
 							End If
 							
 						
@@ -885,8 +896,9 @@ function popUp(URL){
 				  %>
                 </table></div>
                 </form>
-            
-	  	        <h2 class="graduate-section-heading" id="movimentacoes_formando">Movimenta&ccedil;&otilde;es</h2>
+            </section>
+            <section class="dashboard-panel graduate-panel" aria-labelledby="movimentacoes_formando">
+            <h2 class="graduate-section-heading" id="movimentacoes_formando">Movimenta&ccedil;&otilde;es</h2>
 				<%If SISTEMA_NOVO = 1 Then%>
 	  	        <div class="graduate-scroll" role="region" aria-label="Movimenta&ccedil;&otilde;es" tabindex="0">
 <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
@@ -1072,7 +1084,7 @@ function popUp(URL){
 				  %>
                 </table></div>
                 <br />
-<strong>Legenda Movimenta&ccedil;&otilde;es:</strong><br /><br />
+<p class="graduate-movement-legend"><strong>Legenda das movimenta&ccedil;&otilde;es</strong></p>
 
 				<table width="200" border="0" cellspacing="0" cellpadding="2">
   <tr>
@@ -1089,6 +1101,7 @@ function popUp(URL){
 	  	          <%End If%>
 	  	          
 	  	      
+            </section>
       </div>
     </main>
     <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
