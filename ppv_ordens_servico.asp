@@ -463,8 +463,6 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 <link rel="stylesheet" href="css/dashboard.css" />
 <style>
 .ppv-page .ppv-main { max-width: 1680px; }
-.ppv-page .ppv-tools { margin: 0 0 24px; padding: 12px 20px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
-.ppv-page .ppv-tools table { max-width: 100%; }
 .ppv-page .ppv-module { margin-bottom: 22px; }
 .ppv-page .subMenu { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; line-height: 2.6; }
 .ppv-page .subMenu a { display: inline-block; color: #53566b; text-decoration: none; padding: 0 8px; }
@@ -489,7 +487,15 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .ppv-page .container_Vencido { background: #fbe7ed; color: #9b2044; }
 .ppv-page .ppv-guide { margin-top: 20px; height: auto; }
 .ppv-page .ppv-guide summary { font-weight: 650; cursor: pointer; }
-.ppv-page .ppv-guide table { width: auto; max-width: 100%; }
+.ppv-page .ppv-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 16px; border-top: 1px solid var(--line); }
+.ppv-page .ppv-page-count { padding: 6px 8px; color: #53566b; font-weight: 650; }
+.ppv-page .ppv-badge { display: inline-block; border-radius: 999px; padding: 4px 9px; font-weight: 650; white-space: nowrap; }
+.ppv-page .ppv-badge.late { background: #fbe7ed; color: #9b2044; }
+.ppv-page .ppv-badge.today { background: #fff1d6; color: #785100; }
+.ppv-page .ppv-badge.on-time { background: #e4f4ec; color: #215d44; }
+.ppv-page .topbar-actions { flex-wrap: wrap; }
+.ppv-page .topbar-actions .user-name { display: inline; }
+
 .ppv-page .dashboard-nav a.active { background: transparent; color: #d4d5e1; font-weight: 400; }
 .ppv-page .dashboard-nav a[href="ppv_ordens_servico.asp"] { background: #b20b61; color: #fff; font-weight: 600; }
 @media(max-width: 1250px) { .ppv-page .ppv-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -508,24 +514,15 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
     <header class="dashboard-topbar">
       <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
       <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
-      <div class="topbar-actions"><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
     </header>
     <main class="dashboard-main ppv-main" id="conteudo">
       <div class="dashboard-heading">
         <div><p class="eyebrow">PRODU&Ccedil;&Atilde;O P&Oacute;S-VENDA</p><h1>Ordens de Servi&ccedil;o</h1><p>Acompanhe a produ&ccedil;&atilde;o, os respons&aacute;veis e os prazos de cada etapa.</p></div>
-        <a href="adm_index.asp" class="btn btn-outline-secondary">Vis&atilde;o geral</a>
+        <a href="adm_index.asp" class="btn btn-outline-secondary">Voltar ao painel</a>
       </div>
       <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
-      <div class="ppv-tools">
-      <%
-      Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-      BTN_VOLTAR = 1
-      BTN_IMPRIMIR = 2
-      BTN_FONTE = 1
-      BTN_IMPRIMIR_LINK = "#"
-      %>
-      <!-- #include file="includes/sub_menu.asp" -->
-      </div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
       <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
       <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
       </nav>
@@ -671,19 +668,21 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		rs.Open sql, objConexao
 		
 		Dim paginacaocao
-		paginacaocao = formatNumber(0&Request.QueryString("paginacao"),0)
-		
-		If not rs.Eof Then
-		
-			If paginacaocao > 0 Then
-				rs.AbsolutePage=paginacaocao
-			Else
-				paginacaocao = 1
-				rs.AbsolutePage=1
-			End If	
-			
-			
-			'Verifica a qtd de OS de acordo com o filtro
+		paginacaocao = 1
+
+        If Not rs.Eof Then
+            Dim ppvPaginaSolicitada
+            ppvPaginaSolicitada = Request.QueryString("paginacao") & ""
+            If Len(ppvPaginaSolicitada) <= 9 And IsNumeric(ppvPaginaSolicitada) Then
+                ppvPaginaSolicitada = CDbl(ppvPaginaSolicitada)
+                If ppvPaginaSolicitada >= 1 And ppvPaginaSolicitada = Fix(ppvPaginaSolicitada) Then
+                    paginacaocao = ppvPaginaSolicitada
+                    If paginacaocao > rs.PageCount Then paginacaocao = rs.PageCount
+                End If
+            End If
+            rs.AbsolutePage = paginacaocao
+
+            'Verifica a qtd de OS de acordo com o filtro
 			Set rs2=objConexao.Execute("SELECT COUNT(*) as qtd FROM VW_TB_ORDENS_SERVICO  "&temp&sqlWhere&" LIMIT 1000")
 				If not rs2.Eof Then
 					qtdOSs = rs2(0)
@@ -710,7 +709,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
   <th width="8%" rowspan="2"><div align="center"><strong>Prazo Geral</strong></div></th>
   <th width="6%" rowspan="2"><div align="center"><strong>Status</strong></div></th>
   <th width="8%" rowspan="2">A&ccedil;&otilde;es</th>
-  <th width="6%" rowspan="2">Sinaliza&ccedil;&atilde;o</th>
+  <th width="6%" rowspan="2">Situa&ccedil;&atilde;o do prazo</th>
 </tr>
   <tr bgcolor="whitesmoke">
     <th width="6%"><div align="center"><strong>Etapa / Total</strong></div></th>
@@ -861,29 +860,19 @@ sql = 	" SELECT "&_
 																	</div></td>
 														<td>
 														<div align="center">
-															<%If int(rs3("status_ordem_servico")) = 4 Then%>
-																<img src="images/icons/icon_green.gif" width="16" height="15" />
-                              <%ElseIf int(rs3("status_ordem_servico")) = 3 Then%>
-                                <img src="images/icons/icon_entrega.png" width="16" height="15" />
-				                      <%ElseIf int(rs3("status_ordem_servico")) = 2 Then%> 
-																<img src="images/icons/icon_aguardando.png" width='16px' height='16px' />
-															<%Elseif  int(rs3("status_ordem_servico")) = 99  Then%>
-																<img src="images/icons/icon_red.gif" width="17" height="15" />
-															<%Else%>
-														  <%
-																
-																'Response.Write(rs2("diferenca_etapa"))
-																diferenca = formatNumber(rs3("diferenca_etapa"))/1
-																'Response.Write(diferenca)
-																If diferenca > 0 Then%>
-														  <img src="images/icons/icon_balao_red.gif" alt="Etapa atrasada h&aacute; <%=diferenca%> dia(s)." title="Etapa atrasada h&aacute; <%=diferenca%> dia(s)." />
-														  <%Elseif diferenca = 0 Then%>
-														  <img src="images/icons/icon_balao_yellon.gif" alt="OS vencendo hoje." title="OS vencendo hoje" />
-																<%Else%>
-														  <img src="images/icons/icon_balao_green.gif" alt="Faltam <%=(diferenca)*(-1)%> dia(s) para t&eacute;rmino do prazo da etapa." title="Faltam <%=(diferenca)*(-1)%> dia(s) para t&eacute;rmino do prazo da etapa." />                                                
-																<%End If%>
-															<%End If%>
-														</div>                                        </td>
+															<%If int(rs3("status_ordem_servico")) = 1 And IsNumeric(rs3("diferenca_etapa")) Then
+                        diferenca = CDbl(rs3("diferenca_etapa"))
+                        If diferenca > 0 Then%>
+                            <span class="ppv-badge late">Atrasada &middot; <%=diferenca%> d</span>
+                        <%ElseIf diferenca = 0 Then%>
+                            <span class="ppv-badge today">Vence hoje</span>
+                        <%Else%>
+                            <span class="ppv-badge on-time">No prazo &middot; <%=Abs(diferenca)%> d</span>
+                        <%End If
+                    Else%>
+                        <span class="text-muted">&mdash;</span>
+                    <%End If%>
+                    </div>                                        </td>
 											</tr>
                 
        <% 
@@ -908,14 +897,31 @@ rs.MoveNext()
 End If
 Next
 %>
-<%If rs.PageCount > 1 Then %>                                  
-     <tr bgcolor="whitesmoke">
-      <td colspan="14">
-      	   <%call paginacao(paginacaocao,rs.PageCount)%>      </td>
-    </tr>   
-<%End if%>
         </tbody></table>
-        </div></section>
+        </div>
+        <%If rs.PageCount > 1 Then
+            Dim ppvLinkPagina, ppvParametro
+            ppvLinkPagina = "ppv_ordens_servico.asp?"
+            For Each ppvParametro In Request.QueryString
+                If LCase(ppvParametro) <> "paginacao" Then
+                    ppvLinkPagina = ppvLinkPagina & Server.URLEncode(ppvParametro) & "=" & Server.URLEncode(Request.QueryString(ppvParametro) & "") & "&"
+                End If
+            Next
+            ppvLinkPagina = Server.HTMLEncode(ppvLinkPagina & "paginacao=")
+        %>
+        <nav class="ppv-pagination" aria-label="Paginar ordens de servi&ccedil;o">
+            <%If paginacaocao > 1 Then%>
+                <a class="btn btn-outline-secondary btn-sm" href="<%=ppvLinkPagina%>1">Primeira</a>
+                <a class="btn btn-outline-secondary btn-sm" href="<%=ppvLinkPagina & (paginacaocao - 1)%>">Anterior</a>
+            <%End If%>
+            <span class="ppv-page-count">P&aacute;gina <%=paginacaocao%> de <%=rs.PageCount%></span>
+            <%If paginacaocao < rs.PageCount Then%>
+                <a class="btn btn-outline-secondary btn-sm" href="<%=ppvLinkPagina & (paginacaocao + 1)%>">Pr&oacute;xima</a>
+                <a class="btn btn-outline-secondary btn-sm" href="<%=ppvLinkPagina & rs.PageCount%>">&Uacute;ltima</a>
+            <%End If%>
+        </nav>
+        <%End If%>
+        </section>
 
 <%
 	Else
@@ -928,46 +934,7 @@ Next
 	
 	FecharConexao()
 	%>
-      <details class="dashboard-panel ppv-guide"><summary>Legendas e orienta&ccedil;&otilde;es</summary><div class="mt-3">
-<strong>Legenda de Status:</strong><br />
-       1 - Em produ&ccedil;&atilde;o<br />
-       2 - Finalizados e n&atilde;o despachados<br />
-       3 - Despachado para cliente<br />
-       4 - Entregue para o cliente<br />
-       99 - Cancelado
-<p align="left"><strong>Legenda de &Iacute;cones:</strong><br />
-</p>
-<table width="541" border="0" cellspacing="0" cellpadding="2">
-  <tr>
-    <td><div align="center"><img src="images/icons/icon_balao_green.gif" width="17" height="16" /></div></td>
-    <td>Produto com etapa dentro do prazo (passe o mouse para saber qual o prazo que falta para etapa)</td>
-  </tr>
-  <tr>
-    <td><div align="center"><img src="images/icons/icon_balao_yellon.gif" /></div></td>
-    <td>Produto com etapa vencendo na data atual</td>
-  </tr>
-  <tr>
-    <td width="17"><div align="center"><img src="images/icons/icon_balao_red.gif" width="17" height="16" /></div></td>
-    <td width="516">Produto com etapa fora do prazo  (passe o mouse para saber quanto esta atrasado)</td>
-  </tr>
-  
-  <tr>
-    <td><img src="images/icons/icon_red.gif" width="17" height="15" /></td>
-    <td>Produto cancelado</td>
-  </tr>
-  <tr>
-    <td><div align="center"><img src="images/icons/icon_aguardando.png" width='16px' height='16px' /></div></td>
-    <td><div align="left">Finalizado e aguardando despacho</div></td>
-  </tr>
-  <tr>
-    <td><div align="center"><img src="images/icons/icon_entrega.png" /></div></td>
-    <td><div align="left">Despachado para o cliente</div></td>
-  </tr>
-  <tr>
-    <td><div align="center"><img src="images/icons/icon_green.gif" width="16" height="15" /></div></td>
-    <td><div align="left">Produto finalizado e Entregue para cliente</div></td>
-  </tr>
-</table>
+      <details class="dashboard-panel ppv-guide"><summary>Orienta&ccedil;&otilde;es sobre as OS</summary><div class="mt-3">
 <p align="left"><strong>Observa&ccedil;&otilde;es:<br />
   </strong>1) &Eacute; poss&iacute;vel alterar a OS somente quem &eacute; o respons&aacute;vel atual pela OS<br />
 2) &Eacute; poss&iacute;vel excluir a OS somente se a OS foi lan&ccedil;ada manualmente e n&atilde;o foi exclu&iacute;da, se n&atilde;o desejar ter mais a OS utilize o bot&atilde;o  Cancelar dispon&iacute;vel no modo de visualiza&ccedil;&atilde;o da OS<br />
