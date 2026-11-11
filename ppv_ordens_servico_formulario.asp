@@ -603,7 +603,9 @@ End If
 <fieldset class="os-panel">
 <legend>Descrição / Histórico</legend>
     <%If comando <> "incluir" Then%>
-    	<div align="center"><a href="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" target="_blank">Abrir Histórico em nova janela</a></div>
+    	<div class="os-history-toolbar">
+            <button type="button" class="os-back" id="openHistoryReport">Visualizar e imprimir hist&oacute;rico</button>
+        </div>
       	<iframe id="osHistoryFrame" title="Hist&oacute;rico da ordem de servi&ccedil;o" width="100%" height="1" src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" frameborder="0"></iframe>
      <%End if%>
 </fieldset>
@@ -717,6 +719,45 @@ return true
     <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
   </div>
 </div>
+<style>
+.os-history-toolbar { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.os-history-modal { width:min(1000px,calc(100vw - 24px)); height:calc(100dvh - 40px); max-height:900px; padding:0; border:1px solid #e7dfeb; border-radius:14px; background:#fff; color:#292738; }
+.os-history-modal::backdrop { background:rgba(30,24,39,.55); }
+.os-history-modal[open] { display:flex; flex-direction:column; }
+.os-history-modal header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 20px; border-bottom:1px solid #e7dfeb; }
+.os-history-modal h2 { margin:0; font:700 18px/1.4 system-ui,sans-serif; color:#292738; }
+.os-history-modal button { border:1px solid #ded5e4; background:#fff; border-radius:7px; padding:7px 12px; cursor:pointer; color:#6d1749; }
+.os-history-modal iframe { flex:1; min-height:0; width:100%; border:0; }
+</style>
+<dialog id="osHistoryReportModal" class="os-history-modal" aria-labelledby="historyReportTitle">
+    <header>
+        <h2 id="historyReportTitle">Hist&oacute;rico da OS</h2>
+        <button type="button" id="closeHistoryReport" autofocus>Fechar</button>
+    </header>
+    <iframe id="osHistoryReportFrame" title="Relat&oacute;rio do hist&oacute;rico da OS" data-report-src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>&amp;modo=relatorio"></iframe>
+</dialog>
+<script>
+(function () {
+    var trigger = document.getElementById('openHistoryReport');
+    var modal = document.getElementById('osHistoryReportModal');
+    var frame = document.getElementById('osHistoryReportFrame');
+    var previousOverflow;
+    if (!trigger) return;
+    trigger.addEventListener('click', function () {
+        frame.src = frame.getAttribute('data-report-src');
+        previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        modal.showModal();
+    });
+    document.getElementById('closeHistoryReport').addEventListener('click', function () {
+        modal.close();
+    });
+    modal.addEventListener('close', function () {
+        document.body.style.overflow = previousOverflow;
+        trigger.focus();
+    });
+})();
+</script>
 <script>
 (function () {
     var frame = document.getElementById('osHistoryFrame');
