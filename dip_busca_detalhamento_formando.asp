@@ -454,6 +454,17 @@ function popUp(URL){
     .graduate-page .graduate-movement-table tbody > tr { grid-template-columns:minmax(0,1fr); }
 }
 .graduate-page .graduate-content .graduate-summary { margin-bottom:20px; }
+.graduate-page .session-notices a[href="adm_etiquetas_agendadas.asp"],
+.graduate-page .graduate-label-trigger { display:inline-block; border:1px solid #ead6e2; border-radius:7px; padding:6px 11px; background:#fff; color:#88134f; font-weight:650; text-decoration:none; }
+.graduate-page .session-notices a[href="adm_etiquetas_agendadas.asp"] { margin-bottom:10px; }
+.graduate-label-dialog { width:min(960px, calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:0; border:1px solid #e4dfeb; border-radius:14px; background:#fff; color:#242738; box-shadow:0 18px 60px #24273833; }
+.graduate-label-dialog::backdrop { background:#24273899; }
+.graduate-label-dialog-header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid #e4dfeb; }
+.graduate-label-dialog-header h2 { margin:0; font:700 17px/1.3 system-ui,sans-serif; }
+.graduate-label-dialog-header form { margin:0; }
+.graduate-label-frame { display:block; width:100%; height:min(680px, calc(100dvh - 105px)); border:0; }
+.graduate-label-frame[hidden] { display:none; }
+.graduate-label-loading { padding:18px; margin:0; }
 </style>
 </head>
 
@@ -699,7 +710,7 @@ function popUp(URL){
 			  <%IF SISTEMA_NOVO = 1 Then%>
 			   <tr bgcolor="whitesmoke">
 			  <td><div align="left"><strong>Impress&atilde;o de etiqueta:</strong></div></td>
-			  <td><a href="dip_formandos_cadastro_album_impressao_etiquetas.asp?ia=1&cod_formando=<%=COD_FORMANDO%>">Imprimir Etiqueta</a>
+			  <td><a class="graduate-label-trigger" aria-haspopup="dialog" href="dip_formandos_cadastro_album_impressao_etiquetas.asp?ia=1&amp;cod_formando=<%=COD_FORMANDO%>">Imprimir etiqueta</a>
 			  <%If COD_PRODUCAO = 0 and VALIDA_SUB26 <> 0  Then%> | <a href="javascript: popUp('dip_busca_detalhamento_POPUP_formando_incluir_agregados.asp?cod_form=<%=COD_FORMANDO%>','no',1)">Incluir produtos Agregados</a></td><%End If%>
 			  </tr>
 			  <%End If%>
@@ -1118,6 +1129,14 @@ function popUp(URL){
 	  	      
             </section>
       </div>
+      <dialog class="graduate-label-dialog" id="graduateLabelDialog" aria-labelledby="graduateLabelTitle">
+        <header class="graduate-label-dialog-header">
+          <h2 id="graduateLabelTitle">Etiquetas</h2>
+          <form method="dialog"><button class="btn btn-outline-secondary btn-sm" autofocus>Fechar</button></form>
+        </header>
+        <p class="graduate-label-loading" id="graduateLabelLoading" role="status" hidden>Carregando&hellip;</p>
+        <iframe class="graduate-label-frame" id="graduateLabelFrame" title="Etiquetas" hidden></iframe>
+      </dialog>
     </main>
     <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
   </div>
@@ -1147,6 +1166,64 @@ function popUp(URL){
             toggle.setAttribute('aria-expanded', 'false');
             toggle.focus();
         }
+    });
+})();
+(function () {
+    var dialog = document.getElementById('graduateLabelDialog');
+    if (typeof dialog.showModal !== 'function') return;
+    var frame = document.getElementById('graduateLabelFrame');
+    var title = document.getElementById('graduateLabelTitle');
+    var loading = document.getElementById('graduateLabelLoading');
+    var queueLink = document.querySelector('.session-notices a[href="adm_etiquetas_agendadas.asp"]');
+    var printLink = document.querySelector('.graduate-label-trigger');
+
+    function openLabels(event) {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        title.textContent = this === queueLink ? 'Etiquetas agendadas' : 'Impress\u00e3o de etiquetas';
+        frame.title = title.textContent;
+        frame.hidden = false;
+        frame.style.visibility = 'hidden';
+        loading.hidden = false;
+        frame.src = this.href;
+        dialog.showModal();
+    }
+
+    if (queueLink) {
+        queueLink.setAttribute('aria-haspopup', 'dialog');
+        queueLink.addEventListener('click', openLabels);
+    }
+    if (printLink) printLink.addEventListener('click', openLabels);
+
+    frame.addEventListener('load', function () {
+        if (!dialog.open) return;
+        try {
+            var child = frame.contentDocument;
+            if (!child || child.URL === 'about:blank') return;
+            if (new URL(child.URL).pathname === window.location.pathname) {
+                window.location.assign(child.URL);
+                return;
+            }
+            if (child.body.matches('.queue-page, .labels-page')) {
+                var styles = child.createElement('style');
+                styles.textContent = '.dashboard-sidebar,.dashboard-topbar,.dashboard-footer,.dashboard-heading,.search-panel,.skip-link{display:none!important}.dashboard-main{padding:16px!important}.dashboard-layout{min-height:0!important}';
+                child.head.appendChild(styles);
+                if (queueLink && child.body.classList.contains('queue-page') && child.querySelector('.queue-panel .empty-state')) {
+                    queueLink.parentNode.removeChild(queueLink);
+                    queueLink = null;
+                }
+            }
+            child.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !child.querySelector('dialog[open]')) dialog.close();
+            });
+        } finally {
+            loading.hidden = true;
+            frame.style.visibility = '';
+        }
+    });
+    dialog.addEventListener('close', function () {
+        frame.hidden = true;
+        frame.removeAttribute('src');
     });
 })();
 </script>
