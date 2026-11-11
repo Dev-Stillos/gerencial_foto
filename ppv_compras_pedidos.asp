@@ -27,14 +27,28 @@ calendario_necessario = "SIM"
 .purchase-date button { padding:8px; }
 .purchase-results-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
 .purchase-results-heading span { color:#57566a; }
-.purchase-table-scroll { max-width:100%; overflow-x:auto; }
-.purchase-table { width:max-content; min-width:100%; margin-bottom:0; }
-.purchase-table th, .purchase-table td { padding:12px 10px; vertical-align:middle; overflow-wrap:normal; word-break:normal; }
-.purchase-table th { white-space:nowrap; }
-.purchase-table td:is(:nth-child(1), :nth-child(2), :nth-child(6), :nth-child(7)) { white-space:nowrap; }
-.purchase-table td:nth-child(3) { max-width:260px; min-width:140px; }
-.purchase-table td:nth-child(9) { max-width:210px; }
-.purchase-table td:nth-child(10) .purchase-status { white-space:nowrap; }
+.purchase-table { width:100%; table-layout:fixed; margin-bottom:0; }
+.purchase-table th, .purchase-table td { padding:12px 10px; vertical-align:middle; }
+.purchase-table [hidden] { display:none; }
+.purchase-table th:first-child { width:16%; }
+.purchase-table th:nth-child(9), .purchase-table th:nth-child(10) { width:19%; }
+.purchase-table td:nth-child(2) > div, .purchase-table td:nth-child(3) > div { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.purchase-row { cursor:pointer; }
+.purchase-row:hover > td { background:#faf7fb; }
+.purchase-order-link { display:inline-block; font-weight:700; white-space:nowrap; }
+.purchase-order-dialog { box-sizing:border-box; width:min(1180px,calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:0; border:1px solid #e4dfeb; border-radius:14px; color:var(--ink); background:#fff; }
+.purchase-order-dialog[open] { display:flex; flex-direction:column; }
+.purchase-order-dialog::backdrop { background:#24273899; }
+.purchase-order-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:14px 20px; border-bottom:1px solid #e4dfeb; }
+.purchase-order-header form { margin:0; }
+.purchase-order-body { overflow:auto; padding:16px 20px; }
+.purchase-order-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.purchase-order-fields > div { padding:10px; border-radius:8px; background:#f7f5fa; overflow-wrap:anywhere; }
+.purchase-order-fields dt { color:#57566a; font-size:.85em; }
+.purchase-order-fields dd { margin:3px 0 0; }
+.purchase-order-body .purchase-actions { margin-top:14px; }
+.purchase-order-frame { display:block; width:100%; height:72vh; height:72dvh; border:0; background:#fff; }
+.purchase-order-frame[hidden] { display:none; }
 .purchase-table thead th { background:#f4f1f7; color:#42364e; }
 .purchase-table td:first-child { font-weight:700; }
 .purchase-manual { display:block; color:#65546e; font-weight:600; }
@@ -47,28 +61,19 @@ calendario_necessario = "SIM"
 .purchase-pagination { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; margin-top:18px; padding-top:16px; border-top:1px solid #e4dfeb; }
 .purchase-pagination span { color:#57566a; }
 .purchase-row-actions .purchase-action { white-space:nowrap; }
-@media(max-width:1200px) {
-  .purchase-table, .purchase-table tbody { display:block; width:100%; }
+@media(max-width:900px) {
+  .purchase-table, .purchase-table tbody { display:block; }
   .purchase-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-  .purchase-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:14px; border:1px solid #e4dfeb; border-radius:10px; overflow:hidden; }
-  .purchase-row td:nth-child(1), .purchase-row td:nth-child(9) { background:#f4f1f7; padding:12px; }
-  .purchase-row td:nth-child(1) { grid-row:1; grid-column:1; }
-  .purchase-row td:nth-child(9) { grid-row:1; grid-column:2; }
-  .purchase-row td:nth-child(2), .purchase-row td:nth-child(3), .purchase-row td:nth-child(6) { grid-column:1/-1; }
-  .purchase-row td:nth-child(3), .purchase-row td:nth-child(9) { max-width:none; min-width:0; }
-  .purchase-row td:nth-child(2) > div, .purchase-row td:nth-child(6) > div { overflow-x:auto; }
-  .purchase-row td:nth-child(7) { white-space:normal; }
-  .purchase-row td:nth-child(2) { font-weight:700; }
-  .purchase-row td:nth-child(4), .purchase-row td:nth-child(5) { background:#faf9fc; }
+  .purchase-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:12px; border:1px solid #e4dfeb; border-radius:10px; overflow:hidden; }
+  .purchase-row td { display:block; min-width:0; border:0; }
+  .purchase-row td:nth-child(1), .purchase-row td:nth-child(2), .purchase-row td:nth-child(3) { grid-column:1/-1; }
+  .purchase-row td:nth-child(1) { background:#f4f1f7; }
   .purchase-row td > div[align] { text-align:left; }
-  .purchase-row td:last-child { padding:10px; }
-  .purchase-row .purchase-action { display:inline-flex; align-items:center; min-height:36px; padding:6px 9px; }
-  .purchase-row td { display:block; border:0; }
   .purchase-row td::before { content:attr(data-label); display:block; color:#66586e; font-size:.85em; font-weight:700; }
-  .purchase-row td:last-child { grid-column:1/-1; border-top:1px solid #e4dfeb; }
 }
 @media(max-width:640px) {
-  .purchase-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .purchase-filters, .purchase-order-fields { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .purchase-order-header, .purchase-order-body { padding:12px; }
 }
 @media(max-width:400px) {
   .purchase-filters { grid-template-columns:minmax(0,1fr); }
@@ -430,20 +435,19 @@ If comprasAcaoNegada Then
   <div><h2 id="purchase-results-title">Pedidos encontrados</h2><span><%=rs.RecordCount%> pedidos</span></div>
   <span>P&aacute;gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%></span>
 </div>
-<div class="purchase-table-scroll" role="region" aria-labelledby="purchase-results-title" tabindex="0">
 <table class="table purchase-table" role="table" aria-labelledby="purchase-results-title">
 <thead role="rowgroup"><tr role="row">
 <th role="columnheader" scope="col">Pedido</th>
 <th role="columnheader" scope="col">Fornecedor</th>
 <th role="columnheader" scope="col">Produto</th>
-<th role="columnheader" scope="col">Qtd. pendente</th>
-<th role="columnheader" scope="col">Qtd. entregue</th>
-<th role="columnheader" scope="col">Respons&aacute;vel</th>
-<th role="columnheader" scope="col">Emiss&atilde;o</th>
-<th role="columnheader" scope="col">Dias em atraso</th>
+<th hidden role="columnheader" scope="col">Qtd. pendente</th>
+<th hidden role="columnheader" scope="col">Qtd. entregue</th>
+<th hidden role="columnheader" scope="col">Respons&aacute;vel</th>
+<th hidden role="columnheader" scope="col">Emiss&atilde;o</th>
+<th hidden role="columnheader" scope="col">Dias em atraso</th>
 <th role="columnheader" scope="col">Status</th>
 <th role="columnheader" scope="col">Entrega</th>
-<th role="columnheader" scope="col">A&ccedil;&otilde;es</th>
+<th hidden role="columnheader" scope="col">A&ccedil;&otilde;es</th>
 </tr></thead>
 <tbody role="rowgroup">
 <%
@@ -462,7 +466,7 @@ If Not rs.Eof Then
 	qtd_atrasados= pedidoCompraTotais(rs("cod_pedido_compra"),7,true)
 %>
 <tr class="purchase-row" role="row">
-  <td role="cell" data-label="Pedido"><div align="center"><%=rs("numero_pedido_compra")%>
+  <td role="cell" data-label="Pedido"><div align="center"><button class="btn btn-outline-secondary btn-sm purchase-order-link" type="button" aria-haspopup="dialog">#<%=rs("numero_pedido_compra")%></button>
   <% if rs("pedido_manual") = "S" Then%>
   	<small class="purchase-manual">Manual</small>
   <% end if %>
@@ -481,11 +485,11 @@ If Not rs.Eof Then
   Set rs2=Nothing
   %>
   </div></td>
-  <td role="cell" data-label="Qtd. pendente"><div align="center"><%=qtd_pendente%></div></td>
-  <td role="cell" data-label="Qtd. entregue"><div align="center"><%=qtd_entregue%></div></td>
-  <td role="cell" data-label="Respons&aacute;vel"><div align="left"> <%=nomeUsuario(rs("cadastro_cod_usuario"),true)%> </div></td>
-  <td role="cell" data-label="Emiss&atilde;o"><div align="center"><%=ArrumaData(rs("data_cadastro"))%></div></td>
-  <td role="cell" data-label="Dias em atraso"><div align="center">
+  <td hidden role="cell" data-label="Qtd. pendente"><div align="center"><%=qtd_pendente%></div></td>
+  <td hidden role="cell" data-label="Qtd. entregue"><div align="center"><%=qtd_entregue%></div></td>
+  <td hidden role="cell" data-label="Respons&aacute;vel"><div align="left"> <%=nomeUsuario(rs("cadastro_cod_usuario"),true)%> </div></td>
+  <td hidden role="cell" data-label="Emiss&atilde;o"><div align="center"><%=ArrumaData(rs("data_cadastro"))%></div></td>
+  <td hidden role="cell" data-label="Dias em atraso"><div align="center">
   <%
   If qtd_atrasados > 0 Then
 	  Set rs2=objConexao.Execute("SELECT MIN(data_previsao_entrega) AS data_previsao_entrega FROM VW_TB_PEDIDOS_COMPRAS_PRODUTOS WHERE cod_pedido_compra = "&rs("cod_pedido_compra"))
@@ -510,10 +514,10 @@ If Not rs.Eof Then
     <span class="purchase-status is-on-time">Em dia</span>
   <%End If%>
   </td>
-  <td role="cell" data-label="A&ccedil;&otilde;es"><div class="purchase-actions purchase-row-actions"><%
+  <td hidden role="cell" data-label="A&ccedil;&otilde;es"><div class="purchase-actions purchase-row-actions"><%
 		 'Impress&atilde;o somente se o status do pedido de compra for Enviado para o fornecedor, pois neste caso j&aacute; foi aprovado e mudado o status para Enviado para fornecedor para for&ccedil;ar o usu&aacute;rio a mudar o status para Enviado para Fornecedor e ter como controlar a data que foi enviado.
 		If status_pedido_compra > 1  Then%>
-         <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_imprimir.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener">
+         <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_imprimir.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener" data-purchase-print>
           Pedido (2&ordf; via)</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Pedido (2&ordf; via)</button><%End If%>
           <%
 		 End If
@@ -558,7 +562,6 @@ Next
 %>
 </tbody>
 </table>
-</div>
 <%If rs.PageCount > 1 Then
     Dim comprasLinkPagina, comprasParametroPagina
     comprasLinkPagina = "ppv_compras_pedidos.asp?"
@@ -589,6 +592,21 @@ rs.Close
 Set rs = Nothing
 FecharConexao()
 %>
+<dialog class="purchase-order-dialog" id="purchase-order-dialog" aria-labelledby="purchase-order-title">
+    <header class="purchase-order-header">
+        <h2 id="purchase-order-title">Pedido de compra</h2>
+        <div class="purchase-actions">
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="purchase-preview-back" hidden>Voltar ao pedido</button>
+            <button class="btn btn-primary btn-sm" type="button" id="purchase-preview-print" hidden disabled>Imprimir / Salvar PDF</button>
+            <form method="dialog"><button class="btn btn-outline-secondary btn-sm" autofocus>Fechar</button></form>
+        </div>
+    </header>
+    <div class="purchase-order-body" id="purchase-order-body">
+        <dl class="purchase-order-fields" id="purchase-order-fields"></dl>
+        <div class="purchase-actions" id="purchase-order-actions"></div>
+    </div>
+    <iframe class="purchase-order-frame" id="purchase-order-frame" title="Pr&eacute;via do pedido de compra" hidden></iframe>
+</dialog>
     </main>
     <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
   </div>
@@ -612,6 +630,80 @@ FecharConexao()
             toggle.focus();
         }
     });
+})();
+(function () {
+    var dialog = document.getElementById('purchase-order-dialog');
+    var title = document.getElementById('purchase-order-title');
+    var body = document.getElementById('purchase-order-body');
+    var fields = document.getElementById('purchase-order-fields');
+    var actions = document.getElementById('purchase-order-actions');
+    var frame = document.getElementById('purchase-order-frame');
+    var back = document.getElementById('purchase-preview-back');
+    var print = document.getElementById('purchase-preview-print');
+    var orderTitle;
+
+    function showDetails() {
+        title.textContent = orderTitle;
+        body.hidden = false;
+        frame.hidden = back.hidden = print.hidden = true;
+        print.disabled = true;
+        frame.removeAttribute('src');
+    }
+
+    document.querySelectorAll('.purchase-order-link').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var cells = button.closest('tr').cells;
+            orderTitle = 'Pedido ' + button.textContent.trim();
+            fields.replaceChildren();
+            for (var i = 0; i < cells.length - 1; i++) {
+                var field = document.createElement('div');
+                var label = document.createElement('dt');
+                var value = document.createElement('dd');
+                label.textContent = cells[i].dataset.label;
+                value.textContent = cells[i].textContent.trim();
+                field.append(label, value);
+                fields.appendChild(field);
+            }
+            actions.replaceChildren(cells[cells.length - 1].firstElementChild.cloneNode(true));
+            showDetails();
+            dialog.showModal();
+        });
+    });
+
+    document.querySelectorAll('.purchase-row').forEach(function (row) {
+        row.addEventListener('click', function (event) {
+            if (!event.target.closest('a, button, input, select') && !window.getSelection().toString()) {
+                var button = row.querySelector('.purchase-order-link');
+                button.focus();
+                button.click();
+            }
+        });
+    });
+
+    actions.addEventListener('click', function (event) {
+        var link = event.target.closest('[data-purchase-print]');
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        var url = new URL(link.href);
+        url.searchParams.set('modal', '1');
+        title.textContent = orderTitle + ' | Prévia de impressão';
+        body.hidden = true;
+        frame.hidden = back.hidden = print.hidden = false;
+        print.disabled = true;
+        frame.src = url.href;
+        back.focus();
+    });
+    frame.addEventListener('load', function () {
+        print.disabled = frame.hidden || !frame.contentDocument ||
+            !frame.contentDocument.querySelector('[data-purchase-report]');
+    });
+    back.addEventListener('click', function () {
+        showDetails();
+        var link = actions.querySelector('[data-purchase-print]');
+        if (link) link.focus();
+    });
+    print.addEventListener('click', function () { frame.contentWindow.print(); });
+    dialog.addEventListener('close', showDetails);
 })();
 </script>
 </body>
