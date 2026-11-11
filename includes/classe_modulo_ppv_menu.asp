@@ -1,48 +1,66 @@
+<%
+Dim ppvPaginasPermitidas, ppvRegistroPermissao, ppvConsultaPermissao, ppvPerfilMenu
+Set ppvPaginasPermitidas = Server.CreateObject("Scripting.Dictionary")
+ppvPaginasPermitidas.CompareMode = 1
+
+If Len(Session("COD_USUARIO") & "") > 0 And IsNumeric(Session("COD_PERFIL") & "") Then
+    ppvPerfilMenu = CLng(Session("COD_PERFIL"))
+    AbrirConexao()
+    ppvConsultaPermissao = "SELECT p.CAMINHO_VALIDA FROM TB_ADM_PAGINAS_HABILITADAS p " & _
+        "WHERE p.CAMINHO_VALIDA IN ('ppv_ordens_servico.asp', 'ppv_produtos_etapas.asp', 'ppv_ordens_servico_triagem_inicial.asp', 'ppv_ordens_servico_triagem_despacho.asp', 'ppv_ordens_servico_triagem_entrega.asp', 'ppv_ordens_servico_os_manual_origem_vendas.asp', 'ppv_ordens_servico_triagem_entrega_correios.asp') " & _
+        "AND (COALESCE(p.HABILITADA_PARA_TODOS, 0) <> 2 OR EXISTS (" & _
+        "SELECT 1 FROM TB_ADM_PERFIS_PAGINAS_HABILITADAS a WHERE a.COD_PAGINA = p.COD_PAGINA " & _
+        "AND a.COD_PERFIL = " & ppvPerfilMenu & "))"
+    Set ppvRegistroPermissao = objConexao.Execute(ppvConsultaPermissao)
+    While Not ppvRegistroPermissao.Eof
+        ppvPaginasPermitidas(ppvRegistroPermissao("CAMINHO_VALIDA") & "") = True
+        ppvRegistroPermissao.MoveNext()
+    Wend
+    ppvRegistroPermissao.Close
+    Set ppvRegistroPermissao = Nothing
+%>
 <div class="subMenu">Submenu:
-    <% AbrirConexao() %>
+    <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico.asp") Then%>
     <a href="ppv_ordens_servico.asp">Ordens de Servi&ccedil;o</a>
-    	 | 
-    <%If validaUsuario(2,,54,true) Then%>
-        <a href="ppv_produtos_etapas.asp">Produtos Etapas</a>
-    <%Else%>    
-     	<button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Produtos Etapas</button>
-    <%End If%>
-    <!--
-     | 
-    <%If acesso_inclusao_exclusao_os_manual Then%>
-    	<a href="ppv_ordens_servico_formulario.asp?comando=incluir">Cadastrar OS Manual Sem Origem</a>
-    <%Else%>    
-      	<button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Cadastrar OS Manual Sem Origem</button>				
-    <%End If%>
-     -->
-     |
-    <%If validaUsuario(2,,52,true) Then%>
-    	   <a href="ppv_ordens_servico_triagem_inicial.asp">Triagem Inicial</a>
-    <%Else%>    
-       <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Inicial</button>
-    <%End If%>
-     | 
-    <%If validaUsuario(2,,53,true) Then%>
-    	<a href="ppv_ordens_servico_triagem_despacho.asp">Triagem Despacho</a>| 
-    	<a href="ppv_ordens_servico_triagem_entrega.asp">Triagem Entrega</a>                    	
-    <%Else%>    
-      	<button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Despacho</button>| 
-    	<button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Entrega</button>                    		                  	
-    <%End If%>
-     | 
-    <%If validaUsuario(2,,58,true) Then%>
-    	<a href="ppv_ordens_servico_os_manual_origem_vendas.asp">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</a>
-    <%Else%>    
-      	<button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</button>
-    <%End If%>                   
-     | 
-    <%If validaUsuario(2,,53,true) Then%>
-        <a href="ppv_ordens_servico_triagem_entrega_correios.asp">Retorno Correios</a>
     <%Else%>
-        <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Retorno Correios</button>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Ordens de Servi&ccedil;o</button>
+    <%End If%> |
+    <%If ppvPaginasPermitidas.Exists("ppv_produtos_etapas.asp") And validaUsuario(2,,54,true) Then%>
+    <a href="ppv_produtos_etapas.asp">Produtos Etapas</a>
+    <%Else%>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Produtos Etapas</button>
+    <%End If%> |
+    <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_inicial.asp") And validaUsuario(2,,52,true) Then%>
+    <a href="ppv_ordens_servico_triagem_inicial.asp">Triagem Inicial</a>
+    <%Else%>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Inicial</button>
+    <%End If%> |
+    <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_despacho.asp") And validaUsuario(2,,53,true) Then%>
+    <a href="ppv_ordens_servico_triagem_despacho.asp">Triagem Despacho</a>
+    <%Else%>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Despacho</button>
+    <%End If%> |
+    <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_entrega.asp") And validaUsuario(2,,53,true) Then%>
+    <a href="ppv_ordens_servico_triagem_entrega.asp">Triagem Entrega</a>
+    <%Else%>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Entrega</button>
+    <%End If%> |
+    <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_os_manual_origem_vendas.asp") And validaUsuario(2,,58,true) Then%>
+    <a href="ppv_ordens_servico_os_manual_origem_vendas.asp">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</a>
+    <%Else%>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</button>
+    <%End If%> |
+    <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_entrega_correios.asp") And validaUsuario(2,,53,true) Then%>
+    <a href="ppv_ordens_servico_triagem_entrega_correios.asp">Retorno Correios</a>
+    <%Else%>
+    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Retorno Correios</button>
     <%End If%>
-    </div>
-<% fecharConexao() %>
+</div>
+<%
+    FecharConexao()
+End If
+Set ppvPaginasPermitidas = Nothing
+%>
 <style>
 .subMenu .ppv-access-trigger {
     appearance:none; display:inline; padding:0; border:0; background:none;
