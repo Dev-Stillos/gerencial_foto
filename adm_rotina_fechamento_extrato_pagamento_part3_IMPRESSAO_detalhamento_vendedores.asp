@@ -86,8 +86,9 @@ End Function
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="all"></link>
+<link type="text/css" rel="stylesheet" href="css/base.css" media="all">
 <title>Extrato dos Vendedores</title>
 
 
@@ -97,9 +98,67 @@ End Function
     page-break-after: always;
 }
 -->
-</style></head>
+</style><style>
+* { box-sizing:border-box; }
+body { margin:0; background:#f6f7fb; color:#242738; font:14px/1.45 system-ui,Arial,sans-serif; }
+.cap-document { max-width:1400px; margin:14px auto; padding:clamp(12px,3vw,26px); border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.cap-doc-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:12px; margin-bottom:16px; border-bottom:2px solid #b20b61; }
+.cap-doc-header h1 { margin:0; font:700 clamp(18px,3vw,27px)/1.2 system-ui,sans-serif; }
+.cap-doc-logo { flex:none; width:clamp(95px,20vw,150px); height:auto; background:#292b40; border-radius:7px; }
+.cap-doc-toolbar { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.cap-doc-button { display:inline-block; padding:8px 12px; border:1px solid #d8d0e1; border-radius:7px; background:#fff; color:#88134f; font:600 13px/1.3 system-ui,sans-serif; cursor:pointer; }
+.cap-doc-primary { background:#b20b61; color:#fff; border-color:#b20b61; }
+.cap-doc-scroll { overflow-x:auto; }
+.cap-doc-scroll table { border-collapse:collapse; border:0; }
+.cap-doc-scroll th, .cap-doc-scroll td { padding:6px 5px; border-color:#e4dfeb; font-size:inherit; }
+.cap-doc-scroll th { background:#f3f0f7; color:#242738; }
+.cap-doc-scroll .folha { width:100%; margin:12px 0; border:1px solid #e4dfeb; border-radius:8px; }
+.cap-doc-scroll .folha td { padding:14px; }
+.cap-doc-scroll .folha p { margin:8px 0; }
+.cap-boleto-filter { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin:0 0 14px; padding:12px; background:#f7f5fa; border-radius:8px; }
+.cap-boleto-filter label { display:block; font-weight:600; }
+.cap-boleto-filter select, .cap-boleto-edit input[type=text] { display:block; max-width:100%; margin-top:4px; padding:7px; border:1px solid #d8d0e1; border-radius:6px; background:#fff; color:inherit; }
+.cap-boleto-table { width:100%; font-size:12px; }
+.cap-boleto-table tbody tr:nth-child(even) { background:#faf9fc; }
+.cap-boleto-status { display:inline-block; padding:3px 6px; border-radius:5px; white-space:nowrap; background:#f9e7ed; color:#86234a; }
+.cap-boleto-status.is-paid { background:#e5f2ea; color:#275e42; }
+.cap-boleto-edit { width:min(430px,calc(100% - 24px)); padding:20px; border:1px solid #e4dfeb; border-radius:12px; color:#242738; }
+.cap-boleto-edit::backdrop { background:#24273899; }
+.cap-boleto-edit h2 { margin-top:0; }
+@media screen and (max-width:720px) {
+  .cap-boleto-table, .cap-boleto-table tbody { display:block; }
+  .cap-boleto-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .cap-boleto-table tbody tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px; border:1px solid #e4dfeb; border-radius:8px; }
+  .cap-boleto-table td { display:block; text-align:left; overflow-wrap:anywhere; }
+  .cap-boleto-table td::before { content:attr(data-label); display:block; font-weight:650; }
+  .cap-boleto-table td[colspan] { grid-column:1/-1; }
+}
+@page { size:A4 landscape; margin:10mm; }
+@media print {
+  body { background:white; color:#111; font-size:9.5pt; }
+  .cap-document { max-width:none; margin:0; padding:5mm 8mm; border:0; }
+  .cap-doc-logo { width:32mm; background:transparent; filter:brightness(0); }
+  .cap-doc-header h1 { font-size:15pt; }
+  .cap-doc-toolbar, .cap-boleto-filter, .cap-boleto-edit, .cap-boleto-action { display:none !important; }
+  .cap-doc-scroll { overflow:visible; }
+  .cap-doc-scroll table { max-width:100%; }
+  .cap-doc-scroll th, .cap-doc-scroll td { padding:4px 3px; }
+  .cap-doc-scroll tr { break-inside:avoid; }
+  .cap-doc-scroll thead { display:table-header-group; }
+  .cap-extract-page-break { break-after:page; }
+  .cap-extract-page-break:last-child { break-after:auto; }
+  .cap-doc-scroll .folha { break-after:page; }
+  .cap-doc-scroll .folha:last-of-type { break-after:auto; }
+}
+</style>
+</head>
 
-<body bgcolor="#FFFFFF" style="background-color:#FFFFFF">
+<body class="cap-report-page">
+<main class="cap-document" data-cap-report>
+<%If Request.QueryString("modal") <> "1" Then%><div class="cap-doc-toolbar"><button class="cap-doc-button cap-doc-primary" type="button" onclick="window.print()">Imprimir / Salvar PDF</button></div><%End If%>
+<header class="cap-doc-header"><h1>Extrato de vendedores e coordenadores</h1><img class="cap-doc-logo" src="images/logoparafundopreto.png" alt="Stillos"></header>
+<div class="cap-doc-scroll">
+
 <%
 AbrirConexao()
 '//////////////////////////////////////////////////////////////
@@ -633,7 +692,7 @@ Set rsTotal = objConexao.Execute("SELECT COUNT(*) AS XPEDIDOS, SUM(TOTAL_DINHEIR
 				</table>
 		
 		<p><!-- pagebreak --></p>
-		<p style="page-break-after:always;"></p>
+		<div class="cap-extract-page-break"></div>
 	<%
 	rsMaster.MoveNext()
 	Wend
@@ -650,6 +709,7 @@ Else
 	Set rsMaster = Nothing
 	FecharConexao()
 %>
+</div></main>
 </body>
 </html>
 
