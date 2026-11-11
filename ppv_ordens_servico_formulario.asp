@@ -77,7 +77,7 @@ caminho_pagina = Replace(Request.ServerVariables("URL"),"/gerencial_foto/","")
 .os-detail .os-summary > tbody > tr > td[colspan] > br { display:none; }
 .os-form-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
 .dashboard-sidebar a[href="ppv_ordens_servico.asp"][aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
-.os-detail iframe { display:block; width:100%; height:230px; margin-top:10px; border:1px solid #eeeaf2; border-radius:8px; }
+.os-detail iframe { display:block; width:100%; height:1px; margin-top:10px; border:1px solid #eeeaf2; border-radius:8px; }
 .os-detail a:focus-visible { outline:2px solid #9e125c; outline-offset:2px; }
 @media (max-width:650px) {
     .os-detail fieldset.os-panel { padding:10px; }
@@ -604,7 +604,7 @@ End If
 <legend>Descrição / Histórico</legend>
     <%If comando <> "incluir" Then%>
     	<div align="center"><a href="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" target="_blank">Abrir Histórico em nova janela</a></div>
-      	<iframe title="Hist&oacute;rico da ordem de servi&ccedil;o" width="98%" height="220" src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" frameborder="0"></iframe>
+      	<iframe id="osHistoryFrame" title="Hist&oacute;rico da ordem de servi&ccedil;o" width="100%" height="1" src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" frameborder="0"></iframe>
      <%End if%>
 </fieldset>
 
@@ -717,6 +717,50 @@ return true
     <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
   </div>
 </div>
+<script>
+(function () {
+    var frame = document.getElementById('osHistoryFrame');
+    if (!frame) return;
+
+    var observer;
+    var pending = false;
+
+    function resizeHistory() {
+        if (pending) return;
+        pending = true;
+        window.requestAnimationFrame(function () {
+            pending = false;
+            var body = frame.contentDocument && frame.contentDocument.body;
+            if (!body) return;
+            var style = frame.contentWindow.getComputedStyle(body);
+            var height = Math.ceil(body.getBoundingClientRect().height
+                + parseFloat(style.marginTop || 0)
+                + parseFloat(style.marginBottom || 0)) + 4;
+            if (frame.style.height !== height + 'px') frame.style.height = height + 'px';
+        });
+    }
+
+    function observeHistory() {
+        if (observer) observer.disconnect();
+        var body = frame.contentDocument && frame.contentDocument.body;
+        if (!body) return;
+        if (window.ResizeObserver) {
+            observer = new ResizeObserver(resizeHistory);
+            observer.observe(body);
+        }
+        resizeHistory();
+        if (frame.contentDocument.fonts) {
+            frame.contentDocument.fonts.ready.then(resizeHistory);
+        }
+    }
+
+    frame.addEventListener('load', observeHistory);
+    window.addEventListener('resize', resizeHistory);
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+        observeHistory();
+    }
+})();
+</script>
 <script>
 (function () {
     var toggle = document.getElementById('ppvMenuToggle');
