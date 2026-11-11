@@ -37,6 +37,10 @@ End If
       .queue-actions, .queue-actions .btn { width:100%; }
       .queue-table th, .queue-table td { padding:10px 7px; }
     }
+    .queue-dialog { width:min(440px, calc(100% - 32px)); padding:24px; border:1px solid var(--line); border-radius:14px; color:var(--ink); background:#fff; box-shadow:0 18px 60px #24273833; }
+    .queue-dialog::backdrop { background:#24273899; }
+    .queue-dialog p { margin:10px 0 20px; }
+    .queue-dialog-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
   </style>
 </head>
 <body class="queue-page">
@@ -81,7 +85,15 @@ End If
           <%If Not rsFilaEtiquetas.Eof Then%>
           <div class="queue-actions">
             <a class="btn btn-primary" id="printLabels" href="dip_formandos_etiquetas.asp" target="Etiquetas">Imprimir etiquetas</a>
-            <button class="btn btn-outline-danger" id="clearLabels" type="button">Limpar fila</button>
+            <button class="btn btn-outline-danger" id="clearLabels" type="button" aria-haspopup="dialog">Limpar fila</button>
+            <dialog class="queue-dialog" id="clearLabelsDialog" aria-labelledby="clearLabelsTitle" aria-describedby="clearLabelsDescription">
+              <h2 id="clearLabelsTitle">Limpar etiquetas agendadas?</h2>
+              <p id="clearLabelsDescription">Todas as etiquetas da sua fila ser&atilde;o removidas. Confirme se a impress&atilde;o j&aacute; foi conclu&iacute;da.</p>
+              <form class="queue-dialog-actions" method="dialog">
+                <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+                <button class="btn btn-danger" value="limpar">Limpar fila</button>
+              </form>
+            </dialog>
           </div>
           <%End If%>
         </div>
@@ -132,8 +144,13 @@ End If
         });
     }
     if (clearButton) {
+        var clearDialog = document.getElementById('clearLabelsDialog');
         clearButton.addEventListener('click', function () {
-            if (window.confirm('Limpar todas as suas etiquetas agendadas? Confirme se a impress\u00e3o j\u00e1 foi conclu\u00edda.')) {
+            clearDialog.returnValue = '';
+            clearDialog.showModal();
+        });
+        clearDialog.addEventListener('close', function () {
+            if (clearDialog.returnValue === 'limpar') {
                 window.location.assign('?limpar_agendadas=sim');
             }
         });
