@@ -489,7 +489,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .ppv-page .ppv-guide summary { font-weight: 650; cursor: pointer; }
 .ppv-page .ppv-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 16px; border-top: 1px solid var(--line); }
 .ppv-page .ppv-page-count { padding: 6px 8px; color: #53566b; font-weight: 650; }
-.ppv-page .ppv-badge { display: inline-block; border-radius: 999px; padding: 4px 9px; font-weight: 650; white-space: nowrap; }
+.ppv-page .ppv-badge { display: inline-block; border-radius: 999px; padding: 4px 9px; font-weight: 650; white-space: normal; }
 .ppv-page .ppv-badge.late { background: #fbe7ed; color: #9b2044; }
 .ppv-page .ppv-badge.today { background: #fff1d6; color: #785100; }
 .ppv-page .ppv-badge.on-time { background: #e4f4ec; color: #215d44; }
@@ -771,7 +771,11 @@ sql = 	" SELECT "&_
 		
 			While not rs2.Eof
 			
-				sql = "SELECT * FROM VW_TB_ORDENS_SERVICO WHERE cod_formando = "&rs2("cod_formando")&" and cod_pedido = "&rs("cod_pedido")&sqlWhere&" order by numero_ordem_servico desc, numero_ordem_servico_indice asc"
+				sql = "SELECT VW_TB_ORDENS_SERVICO.*, " & _
+                   "CASE WHEN status_ordem_servico = 4 THEN (SELECT MAX(entrega.data) " & _
+                   "FROM TB_PEDIDOS_ITENS_ENTREGUES entrega " & _
+                   "WHERE entrega.cod_ordem_servico = VW_TB_ORDENS_SERVICO.cod_ordem_servico) END AS ppv_data_entrega " & _
+                   "FROM VW_TB_ORDENS_SERVICO WHERE cod_formando = "&rs2("cod_formando")&" and cod_pedido = "&rs("cod_pedido")&sqlWhere&" order by numero_ordem_servico desc, numero_ordem_servico_indice asc"
 			   'Response.Write(sql)
 			   Set rs3=objConexao.Execute(sql)
 			   	
@@ -874,7 +878,26 @@ sql = 	" SELECT "&_
                         End If
                     End If
 
-                    If CStr(rs3("status_ordem_servico")) <> "1" Then%>
+                    If CStr(rs3("status_ordem_servico")) = "4" Then
+                        Dim ppvDataEntrega, ppvPrazoGeral
+                        ppvDataEntrega = rs3("ppv_data_entrega").Value
+                        ppvPrazoGeral = rs3("prazo_geral").Value
+                        If Not IsDate(ppvDataEntrega) Then%>
+                            <span class="text-muted">Entrega sem data</span>
+                        <%ElseIf Not IsDate(ppvPrazoGeral) Then%>
+                            <span class="text-muted">Prazo geral indispon&iacute;vel</span>
+                        <%Else
+                            diferenca = DateDiff("d", DateValue(CDate(ppvPrazoGeral)), DateValue(CDate(ppvDataEntrega)))
+                            If diferenca > 0 Then%>
+                                <span class="ppv-badge late">Entregue com atraso &middot; <%=diferenca%> d</span>
+                            <%Else%>
+                                <span class="ppv-badge on-time">Entregue no prazo</span>
+                            <%End If
+                        End If
+                        If IsDate(ppvDataEntrega) Then%>
+                            <div class="text-muted"><%=Server.HTMLEncode(CStr(DateValue(CDate(ppvDataEntrega))))%></div>
+                        <%End If
+                    ElseIf CStr(rs3("status_ordem_servico")) <> "1" Then%>
                         <span class="text-muted">Sem etapa ativa</span>
                     <%ElseIf Not IsNumeric(diferenca) Then%>
                         <span class="text-muted">Prazo indispon&iacute;vel</span>
