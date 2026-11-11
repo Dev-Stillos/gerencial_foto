@@ -8,6 +8,13 @@ Dim busca_diferenca_etapa, busca_cod_formando
 
 Dim sql, sqlWhere, sqlOrderBy, sqlGroupBy
 
+Dim ppvSqlEntrega, ppvSqlPrazoGeral, ppvSqlPrazoEtapa
+ppvSqlEntrega = "(SELECT MAX(entrega.data) FROM TB_PEDIDOS_ITENS_ENTREGUES entrega " & _
+                "WHERE entrega.cod_ordem_servico = VW_TB_ORDENS_SERVICO.cod_ordem_servico)"
+ppvSqlPrazoGeral = "(CASE WHEN status_ordem_servico = 4 THEN DATEDIFF(" & ppvSqlEntrega & ", prazo_geral) " & _
+                   "WHEN status_ordem_servico IN (1, 2, 3) THEN DATEDIFF(CURDATE(), prazo_geral) END)"
+ppvSqlPrazoEtapa = "COALESCE(diferenca_etapa, DATEDIFF(CURDATE(), prazo_limite))"
+
 sqlOrderBy = "cod_contrato, nome_formando"
 busca_cod_ordem_servico = Cstr(""&Request.QueryString("cod_ordem_servico"))
 busca_status_ordem_servico = Cstr(""&Request.QueryString("status_ordem_servico"))
@@ -46,13 +53,13 @@ If Request.QueryString("filtro1") <> Empty Then
 				'Filtro adicional para OS em andamento
 					If busca_diferenca_etapa = "1" Then
 					'Somente OSs com etapa atual atrasada
-						sqlWhere = sqlWhere&" and diferenca_etapa > 0"
+						sqlWhere = sqlWhere&" and " & ppvSqlPrazoEtapa & " > 0"
 					Elseif  busca_diferenca_etapa = "2" Then
 					'Somente OSs com etapa atual vencendo na data atual
-						sqlWhere = sqlWhere&" and diferenca_etapa = 0"
+						sqlWhere = sqlWhere&" and " & ppvSqlPrazoEtapa & " = 0"
 					Elseif  busca_diferenca_etapa = "3" Then
 					'Somente OSs com etapa atual em dia
-						sqlWhere = sqlWhere&" and diferenca_etapa < 0"
+						sqlWhere = sqlWhere&" and " & ppvSqlPrazoEtapa & " < 0"
 					End If
 				End If
 				
@@ -71,9 +78,9 @@ If Request.QueryString("filtro1") <> Empty Then
 			End If
 			
 			If busca_prazo_geral_filtro = "1" Then
-				sqlWhere = sqlWhere&" and dias_prazo_geral < 0 and dias_prazo_geral IS NOT NULL"
+				sqlWhere = sqlWhere&" and " & ppvSqlPrazoGeral & " > 0"
 			Elseif busca_prazo_geral_filtro = "2" Then
-				sqlWhere = sqlWhere&" and dias_prazo_geral >= 0 and dias_prazo_geral IS NOT NULL"
+				sqlWhere = sqlWhere&" and " & ppvSqlPrazoGeral & " <= 0"
 			End if
 
 			
@@ -114,7 +121,7 @@ End If
 
 	If sqlWhere <> "" Then
 		'Retirar o "AND "
-		sqlWhere = Mid(sqlWhere,5,1000)
+		sqlWhere = Mid(sqlWhere,5)
 	End If
 
 
@@ -434,31 +441,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		}
 	}	
 </script>
-<style type="text/css">
-<!--
-.container_Faltam{
-	display:block;
-	width:80px;
-	color:#000;
-	font-weight:bold;
-	padding:3px;
-	border:solid 1px #FFF;
-}
-.container_Vencido{
-	display:block;
-	width:80px;
-	background-color:#C00;
-	color:#FFF;
-	padding:3px;
-	font-weight:bold;
-	border:solid 1px #FFF;
-}
-.container_Vencido:hover,.container_Faltam:hover{
-	cursor:pointer;
-	border:solid 1px #CCC;
-} 
--->
-</style>    
+    
 <link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
 <link rel="stylesheet" href="css/dashboard.css" />
 <style>
@@ -482,9 +465,8 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .ppv-page .ppv-list > thead > tr > th, .ppv-page .ppv-list > tbody > tr > td { padding: 10px; vertical-align: middle; border: 0; border-bottom: 1px solid #ececf2; font-size: 12px; }
 .ppv-page .ppv-list > tbody > tr.ppv-group > td { background: #f8f6fa; }
 .ppv-page .ppv-list > tbody > tr:not(.ppv-group):hover > td { background: #faf9fc; }
-.ppv-page .ppv-status, .ppv-page .container_Faltam, .ppv-page .container_Vencido { display: inline-block; width: auto; border: 0; border-radius: 6px; padding: 4px 7px; font-weight: 650; }
-.ppv-page .ppv-status, .ppv-page .container_Faltam { background: #f1eff8; color: #494168; }
-.ppv-page .container_Vencido { background: #fbe7ed; color: #9b2044; }
+.ppv-page .ppv-status { display: inline-block; width: auto; border: 0; border-radius: 6px; padding: 4px 7px; font-weight: 650; }
+.ppv-page .ppv-status { background: #f1eff8; color: #494168; }
 .ppv-page .ppv-guide { margin-top: 20px; height: auto; }
 .ppv-page .ppv-guide summary { font-weight: 650; cursor: pointer; }
 .ppv-page .ppv-pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; padding: 16px; border-top: 1px solid var(--line); }
@@ -621,8 +603,8 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
         <div><label for="ppv_prazo_geral_filtro">Prazo geral</label>
 <select id="ppv_prazo_geral_filtro" name="prazo_geral_filtro" class="form-select">
 		        <option value="" <%If busca_prazo_geral_filtro = "" Then%> selected="selected" <%End If%>>Todos</option>
-		        <option value="1" <%If busca_prazo_geral_filtro = "1" Then%> selected="selected" <%End If%>>1 - Prazo geral Vencido</option>
-		        <option value="2" <%If busca_prazo_geral_filtro = "2" Then%> selected="selected" <%End If%>>2 - Prazo geral N&atilde;o vencido</option>
+		        <option value="1" <%If busca_prazo_geral_filtro = "1" Then%> selected="selected" <%End If%>>Prazo geral vencido / entrega com atraso</option>
+		        <option value="2" <%If busca_prazo_geral_filtro = "2" Then%> selected="selected" <%End If%>>Prazo geral em dia / entrega no prazo</option>
 		       </select></div>
         <div><label for="ppv_cod_usuario_responsavel">Respons&aacute;vel pela etapa atual</label>
 <select id="ppv_cod_usuario_responsavel" name="cod_usuario_responsavel" class="form-select" <%If not validacao_listar_os_todos_usuarios Then%> disabled="disabled" <%End If%>>
@@ -772,9 +754,13 @@ sql = 	" SELECT "&_
 			While not rs2.Eof
 			
 				sql = "SELECT VW_TB_ORDENS_SERVICO.*, " & _
-                   "CASE WHEN status_ordem_servico = 4 THEN (SELECT MAX(entrega.data) " & _
-                   "FROM TB_PEDIDOS_ITENS_ENTREGUES entrega " & _
-                   "WHERE entrega.cod_ordem_servico = VW_TB_ORDENS_SERVICO.cod_ordem_servico) END AS ppv_data_entrega " & _
+                   ppvSqlPrazoGeral & " AS ppv_dias_prazo_geral, " & _
+                   ppvSqlPrazoEtapa & " AS ppv_dias_prazo_etapa, " & _
+                   "CASE WHEN status_ordem_servico = 4 THEN " & ppvSqlEntrega & _
+                   " WHEN status_ordem_servico IN (2, 3) THEN " & _
+                   "(SELECT CASE WHEN os.status_ordem_servico = 3 THEN os.data_despachado ELSE os.data_finalizado END " & _
+                   "FROM TB_ORDENS_SERVICO os WHERE os.cod_ordem_servico = VW_TB_ORDENS_SERVICO.cod_ordem_servico) " & _
+                   "END AS ppv_data_status " & _
                    "FROM VW_TB_ORDENS_SERVICO WHERE cod_formando = "&rs2("cod_formando")&" and cod_pedido = "&rs("cod_pedido")&sqlWhere&" order by numero_ordem_servico desc, numero_ordem_servico_indice asc"
 			   'Response.Write(sql)
 			   Set rs3=objConexao.Execute(sql)
@@ -818,30 +804,8 @@ sql = 	" SELECT "&_
 														<td data-label="Data de in&#237;cio"><div align="center"><%=ArrumaData(rs3("data_inicio"))%></div></td>
 														<td data-label="Prazo da etapa"><div align="center"><%=ArrumaData(rs3("prazo_limite"))%></div></td>
 														<td data-label="Data de cadastro"><div align="center"><%=ArrumaData(rs3("data_cadastrado"))%></div></td>
-														<td data-label="Prazo geral"><div align="center">
-														<%
-														temp = Cstr(""&rs3("dias_prazo_geral"))
-														temp2 = ""
-														If temp <> "" Then
-															temp = formatNumber(temp)
-															
-															If temp > 10 Then
-																temp2 = "Faltam"
-															Else if temp >=0 and temp <=10 Then
-																temp2 = "Faltam"
-															Else
-																temp2 = "Vencido"
-																temp = temp*-1
-															End If
-															%>
-															
-															<%End If%>
-															<div class="container_<%=temp2%>" onclick="alert('<%=temp2%>:  <%=int(temp)%> dias');"><%=ArrumaData(rs3("prazo_geral"))%></div>
-														<%Else%>
-														-
-														<%End If%>
-														</div></td>
-														<td data-label="Status"><div align="center"><span class="ppv-status"><%
+														<td data-label="Prazo geral"><div align="center"><%=ArrumaData(rs3("prazo_geral"))%></div></td>
+                    <td data-label="Status"><div align="center"><span class="ppv-status"><%
                     Select Case CStr(rs3("status_ordem_servico"))
                         Case "1": Response.Write "Em andamento"
                         Case "2": Response.Write "Aguardando despacho"
@@ -870,47 +834,51 @@ sql = 	" SELECT "&_
 														<td data-label="Situa&#231;&#227;o do prazo">
 														<div align="center">
 															<%
-                    diferenca = rs3("diferenca_etapa").Value
-                    If CStr(rs3("status_ordem_servico")) = "1" And Not IsNumeric(diferenca) Then
-                        prazo_limite = rs3("prazo_limite").Value
-                        If IsDate(prazo_limite) Then
-                            diferenca = DateDiff("d", DateValue(CDate(prazo_limite)), Date())
-                        End If
+                    Dim ppvStatus, ppvDataStatus, ppvRotuloPrazo
+                    ppvStatus = CStr(rs3("status_ordem_servico"))
+                    ppvDataStatus = rs3("ppv_data_status").Value
+                    diferenca = rs3("ppv_dias_prazo_geral").Value
+                    ppvRotuloPrazo = "Prazo geral"
+                    If ppvStatus = "1" Then
+                        diferenca = rs3("ppv_dias_prazo_etapa").Value
+                        ppvRotuloPrazo = "Etapa atual"
                     End If
 
-                    If CStr(rs3("status_ordem_servico")) = "4" Then
-                        Dim ppvDataEntrega, ppvPrazoGeral
-                        ppvDataEntrega = rs3("ppv_data_entrega").Value
-                        ppvPrazoGeral = rs3("prazo_geral").Value
-                        If Not IsDate(ppvDataEntrega) Then%>
-                            <span class="text-muted">Entrega sem data</span>
-                        <%ElseIf Not IsDate(ppvPrazoGeral) Then%>
-                            <span class="text-muted">Prazo geral indispon&iacute;vel</span>
-                        <%Else
-                            diferenca = DateDiff("d", DateValue(CDate(ppvPrazoGeral)), DateValue(CDate(ppvDataEntrega)))
-                            If diferenca > 0 Then%>
+                    Select Case ppvStatus
+                        Case "99"%>
+                            <span class="text-muted">Prazo n&atilde;o aplic&aacute;vel</span>
+                        <%Case "4"
+                            If Not IsDate(ppvDataStatus) Then%>
+                                <span class="text-muted">Entrega sem data</span>
+                            <%ElseIf Not IsNumeric(diferenca) Then%>
+                                <span class="text-muted">Prazo geral indispon&iacute;vel</span>
+                            <%ElseIf CDbl(diferenca) > 0 Then%>
                                 <span class="ppv-badge late">Entregue com atraso &middot; <%=diferenca%> d</span>
                             <%Else%>
                                 <span class="ppv-badge on-time">Entregue no prazo</span>
                             <%End If
-                        End If
-                        If IsDate(ppvDataEntrega) Then%>
-                            <div class="text-muted"><%=Server.HTMLEncode(CStr(DateValue(CDate(ppvDataEntrega))))%></div>
-                        <%End If
-                    ElseIf CStr(rs3("status_ordem_servico")) <> "1" Then%>
-                        <span class="text-muted">Sem etapa ativa</span>
-                    <%ElseIf Not IsNumeric(diferenca) Then%>
-                        <span class="text-muted">Prazo indispon&iacute;vel</span>
-                    <%Else
-                        diferenca = CDbl(diferenca)
-                        If diferenca > 0 Then%>
-                            <span class="ppv-badge late">Atrasada &middot; <%=diferenca%> d</span>
-                        <%ElseIf diferenca = 0 Then%>
-                            <span class="ppv-badge today">Vence hoje</span>
-                        <%Else%>
-                            <span class="ppv-badge on-time">No prazo &middot; <%=Abs(diferenca)%> d</span>
-                        <%End If
-                    End If%>
+                        Case "1", "2", "3"%>
+                            <div class="text-muted"><%=ppvRotuloPrazo%></div>
+                            <%If Not IsNumeric(diferenca) Then%>
+                                <span class="text-muted">Prazo indispon&iacute;vel</span>
+                            <%ElseIf CDbl(diferenca) > 0 Then%>
+                                <span class="ppv-badge late">Atraso &middot; <%=diferenca%> d</span>
+                            <%ElseIf CDbl(diferenca) = 0 Then%>
+                                <span class="ppv-badge today">Vence hoje</span>
+                            <%Else%>
+                                <span class="ppv-badge on-time">No prazo &middot; <%=Abs(CDbl(diferenca))%> d</span>
+                            <%End If
+                        Case Else%>
+                            <span class="text-muted">Prazo n&atilde;o avaliado</span>
+                    <%End Select
+                    If IsDate(ppvDataStatus) Then
+                        Select Case ppvStatus
+                            Case "2": ppvRotuloPrazo = "Finalizada em"
+                            Case "3": ppvRotuloPrazo = "Despachada em"
+                            Case "4": ppvRotuloPrazo = "Entregue em"
+                        End Select%>
+                        <div class="text-muted"><%=ppvRotuloPrazo%> <%=Server.HTMLEncode(CStr(DateValue(CDate(ppvDataStatus))))%></div>
+                    <%End If%>
                     </div>                                        </td>
 											</tr>
                 
