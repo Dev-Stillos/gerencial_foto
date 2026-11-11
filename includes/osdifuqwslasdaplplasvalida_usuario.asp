@@ -1,7 +1,7 @@
 <%
 Dim COD_USUARIO_INTERNO_LOGADO, COD_PERFIL_LOGADO, ENTRAR_Zz5487iO8Tttt, VALIDA_PAG, COD_PAGINA_USUARIO, sqlADM, rsADM, sqlADM2,rsADM2, ADM_HABILITADA_PARA_TODOS_AAS
 Dim redirecionaUsuario
-redirecionaUsuario = "https://stillos.com.br/gerencial_foto"
+redirecionaUsuario = "/gerencial_foto"
 COD_USUARIO_INTERNO_LOGADO 	= Session("COD_USUARIO")
 COD_PERFIL_LOGADO			= Session("COD_PERFIL")
 
@@ -10,14 +10,14 @@ VALIDA_PAG = Replace(VALIDA_PAG,"/loja/","")
 VALIDA_PAG = Replace(VALIDA_PAG,"/loja2/","")
 VALIDA_PAG = Replace(VALIDA_PAG,"/gerencial_foto/","")
 
-'Verifica se o usuário está logado
+'Verifica se o usuÃ¡rio estÃ¡ logado
 if COD_USUARIO_INTERNO_LOGADO=Empty OR VALIDA_PAG=Empty then
 Session.Abandon()
 Response.Redirect(redirecionaUsuario)		
 end if
 
 AbrirConexao() 
-'Verifica se a página solicitada possui cadastrada
+'Verifica se a pÃ¡gina solicitada possui cadastrada
 sqlADM2 = "SELECT * FROM TB_ADM_PAGINAS_HABILITADAS WHERE CAMINHO_VALIDA = '"&VALIDA_PAG&"' "
 Set rsADM2 = objConexao.execute(sqlADM2)
 
@@ -34,7 +34,7 @@ end if
 rsADM2.Close
 Set rsADM2=Nothing
 
-'VALIDA O USUÁRIO
+'VALIDA O USUÃRIO
 if ENTRAR_Zz5487iO8Tttt = True Then
 	sqlADM = "SELECT * FROM TB_ADM_PERFIS_PAGINAS_HABILITADAS WHERE COD_PERFIL = " &COD_PERFIL_LOGADO& " AND COD_PAGINA = "&COD_PAGINA_USUARIO
 	
@@ -42,7 +42,7 @@ if ENTRAR_Zz5487iO8Tttt = True Then
 		If Not rsADM.eof Then
 			ENTRAR_Zz5487iO8Tttt = True
 			
-			'Verifica se há sub-validações para página
+			'Verifica se hÃ¡ sub-validaÃ§Ãµes para pÃ¡gina
 			
 		sql="SELECT "&_
 			"TB_ADM_PAGINAS_HABILITADAS_SUB_VALIDACOES.COD_SUB_VALIDACAO, "&_
@@ -70,7 +70,7 @@ if ENTRAR_Zz5487iO8Tttt = True Then
 		
 			
 		ElseIf int(ADM_HABILITADA_PARA_TODOS_AAS) = 2 Then 
-		'Se ela não for habilitada para todos então bloqueia
+		'Se ela nÃ£o for habilitada para todos entÃ£o bloqueia
 			Session.Abandon()
 			Response.Redirect(redirecionaUsuario)	
 
