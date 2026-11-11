@@ -125,7 +125,10 @@ acesso_inclusao_exclusao_os_manual = validaUsuario(2,,51,false)
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triagem inicial | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
 <!-- #include virtual="gerencial_foto/files/includes/scripts.asp" -->
 	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
 <script language="JavaScript" type="text/javascript">
@@ -433,12 +436,6 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		}
 	}
 	
-	function confirmaTriagem(){
-		if(YNconfirm('Tem certeza que deseja efetuar a triagem das OSs?')){
-			document.TRIAGEM_INICIAL.submit();
-		}
-	}
-	
 	function selecionarVendedores(cod_pedido,cod_ordem_servico){
 		var temp = "", a = "", cod_usuario_responsavel = "";
 		var i=0
@@ -450,121 +447,90 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 			document.TRIAGEM_INICIAL["cod_usuario_responsavel_"+a[i]].value = cod_usuario_responsavel;
 		}		
 	}
-	function filtrarContrato(contrato){
-		if(contrato !== ''){
-			var d = document.FILTRO_PADRAO;
-			d.COD_CONTRATO.value = contrato;
-			d.submit();
-		}
-	}
 	
 	</script>
     
     
-    </head>
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td><!-- #include file="includes/menu.asp" --></td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr> 
-    <td valign="top" style="border:dotted 1px #999999">
-	
-	  <h2>PPV - Triagem Inicial de Ordens de Servi&ccedil;o</h2>
-         <br />
-      <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
-	  <br />
-   
-    <%
-	Dim sucesso, codmsg
-	codmsg	= CStr(""&Request.QueryString("codmsg"))
-	sucesso = CStr(""&Request.QueryString("sucesso"))
-		
-	If sucesso = "" and codmsg <> "" Then%>
-    	<div align="center" class="msgGrandeSucesso">
-        	<%
-			If codmsg = "201" Then	
-				Response.Write("Triagem inicial realizada com sucesso!")
-			End If	
-			%>
-            
-        
-        </div>
-        
-   <%End If %>
-
-
-      <form action="ppv_ordens_servico_triagem_inicial.asp" name="FILTRO_PADRAO" style="margin:0px">
-	  <table style="border:#999999 dashed 1px; padding:2px; background:#FFFFCC" width="99%" border="0" align="center" cellpadding="5" cellspacing="0">
-      <!--
-		  <tr>
-		    <td width="19%"><div align="right"><strong>Produto</strong></div></td>
-		    <td width="81%"><div align="left"><select name='COD_PRODUTO' class='inputTamanho3'>
-    <option value=''>Todos</option>
-    <%AbrirConexao()
-	
-    Set rsE3=objConexao.Execute("SELECT COD_PRODUTO, NOME_PRODUTO FROM TB_PRODUTOS WHERE ATIVO = 1 AND gera_ordem_servico_prazo_cliente > 0 ORDER BY NOME_PRODUTO ")
-    While not rsE3.Eof 
-    'Padrao
-    Dim selRelPadrao3, verificador3
-    verificador3 = ""&rsE3(0)
     
-    selRelPadrao3 = "" 
-    
-    
-    If CStr(verificador3) = CStr(busca_cod_produto)  Then%>
-    <option selected='selected' value="<%=rsE3(0)%>"><%=rsE3(1)%></option>
-    <%Else%>
-    <option value="<%=rsE3(0)%>"><%=rsE3(1)%></option>
-    <%End if%>
-    <%rsE3.MoveNext()
-    Wend
-    rsE3.Close
-    Set rsE3=Nothing
-    FecharConexao()%>
-    
-    </select></div></td>
-		    </tr>
-       -->
-            <tr>
-		    <td width="19%"><div align="right"><strong>Contrato</strong></div></td>
-		    <td width="81%"><div align="left"><input type="text" name="COD_CONTRATO" value="<%=busca_COD_CONTRATO%>" /></div></td>
-		    </tr>
-		  <tr>
-		    <td> </td>
-		    <td><div align="left">
-		      <input class="btnFiltrarAmarelo" type="submit" name="filtro1" value=" " />
-		      </div></td>
-		    </tr>
-        </table>
-      </form>
-        <br />
+<style>
+.triage-page .dashboard-main { min-width:0; }
+.triage-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.triage-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.triage-page .ppv-module { margin-bottom:20px; }
+.triage-page .subMenu { padding:12px 16px; border:1px solid var(--line); border-radius:10px; background:white; line-height:2; }
+.triage-page .subMenu [aria-current="page"] { font-weight:700; color:#88134f; }
+.triage-page .triage-panel { height:auto; margin-bottom:18px; padding:clamp(16px, 3vw, 26px); }
+.triage-heading { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.triage-heading h2 { color:#242738; }
+.triage-count { padding:4px 9px; border-radius:6px; background:#f3eaf3; color:#714064; font-weight:650; }
+.triage-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; }
+.triage-filter label { display:block; margin-bottom:5px; font-weight:600; }
+.triage-contracts { display:flex; flex-wrap:wrap; align-content:flex-start; gap:8px; max-height:200px; overflow:auto; padding:5px; margin:10px -5px 0; }
+.triage-contracts a { display:inline-flex; align-items:center; min-height:36px; padding:5px 10px; border:1px solid #e4dfeb; border-radius:7px; background:#faf8fc; color:#594660; text-decoration:none; font-weight:600; }
+.triage-contracts a:hover, .triage-contracts a[aria-current] { border-color:#b20b61; background:#faeaf3; color:#88134f; }
+.triage-contracts [hidden] { display:none; }
+.triage-contract-search { max-width:290px; }
+.triage-table { margin-bottom:0; }
+.triage-table th, .triage-table td { padding:12px 8px; vertical-align:top; overflow-wrap:anywhere; }
+.triage-table thead th, .triage-table .triage-order-group th { background:#f4f1f7; color:#42364e; }
+.triage-table .form-select { min-width:140px; }
+.triage-copy { margin-top:7px; white-space:normal; }
+.triage-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:16px; }
+.triage-dialog { width:min(450px, calc(100% - 24px)); padding:24px; border:1px solid var(--line); border-radius:14px; color:var(--ink); }
+.triage-dialog::backdrop { background:#24273899; }
+.triage-dialog p { margin:10px 0; }
+@media(max-width:1050px) {
+  .triage-table, .triage-table tbody { display:block; }
+  .triage-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .triage-order-group { display:block; margin-top:12px; }
+  .triage-order-group th { display:block; border-radius:7px; }
+  .triage-order { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-bottom:1px solid var(--line); }
+  .triage-order td { display:block; border:0; }
+  .triage-order td:last-child { grid-column:1/-1; }
+  .triage-order td::before { content:attr(data-label); display:block; margin-bottom:4px; color:#66586e; font-size:.85em; font-weight:700; }
+}
+@media(max-width:420px) {
+  .triage-filter > div, .triage-filter > button, .triage-contract-search { width:100%; }
+}
+</style>
+</head>
+<body class="triage-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><p class="eyebrow">PRODU&Ccedil;&Atilde;O P&Oacute;S-VENDA</p><h1>Triagem inicial</h1><p>Selecione um contrato e atribua respons&aacute;veis &agrave;s ordens de servi&ccedil;o.</p></div>
+        <a href="ppv_ordens_servico.asp" class="btn btn-outline-secondary">Voltar &agrave;s ordens</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+      <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
+        <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+      </nav>
 
-        <em><strong>Listagem em Ordem alfab&eacute;tica com todas OS, cuja as etapas iniciais estão em aberto e o nome da etapa é "Triagem".</strong></em><br />
-        <br />
-    	
+      <%If CStr("" & Request.QueryString("sucesso")) = "" And CStr("" & Request.QueryString("codmsg")) = "201" Then%>
+      <p class="alert alert-success" role="status">Triagem inicial realizada com sucesso.</p>
+      <%End If%>
+      <section class="dashboard-panel triage-panel" aria-labelledby="triage-filter-title">
+        <div class="triage-heading"><h2 id="triage-filter-title">Filtrar por contrato</h2></div>
+        <form class="triage-filter" action="ppv_ordens_servico_triagem_inicial.asp" method="get" name="FILTRO_PADRAO">
+          <input type="hidden" name="filtro1" value="1">
+          <div><label for="triage-contract">C&oacute;digo do contrato</label><input class="form-control" id="triage-contract" name="COD_CONTRATO" value="<%=Server.HTMLEncode(busca_COD_CONTRATO & "")%>"></div>
+          <button class="btn btn-primary" type="submit">Filtrar ordens</button>
+          <%If Len(busca_COD_CONTRATO & "") > 0 Then%><a class="btn btn-outline-secondary" href="ppv_ordens_servico_triagem_inicial.asp">Limpar filtro</a><%End If%>
+        </form>
+      </section>
         <%
 		AbrirConexao()
 		
@@ -581,35 +547,35 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		%>
         
         	
-            <div align="center" style="padding:10px; background-color:#F2F2F2">Qtd. Total Triagem Pendente Geral:  <strong><%=qtd_geral_triagem%></strong><br />Contratos: 
-            <%		
-			Dim contratos
-			contratos = ""
-			Set rsCont = objConexao.Execute("SELECT COD_CONTRATO FROM VW_TB_ORDENS_SERVICO WHERE descricao = 'triagem' AND status_ordem_servico = 1 GROUP BY COD_CONTRATO ORDER BY COD_CONTRATO ASC")
-			While not rsCont.Eof
-				If contratos="" Then
-					contratos = "<a href=""javascript:filtrarContrato('"&rsCont("COD_CONTRATO")&"')"">"&rsCont("COD_CONTRATO")&"</a>"
-				Else
-					contratos = contratos&", <a href=""javascript:filtrarContrato('"&rsCont("COD_CONTRATO")&"')"">"&rsCont("COD_CONTRATO")&"</a>"
-				End If
-			rsCont.MoveNext()
-			Wend
-			
-			rsCont.Close
-			Set rsCont = Nothing
-			
-			If contratos = "" Then
-				contratos = "NÃO HÁ ORDENS DE serviço PARA SEREM TRIADAS!"
-			End If
-			Response.Write(contratos)
-			%>
-            
-            </div>
-            <br />
-<br />
 
-        
-        
+      <section class="dashboard-panel triage-panel" aria-labelledby="triage-pending">
+        <div class="triage-heading">
+          <h2 id="triage-pending">Contratos com triagem pendente</h2>
+          <span class="triage-count"><%=qtd_geral_triagem%> OS no total</span>
+        </div>
+        <%
+        Dim codigoContratoTriagem
+        Set rsCont = objConexao.Execute("SELECT COD_CONTRATO FROM VW_TB_ORDENS_SERVICO WHERE descricao = 'triagem' AND status_ordem_servico = 1 GROUP BY COD_CONTRATO ORDER BY COD_CONTRATO ASC")
+        If rsCont.Eof Then%>
+        <p class="mb-0">Nenhuma ordem aguardando triagem.</p>
+        <%Else%>
+        <label class="form-label" for="triage-contract-search">Buscar na lista de contratos</label>
+        <input class="form-control triage-contract-search" id="triage-contract-search" type="search" autocomplete="off">
+        <nav class="triage-contracts" id="triage-contracts" aria-label="Contratos com triagem pendente">
+          <%While Not rsCont.Eof
+            codigoContratoTriagem = rsCont("COD_CONTRATO") & ""
+            If Len(Trim(codigoContratoTriagem)) > 0 Then%>
+          <a href="?filtro1=1&amp;COD_CONTRATO=<%=Server.URLEncode(codigoContratoTriagem)%>"<%If StrComp(codigoContratoTriagem, busca_COD_CONTRATO & "", 1) = 0 Then%> aria-current="true"<%End If%>><%=Server.HTMLEncode(codigoContratoTriagem)%></a>
+          <%End If
+            rsCont.MoveNext()
+          Wend%>
+        </nav>
+        <p id="triage-contract-empty" role="status" hidden>Nenhum contrato corresponde &agrave; busca.</p>
+        <%End If
+        rsCont.Close
+        Set rsCont = Nothing
+        %>
+      </section>
         <%If Request.QueryString("filtro1") <> Empty  Then%>
             
         <%
@@ -631,18 +597,24 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 			rs2.Close
 			Set rs2=Nothing
 		%>
-        <form name="TRIAGEM_INICIAL" action="ppv_ordens_servico_triagem_inicial.asp" method="post" style="margin:0px">
+        <section class="dashboard-panel triage-panel" aria-labelledby="triage-orders">
+        <div class="triage-heading">
+          <h2 id="triage-orders">Ordens para triagem</h2>
+          <span class="triage-count"><%=qtdOSs%> OS</span>
+        </div>
+        <form id="triage-form" name="TRIAGEM_INICIAL" action="ppv_ordens_servico_triagem_inicial.asp" method="post" style="margin:0px">
         	<input name="campo1" value="S" type="hidden" />
-            <table width="99%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-              <tr bgcolor="whitesmoke">
-        <td colspan="2"><div align="center"><strong> OS</strong></div></td>
-        <td width="11%"><div align="center"><strong>Formando</strong></div></td>
-        <td width="7%"><div align="center"><strong>Contrato</strong></div></td>
-        <td width="20%"><div align="center"><strong>Produto</strong></div></td>
-        <td width="13%"><div align="center"><strong>Data Cadastro</strong></div></td>
-        <td width="17%"><div align="center"><strong>Prazo Geral</strong></div></td>
-        <td width="24%"><div align="center"><strong>Respons&aacute;vel pela OS</strong></div></td>
-        </tr>
+            <table class="table triage-table" aria-labelledby="triage-orders" role="table">
+              <thead role="rowgroup"><tr role="row">
+                <th scope="col" role="columnheader">OS</th>
+                <th scope="col" role="columnheader">Formando</th>
+                <th scope="col" role="columnheader">Contrato</th>
+                <th scope="col" role="columnheader">Produto</th>
+                <th scope="col" role="columnheader">Cadastro</th>
+                <th scope="col" role="columnheader">Prazo geral</th>
+                <th scope="col" role="columnheader">Respons&aacute;vel pela OS</th>
+              </tr></thead>
+              <tbody role="rowgroup">
       <%
     
     'Neste momento que já passou o group by corrige o sqlWhere para o rs2
@@ -654,14 +626,10 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
     While not rs.Eof
     %>
         
-    <tr>
-                                <td colspan="8"><table width="650" border="0" cellspacing="0" cellpadding="1">
-                                  <tr>
-                                    <td class="textoMedio"><strong><%=rs("cod_pedido")%></strong>                                    </td>
-                                  </tr>
-                                </table></td>
-                              </tr>
-                              
+              <tr class="triage-order-group" role="row">
+                <th colspan="7" role="cell">Pedido #<%=rs("cod_pedido")%></th>
+              </tr>
+
            <%	   
            sql = "SELECT * FROM VW_TB_ORDENS_SERVICO WHERE cod_pedido = "&rs("cod_pedido")&sqlWhere&" order by numero_ordem_servico desc, numero_ordem_servico_indice asc"
            'Response.Write(sql)
@@ -684,10 +652,9 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
            
            %>                   
                               
-                <tr>
-                                            <td width="3%"><div align="right"><img src="images/icons/seta_superior.gif" width="19" height="15" /></div></td>
-                              <td width="5%"><div align="center"><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></div></td>
-                              <td><%
+                <tr class="triage-order" role="row">
+                              <td role="cell" data-label="OS"><strong><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></strong></td>
+                              <td role="cell" data-label="Formando"><%
 									sql = 	" SELECT "&_
 											" TB_PEDIDOS_FORMANDOS.COD_FORMANDO, "&_
 											" TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO, "&_
@@ -716,16 +683,11 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 														rs5.Close
 														Set rs5=Nothing
 														%></td>
-                              <td><%=(COD_CONTRATO)%></td>
-                                            <td><div align="left">
-                                            <%=rs2("nome_produto")%>                                        
-                                            </div></td>
-                                            <td><div align="center"><%=ArrumaData(rs2("data_cadastrado"))%></div></td>
-                                            <td><div align="center"> <%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></div></td>
-                                            <td><table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                              <tr>
-                                                <td><div align="center">
-                                                <%
+                              <td role="cell" data-label="Contrato"><%=(COD_CONTRATO)%></td>
+                                            <td role="cell" data-label="Produto"><%=rs2("nome_produto")%></td>
+                                            <td role="cell" data-label="Cadastro"><%=ArrumaData(rs2("data_cadastrado"))%></td>
+                                            <td role="cell" data-label="Prazo geral"><%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></td>
+                                            <td role="cell" data-label="Respons&aacute;vel pela OS"><%
 												ultimo_responsavel = ""
 												'Verifica último responsável, sem ser desta OS
 												Set rs3=objConexao.Execute("SELECT cod_usuario_responsavel, nome_formando FROM `VW_TB_ORDENS_SERVICO` WHERE cod_contrato = "&sqlTexto(rs2("cod_contrato"))&" and cod_ordem_servico <> "&rs2("cod_ordem_servico")&" and cod_produto = "&rs2("cod_produto")&" LIMIT 1")
@@ -738,8 +700,8 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 												%>
                                                 
                                                 
-                                                  <select class="inputTamanho2" name="cod_usuario_responsavel_<%=rs2("cod_ordem_servico")%>">
-                                                    <option value="" <%If ultimo_responsavel = "" or 1 = 1 Then%> selected="selected" <%End If%>></option>
+                                                  <select class="form-select" aria-label="Respons&aacute;vel pela OS <%=rs2("cod_ordem_servico")%>" name="cod_usuario_responsavel_<%=rs2("cod_ordem_servico")%>">
+                                                    <option value="" <%If ultimo_responsavel = "" or 1 = 1 Then%> selected="selected" <%End If%>>Selecione</option>
                                                     <%
                                             
                                             'Seleciona todos os funcion&aacute;rios ativos, exceto o usu&aacute;rio atual.
@@ -755,14 +717,10 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
                                             Set rs3=Nothing
                                         %>
                                                   </select>
-                                                </div></td>
-                                              </tr>
-                                              <%If qtdEncontrado > 1 and cont = 1 Then%>
-                                              <tr>
-                                                <td><div align="center"><a href="javascript:selecionarVendedores(<%=rs("cod_pedido")%>,<%=rs2("cod_ordem_servico")%>);">Marcar todas desta venda com o resp. acima</a></div></td>
-                                              </tr>
-                                              <%End If%>
-                                            </table></td>
+                                                <%If qtdEncontrado > 1 and cont = 1 Then%>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm triage-copy" onclick="selecionarVendedores(<%=rs("cod_pedido")%>,<%=rs2("cod_ordem_servico")%>)">Aplicar ao pedido</button>
+                                                <%End If%>
+                                            </td>
                               </tr>
                
                     
@@ -778,25 +736,30 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		   End If
 		   %>
            
-           <input type="hidden" name="marcar_<%=rs("cod_pedido")%>" value="<%=ordens_servico%>" />         
+           <tr hidden><td colspan="7"><input type="hidden" name="marcar_<%=rs("cod_pedido")%>" value="<%=ordens_servico%>" /></td></tr>         
     <%
     rs.MoveNext()
     Wend
     %>
-          <tr>
-                  <td colspan="8"><div align="center"><a href="javascript:confirmaTriagem();"><img border="0" src="images/layout/btnGravar.jpg" /></a></div></td>
-                  </tr>
-         
-          </table>
-      	</form>
+              </tbody>
+            </table>
+            <div class="triage-actions"><button type="button" class="btn btn-primary" id="triage-review" aria-haspopup="dialog">Concluir triagem</button></div>
+        </form>
+        <dialog class="triage-dialog" id="triage-confirm" aria-labelledby="triage-confirm-title" aria-describedby="triage-confirm-message">
+          <h2 id="triage-confirm-title">Concluir triagem?</h2>
+          <p id="triage-confirm-message">A etapa inicial ser&aacute; finalizada nas ordens com respons&aacute;vel selecionado.</p>
+          <form method="dialog" class="triage-actions">
+            <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+            <button class="btn btn-primary" value="confirmar">Confirmar triagem</button>
+          </form>
+        </dialog>
+        </section>
 
 
 <%
 	Else
 	%>
-    <div align="center" class="msgGrande">
-    Nenhuma OS encontrada para triagem!<br />
-</div>
+    <div class="dashboard-panel triage-panel" role="status">Nenhuma ordem encontrada para este filtro.</div>
     <%End if
 	
 	rs.Close
@@ -807,36 +770,66 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
     
     	<%Else%>
     	
-        <div class="msgGrande" align="center">Utilize o filtro por contrato para iniciar a triagem</div>
+        
         <%End if%>
-	  </p>
-	   <br />
-	   <br />
-       <strong>Observa&ccedil;&otilde;es:<br />
-       </strong>1) Ap&oacute;s a triagem a etapa 1 ser&aacute; finalizada<br />2) Virá pré-selecionado o último responsável pelo CONTRATO e PRODUTO, caso o sistema não encontrar um último responsável não haverá pré-seleção
-<p align="center"> </p>
-	    </td>
-    </tr>
-</table>
-<%
-FecharConexao()
-%>
+      <%FecharConexao()%>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
 
- 
-  
-  </td>
-    </tr>
-</table>
+(function () {
+    var submenuLink = document.querySelector('.ppv-module a[href="ppv_ordens_servico_triagem_inicial.asp"]');
+    if (submenuLink) submenuLink.setAttribute('aria-current', 'page');
 
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
+    var search = document.getElementById('triage-contract-search');
+    if (search) {
+        var links = document.querySelectorAll('#triage-contracts a');
+        var empty = document.getElementById('triage-contract-empty');
+        search.addEventListener('input', function () {
+            var term = search.value.trim().toUpperCase();
+            var hasMatch = false;
+            links.forEach(function (link) {
+                link.hidden = !link.textContent.trim().toUpperCase().includes(term);
+                if (!link.hidden) hasMatch = true;
+            });
+            empty.hidden = hasMatch;
+        });
+    }
 
-  </td>
-</tr>
-</table>
-
+    var review = document.getElementById('triage-review');
+    if (review) {
+        var dialog = document.getElementById('triage-confirm');
+        var form = document.getElementById('triage-form');
+        review.addEventListener('click', function () {
+            dialog.returnValue = '';
+            dialog.showModal();
+        });
+        dialog.addEventListener('close', function () {
+            if (dialog.returnValue === 'confirmar') form.submit();
+        });
+    }
+})();
+</script>
 </body>
 </html>
