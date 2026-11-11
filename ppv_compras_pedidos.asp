@@ -27,8 +27,14 @@ calendario_necessario = "SIM"
 .purchase-date button { padding:8px; }
 .purchase-results-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
 .purchase-results-heading span { color:#57566a; }
-.purchase-table { margin-bottom:0; }
-.purchase-table th, .purchase-table td { padding:10px 8px; vertical-align:top; overflow-wrap:anywhere; }
+.purchase-table-scroll { max-width:100%; overflow-x:auto; }
+.purchase-table { width:max-content; min-width:100%; margin-bottom:0; }
+.purchase-table th, .purchase-table td { padding:12px 10px; vertical-align:middle; overflow-wrap:normal; word-break:normal; }
+.purchase-table th { white-space:nowrap; }
+.purchase-table td:is(:nth-child(1), :nth-child(2), :nth-child(6), :nth-child(7)) { white-space:nowrap; }
+.purchase-table td:nth-child(3) { max-width:260px; min-width:140px; }
+.purchase-table td:nth-child(9) { max-width:210px; }
+.purchase-table td:nth-child(10) .purchase-status { white-space:nowrap; }
 .purchase-table thead th { background:#f4f1f7; color:#42364e; }
 .purchase-table td:first-child { font-weight:700; }
 .purchase-manual { display:block; color:#65546e; font-weight:600; }
@@ -38,26 +44,28 @@ calendario_necessario = "SIM"
 .purchase-row-actions { gap:4px; }
 .purchase-action { background:#fff; cursor:pointer; font-family:inherit; display:inline-block; padding:4px 6px; border:1px solid #e4dfeb; border-radius:5px; text-decoration:none; font-size:.87em; color:#88134f; }
 .purchase-action:hover { background:#f7edf3; color:#88134f; }
-.purchase-pagination { margin-top:16px; }
-.purchase-pagination .menu_paginacaocao { display:flex; flex-wrap:wrap; gap:4px; max-height:124px; overflow:auto; padding:4px; }
-.purchase-pagination .menu_paginacaocao :is(a,span) { padding:4px 7px; border:1px solid #e4dfeb; border-radius:5px; text-decoration:none; }
-.purchase-pagination .menu_paginacaocao span { background:#b20b61; color:white; }
+.purchase-pagination { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; margin-top:18px; padding-top:16px; border-top:1px solid #e4dfeb; }
+.purchase-pagination span { color:#57566a; }
+.purchase-row-actions .purchase-action { white-space:nowrap; }
 @media(max-width:1200px) {
-  .purchase-table, .purchase-table tbody { display:block; }
+  .purchase-table, .purchase-table tbody { display:block; width:100%; }
   .purchase-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
   .purchase-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:14px; border:1px solid #e4dfeb; border-radius:10px; overflow:hidden; }
   .purchase-row td:nth-child(1), .purchase-row td:nth-child(9) { background:#f4f1f7; padding:12px; }
   .purchase-row td:nth-child(1) { grid-row:1; grid-column:1; }
   .purchase-row td:nth-child(9) { grid-row:1; grid-column:2; }
-  .purchase-row td:nth-child(2), .purchase-row td:nth-child(3) { grid-column:1/-1; }
+  .purchase-row td:nth-child(2), .purchase-row td:nth-child(3), .purchase-row td:nth-child(6) { grid-column:1/-1; }
+  .purchase-row td:nth-child(3), .purchase-row td:nth-child(9) { max-width:none; min-width:0; }
+  .purchase-row td:nth-child(2) > div, .purchase-row td:nth-child(6) > div { overflow-x:auto; }
+  .purchase-row td:nth-child(7) { white-space:normal; }
   .purchase-row td:nth-child(2) { font-weight:700; }
   .purchase-row td:nth-child(4), .purchase-row td:nth-child(5) { background:#faf9fc; }
   .purchase-row td > div[align] { text-align:left; }
-  .purchase-row td:last-child { border-top:1px solid #e4dfeb; padding:10px; }
+  .purchase-row td:last-child { padding:10px; }
   .purchase-row .purchase-action { display:inline-flex; align-items:center; min-height:36px; padding:6px 9px; }
   .purchase-row td { display:block; border:0; }
   .purchase-row td::before { content:attr(data-label); display:block; color:#66586e; font-size:.85em; font-weight:700; }
-  .purchase-row td:last-child { grid-column:1/-1; }
+  .purchase-row td:last-child { grid-column:1/-1; border-top:1px solid #e4dfeb; }
 }
 @media(max-width:640px) {
   .purchase-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -373,6 +381,7 @@ If comprasAcaoNegada Then
 
 	If not rs.Eof Then
 		If paginacaocao > 0 Then
+			If paginacaocao > rs.PageCount Then paginacaocao = rs.PageCount
 			rs.AbsolutePage=paginacaocao
 		Else
 			paginacaocao = 1
@@ -421,6 +430,7 @@ If comprasAcaoNegada Then
   <div><h2 id="purchase-results-title">Pedidos encontrados</h2><span><%=rs.RecordCount%> pedidos</span></div>
   <span>P&aacute;gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%></span>
 </div>
+<div class="purchase-table-scroll" role="region" aria-labelledby="purchase-results-title" tabindex="0">
 <table class="table purchase-table" role="table" aria-labelledby="purchase-results-title">
 <thead role="rowgroup"><tr role="row">
 <th role="columnheader" scope="col">Pedido</th>
@@ -504,8 +514,7 @@ If Not rs.Eof Then
 		 'Impress&atilde;o somente se o status do pedido de compra for Enviado para o fornecedor, pois neste caso j&aacute; foi aprovado e mudado o status para Enviado para fornecedor para for&ccedil;ar o usu&aacute;rio a mudar o status para Enviado para Fornecedor e ter como controlar a data que foi enviado.
 		If status_pedido_compra > 1  Then%>
          <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_imprimir.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener">
-          Pedido (2&ordf; via)</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">" target="_blank" rel="noopener">
-          Pedido (2&ordf; via)</button><%End If%>
+          Pedido (2&ordf; via)</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Pedido (2&ordf; via)</button><%End If%>
           <%
 		 End If
 
@@ -519,8 +528,7 @@ If Not rs.Eof Then
        
             <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=visualizar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
           Ver
-          </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">">
-          Ver</button><%End If%>
+          </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Ver</button><%End If%>
         
         
         <%
@@ -533,14 +541,12 @@ If Not rs.Eof Then
 			
                     
                         <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=alterar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
-              Editar</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">">
-              Editar</button><%End If%> 	 	
+              Editar</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Editar</button><%End If%> 	 	
        
 			<%If  int(status_pedido_compra) <> 99 Then%>
               <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=excluir&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
               Excluir
-              </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">">
-              Excluir</button><%End If%>
+              </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Excluir</button><%End If%>
           	 <%End If%>
         <%End If%>
         </div></td>
@@ -552,8 +558,28 @@ Next
 %>
 </tbody>
 </table>
-<%If rs.PageCount > 1 Then%>
-<nav class="purchase-pagination" aria-label="P&aacute;ginas dos pedidos"><%Call paginacao(paginacaocao,rs.PageCount)%></nav>
+</div>
+<%If rs.PageCount > 1 Then
+    Dim comprasLinkPagina, comprasParametroPagina
+    comprasLinkPagina = "ppv_compras_pedidos.asp?"
+    For Each comprasParametroPagina In Array("filtro", "filtro1", "NUMERO_PEDIDO_COMPRAS", "CADASTRO_COD_USUARIO", "status_pedido_compra", "COD_FORNECEDOR", "DATA_CADASTRO_INICIO", "DATA_CADASTRO_FIM")
+        If Len(Request.QueryString(comprasParametroPagina) & "") > 0 Then
+            comprasLinkPagina = comprasLinkPagina & comprasParametroPagina & "=" & Server.URLEncode(Request.QueryString(comprasParametroPagina) & "") & "&"
+        End If
+    Next
+    comprasLinkPagina = Server.HTMLEncode(comprasLinkPagina & "paginacao=")
+%>
+<nav class="purchase-pagination" aria-label="P&aacute;ginas dos pedidos">
+    <%If paginacaocao > 1 Then%>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina%>1">Primeira</a>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina & (paginacaocao - 1)%>">Anterior</a>
+    <%End If%>
+    <span>P&aacute;gina <strong><%=paginacaocao%></strong> de <%=rs.PageCount%></span>
+    <%If paginacaocao < rs.PageCount Then%>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina & (paginacaocao + 1)%>">Pr&oacute;xima</a>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina & rs.PageCount%>">&Uacute;ltima</a>
+    <%End If%>
+</nav>
 <%End If%>
 </section>
 <%Else%>
