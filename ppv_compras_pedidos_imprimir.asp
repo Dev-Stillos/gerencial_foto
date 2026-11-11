@@ -98,12 +98,15 @@ dd { margin:2px 0 0; overflow-wrap:anywhere; }
   .report-table td, .report-table tfoot th { display:block; border:0; text-align:left; }
   .report-table td::before { content:attr(data-label); display:block; font-size:.8em; color:#57566a; font-weight:650; }
 }
-@page { size:A4 portrait; margin:12mm; }
+@page { size:A4 portrait; margin:10mm; }
 @media print {
-  body { background:#fff; color:#111; font-size:9pt; }
+  body { background:#fff; color:#111; font-size:10pt; }
   .report-toolbar { display:none; }
   .report-logo { width:38mm; background:transparent; filter:brightness(0); }
-  .report { max-width:none; margin:0; padding:0; border:0; }
+  .report { max-width:none; margin:0; padding:5mm 8mm 4mm; border:0; }
+  .report-header h1 { font-size:17pt; }
+  .report-table { font-size:9.5pt; }
+  .report-table th, .report-table td { padding:5px 4px; }
   .report-table thead { display:table-header-group; }
   .report-table tr, .report-signatures, .report-totals { break-inside:avoid; }
   h2 { break-after:avoid; }
