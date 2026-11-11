@@ -161,7 +161,7 @@ Sub ExibirPainelTriagem(ByVal modo)
             "LEFT JOIN TB_ADM_USUARIOS u ON u.cod_usuario = e.cod_usuario_responsavel ORDER BY ordens.cod_ordem_servico DESC, e.numero_etapa"
         Set registros = objConexao.Execute(consulta)
 %>
-        <h3>Contrato <%=Server.HTMLEncode(codigo)%></h3>
+        <h3 class="triage-history-title">Contrato <%=Server.HTMLEncode(codigo)%></h3>
         <p>In&iacute;cio, t&eacute;rmino e respons&aacute;vel registrado em cada etapa. As ordens seguem as permiss&otilde;es do seu perfil.</p>
         <% If registros.Eof Then %><p>Nenhuma etapa dispon&iacute;vel para exibi&ccedil;&atilde;o.</p><% End If %>
         <% osAnterior = ""
@@ -181,9 +181,9 @@ Sub ExibirPainelTriagem(ByVal modo)
         <% End If %>
             <li>
                 <strong><%=Server.HTMLEncode(registros("numero_etapa") & ". " & registros("descricao"))%></strong>
-                <span>In&iacute;cio <%=TextoPainelTriagem(registros("data_inicio"))%></span>
-                <span>T&eacute;rmino <%=TextoPainelTriagem(registros("data_termino"))%></span>
-                <span>Respons&aacute;vel <%=TextoPainelTriagem(registros("responsavel"))%></span>
+                <span><b>In&iacute;cio</b><%=TextoPainelTriagem(registros("data_inicio"))%></span>
+                <span><b>T&eacute;rmino</b><%=TextoPainelTriagem(registros("data_termino"))%></span>
+                <span><b>Respons&aacute;vel</b><%=TextoPainelTriagem(registros("responsavel"))%></span>
             </li>
         <%     registros.MoveNext()
            Loop
@@ -600,12 +600,12 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .triage-count { padding:4px 9px; border-radius:6px; background:#f3eaf3; color:#714064; font-weight:650; }
 .triage-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; }
 .triage-filter label { display:block; margin-bottom:5px; font-weight:600; }
-.triage-browser {
+.triage-dialog.triage-browser {
   box-sizing:border-box;
-  width:min(1180px, calc(100% - 48px));
+  width:min(1440px, calc(100% - 48px));
   max-width:none;
-  height:min(820px, 88vh);
-  height:min(820px, 88dvh);
+  height:calc(100vh - 48px);
+  height:calc(100dvh - 48px);
   max-height:none;
   padding:0;
   overflow:hidden;
@@ -621,8 +621,10 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .triage-history-os { padding:12px; margin:10px 0; border:1px solid var(--line); border-radius:8px; }
 .triage-history-os summary { font-weight:700; cursor:pointer; }
 .triage-history-steps { margin:8px 0 0; }
-.triage-history-steps li { display:flex; flex-wrap:wrap; gap:6px 16px; padding:8px 0; border-top:1px solid var(--line); }
-.triage-history-steps strong { flex-basis:100%; }
+.triage-history-title { margin:16px 0 6px; color:var(--ink); font:700 1.25rem/1.3 system-ui,sans-serif; }
+.triage-history-steps li { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px 16px; padding:12px 0; border-top:1px solid var(--line); overflow-wrap:anywhere; }
+.triage-history-steps strong { grid-column:1/-1; }
+.triage-history-steps span b { display:block; font-size:.85em; color:#55475e; }
 .triage-table { margin-bottom:0; }
 .triage-table th, .triage-table td { padding:12px 8px; vertical-align:top; overflow-wrap:anywhere; }
 .triage-table thead th, .triage-table .triage-order-group th { background:#f4f1f7; color:#42364e; }
@@ -643,7 +645,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
   .triage-order td::before { content:attr(data-label); display:block; margin-bottom:4px; color:#66586e; font-size:.85em; font-weight:700; }
 }
 @media(max-width:640px) {
-  .triage-browser {
+  .triage-dialog.triage-browser {
     width:calc(100% - 16px);
     height:calc(100vh - 16px);
     height:calc(100dvh - 16px);
@@ -652,7 +654,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
   .triage-browser-header h2 { min-width:0; overflow-wrap:anywhere; }
   .triage-browser .triage-modal-list li { flex-direction:column; align-items:stretch; }
   .triage-browser .triage-modal-list .triage-modal-actions > .btn { flex:1 1 130px; }
-  .triage-browser .triage-history-steps li { flex-direction:column; }
+  .triage-browser .triage-history-steps li { grid-template-columns:minmax(0,1fr); }
 }
 @media(max-width:420px) {
   .triage-filter > div, .triage-filter > button { width:100%; }
