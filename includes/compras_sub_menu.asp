@@ -3,35 +3,56 @@ Dim comprasPaginaAtual
 comprasPaginaAtual = LCase(Request.ServerVariables("URL") & "")
 comprasPaginaAtual = Mid(comprasPaginaAtual, InStrRev(comprasPaginaAtual, "/") + 1)
 AbrirConexao()
+Dim comprasPaginasPermitidas, comprasRegistroPermissao, comprasSqlPermissao
+Set comprasPaginasPermitidas = Server.CreateObject("Scripting.Dictionary")
+comprasPaginasPermitidas.CompareMode = 1
+If IsNumeric(Session("COD_PERFIL") & "") Then
+    comprasSqlPermissao = "SELECT p.CAMINHO_VALIDA FROM TB_ADM_PAGINAS_HABILITADAS p " & _
+        "WHERE p.CAMINHO_VALIDA IN ('ppv_compras_pedidos.asp', 'ppv_compras_pedidos_formulario.asp', 'ppv_fornecedores.asp', 'ppv_formas_recebimento.asp', 'ppv_formas_pagamento.asp', 'ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp', 'ppv_compras_pedidos_produtos_solicitados.asp', 'ppv_compras_pedidos_imprimir.asp') " & _
+        "AND (COALESCE(p.HABILITADA_PARA_TODOS, 0) <> 2 OR EXISTS (" & _
+        "SELECT 1 FROM TB_ADM_PERFIS_PAGINAS_HABILITADAS a WHERE a.COD_PAGINA = p.COD_PAGINA " & _
+        "AND a.COD_PERFIL = " & CLng(Session("COD_PERFIL")) & "))"
+    Set comprasRegistroPermissao = objConexao.Execute(comprasSqlPermissao)
+    While Not comprasRegistroPermissao.Eof
+        comprasPaginasPermitidas(comprasRegistroPermissao("CAMINHO_VALIDA") & "") = True
+        comprasRegistroPermissao.MoveNext()
+    Wend
+    comprasRegistroPermissao.Close
+    Set comprasRegistroPermissao = Nothing
+End If
 %>
 <div class="compras-shared-menu" role="navigation" aria-label="Compras">
+    <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos.asp") Then%>
     <a class="compras-shared-item" href="ppv_compras_pedidos.asp"<%If comprasPaginaAtual = "ppv_compras_pedidos.asp" Then%> aria-current="page"<%End If%>>Compras</a>
-    <%If validaUsuario(2,,61,true) Then%>
+    <%Else%>
+    <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Compras</button>
+    <%End If%>
+    <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") And validaUsuario(2,,61,true) Then%>
     <a class="compras-shared-item" href="ppv_compras_pedidos_formulario.asp"<%If comprasPaginaAtual = "ppv_compras_pedidos_formulario.asp" And Len(Request.QueryString("comando") & "") = 0 Then%> aria-current="page"<%End If%>>Novo Pedido de Compra (manual)</a>
     <%Else%>
     <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Novo Pedido de Compra (manual)</button>
     <%End If%>
-    <%If validaUsuario(2,,61,true) Then%>
+    <%If comprasPaginasPermitidas.Exists("ppv_fornecedores.asp") And validaUsuario(2,,61,true) Then%>
     <a class="compras-shared-item" href="ppv_fornecedores.asp"<%If comprasPaginaAtual = "ppv_fornecedores.asp" Then%> aria-current="page"<%End If%>>Fornecedores</a>
     <%Else%>
     <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Fornecedores</button>
     <%End If%>
-    <%If validaUsuario(2,,63,true) Then%>
+    <%If comprasPaginasPermitidas.Exists("ppv_formas_recebimento.asp") And validaUsuario(2,,63,true) Then%>
     <a class="compras-shared-item" href="ppv_formas_recebimento.asp"<%If comprasPaginaAtual = "ppv_formas_recebimento.asp" Then%> aria-current="page"<%End If%>>Formas de Recebimento</a>
     <%Else%>
     <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Formas de Recebimento</button>
     <%End If%>
-    <%If validaUsuario(2,,62,true) Then%>
+    <%If comprasPaginasPermitidas.Exists("ppv_formas_pagamento.asp") And validaUsuario(2,,62,true) Then%>
     <a class="compras-shared-item" href="ppv_formas_pagamento.asp"<%If comprasPaginaAtual = "ppv_formas_pagamento.asp" Then%> aria-current="page"<%End If%>>Formas de Pagamento</a>
     <%Else%>
     <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Formas de Pagamento</button>
     <%End If%>
-    <%If validaUsuario(2,,60,true) Then%>
+    <%If comprasPaginasPermitidas.Exists("ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp") And validaUsuario(2,,60,true) Then%>
     <a class="compras-shared-item" href="ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp"<%If comprasPaginaAtual = "ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp" Then%> aria-current="page"<%End If%>>Gera&ccedil;&atilde;o de Pedidos de Compra com origem em Ordens de Servi&ccedil;o</a>
     <%Else%>
     <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Gera&ccedil;&atilde;o de Pedidos de Compra com origem em Ordens de Servi&ccedil;o</button>
     <%End If%>
-    <%If validaUsuario(2,,60,true) Then%>
+    <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_produtos_solicitados.asp") And validaUsuario(2,,60,true) Then%>
     <a class="compras-shared-item" href="ppv_compras_pedidos_produtos_solicitados.asp"<%If comprasPaginaAtual = "ppv_compras_pedidos_produtos_solicitados.asp" Then%> aria-current="page"<%End If%>>Produtos Solicitados</a>
     <%Else%>
     <button type="button" class="compras-shared-item compras-access-trigger" aria-haspopup="dialog">Produtos Solicitados</button>
@@ -83,10 +104,12 @@ AbrirConexao()
 <script>
 (function () {
     var dialog = document.getElementById('comprasAccessDialog');
-    document.querySelectorAll('.compras-shared-menu .compras-access-trigger').forEach(function (button) {
-        button.addEventListener('click', function () {
-            dialog.showModal();
-        });
+    if (typeof dialog.showModal !== 'function') return;
+    document.addEventListener('click', function (event) {
+        if (event.target.closest('.compras-access-trigger') && !dialog.open) dialog.showModal();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('purchase-access-denied') && !dialog.open) dialog.showModal();
     });
 })();
 </script>
