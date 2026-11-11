@@ -90,6 +90,16 @@
 .cap-help p { margin:10px 0 0; }
 .cap-dialog { box-sizing:border-box; width:min(480px,calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:22px; border:1px solid #e4dfeb; border-radius:14px; color:var(--ink); }
 .cap-reports-dialog { width:min(720px,calc(100% - 24px)); }
+.cap-reports-dialog.is-preview { width:min(1440px,calc(100% - 24px)); padding:0; overflow:hidden; }
+.cap-reports-dialog.is-preview[open] { display:flex; flex-direction:column; }
+.cap-reports-dialog.is-preview .cap-preview-heading { padding:12px 16px; margin:0; border-bottom:1px solid #e4dfeb; }
+.cap-preview-frame { display:block; width:100%; height:82vh; height:82dvh; min-height:0; border:0; background:#f6f7fb; }
+.cap-preview-frame[hidden] { display:none; }
+.cap-preview-status { padding:0 16px; }
+@media(max-width:600px) {
+  .cap-reports-dialog.is-preview { max-height:calc(100dvh - 12px); width:calc(100% - 12px); }
+  .cap-preview-frame { height:78dvh; }
+}
 .cap-dialog::backdrop { background:#24273899; }
 .cap-dialog p { margin:10px 0; }
 .cap-report-meta { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 18px; padding:12px; border-radius:8px; background:#f7f5fa; }
@@ -332,7 +342,7 @@ If sucesso = "" And codmsg = "1" Then%>
             </dl>
             <h3 class="cap-modal-section">Relat&oacute;rios do per&iacute;odo</h3>
             <div class="cap-report-grid"><div class="cap-report"><%If acesso_4 Then%>
-                            	<a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_recibo_extenso_agrupado.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Recibos</span><span aria-hidden="true">&#8599;</span></a>
+                            	<a class="btn btn-outline-secondary" data-cap-preview target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_recibo_extenso_agrupado.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Recibos</span><span aria-hidden="true">&rarr;</span></a>
                             <%Else
 							Response.Write("<span class=""cap-muted"">Recibos &middot; acesso restrito</span>")
 							
@@ -341,7 +351,7 @@ If sucesso = "" And codmsg = "1" Then%>
                                 
 				            
 				              <div class="cap-report"><%If acesso_2 Then%>
-				              <a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_detalhamento_vendedores.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Extrato de vendedores e coordenadores</span><span aria-hidden="true">&#8599;</span></a>
+				              <a class="btn btn-outline-secondary" data-cap-preview target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_detalhamento_vendedores.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Extrato de vendedores e coordenadores</span><span aria-hidden="true">&rarr;</span></a>
 				              <%Else
 							Response.Write("<span class=""cap-muted"">Extrato de vendedores &middot; acesso restrito</span>")
 							
@@ -350,7 +360,7 @@ If sucesso = "" And codmsg = "1" Then%>
 				              
 				            
 				              <div class="cap-report"><%If acesso_3 Then%>
-				              <a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_folha_geral.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Folha Geral</span><span aria-hidden="true">&#8599;</span></a><%Else
+				              <a class="btn btn-outline-secondary" data-cap-preview target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_folha_geral.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Folha Geral</span><span aria-hidden="true">&rarr;</span></a><%Else
 							Response.Write("<span class=""cap-muted"">Folha geral &middot; acesso restrito</span>")
 							
 							End If
@@ -373,7 +383,7 @@ If sucesso = "" And codmsg = "1" Then%>
 									If temBoleto Then
 								%>
 									<a href="adm_controle_no_extrato_comissao_vendedores_boletos.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>" 
-									class="btn btn-outline-secondary" target="_blank" rel="noopener"><span>Comiss&atilde;o por boleto</span><span aria-hidden="true">&#8599;</span></a>
+									class="btn btn-outline-secondary" data-cap-preview target="_blank" rel="noopener"><span>Comiss&atilde;o por boleto</span><span aria-hidden="true">&rarr;</span></a>
 								<% Else %>
 									<span class="cap-muted">Sem pagamentos por boleto</span>
 								<% 
@@ -421,8 +431,17 @@ FecharConexao()
 </details>
 
 <dialog class="cap-dialog cap-reports-dialog" id="cap-reports" aria-labelledby="cap-reports-title">
-  <header class="cap-heading"><h2 id="cap-reports-title">Relat&oacute;rios do fechamento</h2><form method="dialog"><button class="btn btn-outline-secondary btn-sm" autofocus>Fechar</button></form></header>
+  <header class="cap-heading cap-preview-heading">
+    <h2 id="cap-reports-title">Relat&oacute;rios do fechamento</h2>
+    <div class="cap-actions">
+      <button class="btn btn-outline-secondary btn-sm" type="button" id="cap-preview-back" hidden>Voltar aos relat&oacute;rios</button>
+      <button class="btn btn-primary btn-sm" type="button" id="cap-preview-print" hidden disabled>Imprimir / Salvar PDF</button>
+      <form method="dialog"><button class="btn btn-outline-secondary btn-sm" autofocus>Fechar</button></form>
+    </div>
+  </header>
   <div id="cap-reports-content"></div>
+  <p class="cap-preview-status" id="cap-preview-status" role="status" hidden></p>
+  <iframe class="cap-preview-frame" id="cap-preview-frame" title="Pr&eacute;via do relat&oacute;rio" hidden></iframe>
 </dialog>
 <dialog class="cap-dialog" id="cap-delete" aria-labelledby="cap-delete-title" aria-describedby="cap-delete-message">
   <h2 id="cap-delete-title">Excluir fechamento?</h2>
@@ -479,16 +498,47 @@ FecharConexao()
     var ranking = document.getElementById('cap-ranking');
     var rankFrom = document.getElementById('cap-ranking-from');
     var rankTo = document.getElementById('cap-ranking-to');
-    var deletePeriod;
+    var deletePeriod, periodTitle, previewLink;
+    var frame = document.getElementById('cap-preview-frame');
+    var back = document.getElementById('cap-preview-back');
+    var printButton = document.getElementById('cap-preview-print');
+    var status = document.getElementById('cap-preview-status');
+
+    function showReports() {
+        reports.classList.remove('is-preview');
+        title.textContent = periodTitle;
+        content.hidden = false;
+        frame.hidden = back.hidden = printButton.hidden = status.hidden = true;
+        printButton.disabled = true;
+        frame.removeAttribute('src');
+    }
 
     document.querySelectorAll('.cap-details').forEach(function (button) {
         button.addEventListener('click', function () {
-            title.textContent = 'Fechamento de ' + button.dataset.period;
+            periodTitle = 'Fechamento de ' + button.dataset.period;
+            showReports();
             content.replaceChildren(button.nextElementSibling.content.cloneNode(true));
             reports.showModal();
         });
     });
     content.addEventListener('click', function (event) {
+        var link = event.target.closest('[data-cap-preview]');
+        if (link && !(event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)) {
+            event.preventDefault();
+            previewLink = link;
+            var url = new URL(link.href);
+            url.searchParams.set('modal', '1');
+            reports.classList.add('is-preview');
+            title.textContent = link.querySelector('span').textContent.trim();
+            frame.title = title.textContent;
+            content.hidden = true;
+            frame.hidden = back.hidden = printButton.hidden = status.hidden = false;
+            printButton.disabled = true;
+            status.textContent = 'Carregando relatório...';
+            frame.src = url.href;
+            back.focus();
+            return;
+        }
         var button = event.target.closest('[data-delete-period]');
         if (!button) return;
         deletePeriod = button.dataset.deletePeriod;
@@ -497,6 +547,25 @@ FecharConexao()
         deletion.returnValue = '';
         deletion.showModal();
     });
+    frame.addEventListener('load', function () {
+        if (frame.hidden) return;
+        var documentPreview = frame.contentDocument;
+        if (documentPreview && documentPreview.URL === 'about:blank') return;
+        var ready = documentPreview && documentPreview.querySelector('[data-cap-report]');
+        printButton.disabled = !ready;
+        var toolbar = ready && documentPreview.querySelector('.cap-doc-toolbar');
+        if (toolbar) toolbar.style.display = 'none';
+        status.hidden = Boolean(ready);
+        if (!ready) status.textContent = 'A prévia não está disponível para impressão.';
+    });
+    back.addEventListener('click', function () {
+        showReports();
+        if (previewLink) previewLink.focus();
+    });
+    printButton.addEventListener('click', function () {
+        if (!printButton.disabled) frame.contentWindow.print();
+    });
+    reports.addEventListener('close', showReports);
     deletion.addEventListener('close', function () {
         if (deletion.returnValue === 'excluir' && deletePeriod) {
             location.assign('cap_fechamentos.asp?comando=excluir&vendedor_recebe_em=' + encodeURIComponent(deletePeriod));
