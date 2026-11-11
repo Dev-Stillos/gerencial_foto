@@ -9,7 +9,59 @@ cod_pedido = Request.QueryString("cod_pedido")
 
 BTN_IMPRIMIR_LINK = "href='lca_pedidos_pendentes_uniimpressao.asp?cod_pedido="&COD_PEDIDO&"' target='_blank'"
 %>
-<!-- #include file="files/includes/miolo-superior.asp" -->
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<%
+Dim caminho_pagina, jquery
+caminho_pagina = Replace(Request.ServerVariables("URL"),"/gerencial_foto/","")
+jquery = True
+%>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Detalhes do pedido | Portal Stillos</title>
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/chosen.min.css" />
+<link rel="stylesheet" href="css/modal-message.css" />
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<!-- #include file="files/includes/scripts.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
+<style>
+.order-page .order-content { min-width:0; color:#292738; }
+.order-page .order-heading { align-items:flex-start; }
+.order-page .order-heading h1 { margin-bottom:0; }
+.order-page .order-actions, .order-page .order-jump { display:flex; flex-wrap:wrap; gap:8px; }
+.order-page .order-jump { margin:0 0 20px; }
+.order-page .order-jump a { padding:6px 12px; border:1px solid #e4dfeb; border-radius:8px; background:#fff; color:#6d1749; font-weight:650; text-decoration:none; }
+.order-page .order-content table[border="1"] { border:1px solid #e4dfeb; background:#fff; }
+.order-page .order-content table[border="1"] > tbody > tr > td { padding:8px 10px; border-color:#eeeaf2; overflow-wrap:anywhere; }
+.order-page .order-content tr[bgcolor="whitesmoke"] > td { background:#f1edf6; color:#3e344e; }
+.order-page .order-content .order-summary { height:auto; margin:0; }
+.order-page .order-summary h2, .order-page .order-section-heading { color:#292738; font:700 clamp(17px,2vw,23px)/1.3 system-ui,sans-serif; margin:0 0 12px; }
+.order-page .order-section-heading { margin-top:28px; scroll-margin-top:18px; }
+.order-page .order-summary table { width:100%; border-collapse:collapse; }
+.order-page .order-summary table > tbody > tr > td:first-child:not([colspan]) { background:#f8f6fa; }
+.order-page .order-scroll { max-width:100%; overflow-x:auto; }
+.order-page .order-scroll table { min-width:1080px; }
+.order-page .order-content :is(input,select,textarea,iframe,.btnGeral,table) { max-width:100%; }
+.order-page .order-content .btnGeral { display:inline-block; padding:7px 10px; margin:3px 0; border:1px solid #ddd5e5; border-radius:7px; background:#fff; color:#7c174e; font-weight:650; white-space:normal; }
+.order-page .order-content a:focus-visible { outline:2px solid #9e125c; outline-offset:2px; }
+.order-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
+.order-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+@media (max-width:650px) {
+    .order-page .order-summary > table,
+    .order-page .order-summary > table > tbody,
+    .order-page .order-summary > table > tbody > tr,
+    .order-page .order-summary > table > tbody > tr > td { display:block; width:100%; }
+    .order-page .order-content { overflow-wrap:anywhere; }
+}
+</style>
+</head>
+<body class="order-page">
+<div class="bloqueio_tela hidden"></div>
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
 <!-- #include file="includes/classe_fechamento.asp" -->
 <%
@@ -99,15 +151,43 @@ FecharConexao()
 
 %> 
 
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-
-	  <h2>LCA - Busca / Detalhe de Pedido</h2>
-	  <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
-	  	  
-		  	<h3 align="center">Detalhes do Pedido <%If int(PEDIDO_EXTRA) = 1 Then%> Extra <%End If%>n&ordm; <%=COD_PEDIDO%></h3>
-				<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Detalhes do pedido</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="order-content">
+        <div class="dashboard-heading order-heading">
+          <div>
+            <p class="eyebrow">PEDIDOS</p>
+            <h1>Pedido<%If int(PEDIDO_EXTRA) = 1 Then%> extra<%End If%> #<%=Server.HTMLEncode(COD_PEDIDO & "")%></h1>
+          </div>
+          <div class="order-actions">
+            <a class="btn btn-outline-secondary" href="adm_index.asp" id="orderBack">Voltar</a>
+            <a class="btn btn-primary" href="lca_pedidos_pendentes_uniimpressao.asp?cod_pedido=<%=Server.URLEncode(COD_PEDIDO & "")%>" target="_blank" rel="noopener">Imprimir pedido</a>
+          </div>
+        </div>
+        <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+        <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+        <nav class="order-jump" aria-label="Se&ccedil;&otilde;es do pedido">
+          <a href="#dados_pedido">Dados do pedido</a>
+          <a href="#produtos_adquiridos">Produtos</a>
+          <a href="#formas_pagamento">Pagamentos</a>
+          <a href="#ordens_servico">Ordens de servi&ccedil;o</a>
+        </nav>
+        <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
+        <section class="dashboard-panel order-summary" aria-labelledby="dados_pedido">
+          <h2 id="dados_pedido">Dados do pedido</h2>
+          <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
  
   <tr>
             <td width="16%"><div align="left"><strong>Vendedor:</strong></div></td>
@@ -337,7 +417,8 @@ FecharConexao()
 				FecharConexao()
 				%>
             </table>
-			<h3 align="center">Produtos Adquiridos</h3>
+			</section>
+            <h2 class="order-section-heading" id="produtos_adquiridos">Produtos adquiridos</h2>
 				  <%
 			  '1) Seleciona os c�digos dos formandos do pedido
 			  '2) Seleciona os dados inseridos nas fichas
@@ -718,7 +799,7 @@ Set rsProdutosAparte = Nothing
 			'FecharConexao2()d
 		  	FecharConexao()
   			%>
-	  	      <h3 align="center">Formas de Pagamento</h3>
+	  	      <h2 class="order-section-heading" id="formas_pagamento">Formas de pagamento</h2>
 	  	     <table width="100%" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
                 <%if PAGAMENTO_EM_DINHEIRO > 0 then%>
 			    <tr bgcolor="whitesmoke">
@@ -1179,7 +1260,7 @@ FecharConexao()
 <%End If%>
 <br />
 <hr />
-<h3 align="center">Ordens de Servi&ccedil;o da Venda</h3>
+<h2 class="order-section-heading" id="ordens_servico">Ordens de servi&ccedil;o da venda</h2>
        <%
 	   AbrirConexao()
 	   Dim pode_imprimir_2_via_despacho_procolo
@@ -1241,7 +1322,8 @@ FecharConexao()
 
 			</form>
 			<%end if 'if validacao do usuario %>
-		<table width="99%" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
+		<div class="order-scroll" role="region" aria-label="Ordens de servi&ccedil;o da venda" tabindex="0">
+<table width="99%" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
   <tr bgcolor="whitesmoke">
   <td rowspan="2" width="3%"><div align="center"><strong> OS</strong></div></td>
   <td rowspan="2" width="12%"><div align="center"><strong>Formando</strong></div></td>
@@ -1338,7 +1420,7 @@ FecharConexao()
 	   rs2.MoveNext()
 	   Wend
 	   %>
-        </table>
+        </table></div>
         <%If pode_imprimir_2_via_despacho_procolo Then%>
         
       <div style="position:relative; float:left; width: 100%; padding-top:30px;">
@@ -1432,6 +1514,7 @@ FecharConexao()
        <%
 	   FecharConexao()
 	   %>
+      </div>
 <script type="text/javascript">
 
 function historicoCheque(COD_PEDIDO,COD_PEDIDO_CHEQUE){
@@ -1441,4 +1524,38 @@ displayStaticMessage(caminho,false,420)
 }
 
 </script>
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+<!-- #include file="files/includes/scripts_rodape.asp" -->
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    var back = document.getElementById('orderBack');
+    back.addEventListener('click', function (event) {
+        if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+            event.preventDefault();
+            window.history.back();
+        }
+    });
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>
