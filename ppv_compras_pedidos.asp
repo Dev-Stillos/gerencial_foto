@@ -36,7 +36,7 @@ calendario_necessario = "SIM"
 .purchase-status.is-delivered, .purchase-status.is-on-time { background:#e7f3ec; color:#286143; }
 .purchase-status.is-late { background:#fce9ee; color:#8e2045; }
 .purchase-row-actions { gap:4px; }
-.purchase-action { display:inline-block; padding:4px 6px; border:1px solid #e4dfeb; border-radius:5px; text-decoration:none; font-size:.87em; color:#88134f; }
+.purchase-action { background:#fff; cursor:pointer; font-family:inherit; display:inline-block; padding:4px 6px; border:1px solid #e4dfeb; border-radius:5px; text-decoration:none; font-size:.87em; color:#88134f; }
 .purchase-action:hover { background:#f7edf3; color:#88134f; }
 .purchase-pagination { margin-top:16px; }
 .purchase-pagination .menu_paginacaocao { display:flex; flex-wrap:wrap; gap:4px; max-height:124px; overflow:auto; padding:4px; }
@@ -45,13 +45,22 @@ calendario_necessario = "SIM"
 @media(max-width:1200px) {
   .purchase-table, .purchase-table tbody { display:block; }
   .purchase-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-  .purchase-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:12px; border:1px solid #e4dfeb; border-radius:8px; }
+  .purchase-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:14px; border:1px solid #e4dfeb; border-radius:10px; overflow:hidden; }
+  .purchase-row td:nth-child(1), .purchase-row td:nth-child(9) { background:#f4f1f7; padding:12px; }
+  .purchase-row td:nth-child(1) { grid-row:1; grid-column:1; }
+  .purchase-row td:nth-child(9) { grid-row:1; grid-column:2; }
+  .purchase-row td:nth-child(2), .purchase-row td:nth-child(3) { grid-column:1/-1; }
+  .purchase-row td:nth-child(2) { font-weight:700; }
+  .purchase-row td:nth-child(4), .purchase-row td:nth-child(5) { background:#faf9fc; }
+  .purchase-row td > div[align] { text-align:left; }
+  .purchase-row td:last-child { border-top:1px solid #e4dfeb; padding:10px; }
+  .purchase-row .purchase-action { display:inline-flex; align-items:center; min-height:36px; padding:6px 9px; }
   .purchase-row td { display:block; border:0; }
   .purchase-row td::before { content:attr(data-label); display:block; color:#66586e; font-size:.85em; font-weight:700; }
   .purchase-row td:last-child { grid-column:1/-1; }
 }
 @media(max-width:640px) {
-  .purchase-filters, .purchase-row { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .purchase-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media(max-width:400px) {
   .purchase-filters { grid-template-columns:minmax(0,1fr); }
@@ -341,6 +350,18 @@ end if
 </form>
 </section>
 <%
+Dim comprasAcaoNegada
+comprasAcaoNegada = False
+Select Case Request.QueryString("codmsg") & ""
+    Case "900", "901", "902", "903"
+        comprasAcaoNegada = True
+End Select
+If comprasAcaoNegada Then
+%>
+<span id="purchase-access-denied" hidden></span>
+<noscript><p role="status">Seu perfil n&atilde;o tem permiss&atilde;o para realizar esta a&ccedil;&atilde;o.</p></noscript>
+<%End If%>
+<%
 	
 	Set rs=server.CreateObject("ADODB.recordset")
 	rs.CursorLocation=3  'Cursor no cliente
@@ -364,7 +385,7 @@ end if
 	codmsg	= CStr(""&Request.QueryString("codmsg"))
 	sucesso = CStr(""&Request.QueryString("sucesso"))
 		
-	If sucesso = "" and codmsg <> "" Then%>
+	If sucesso = "" And codmsg <> "" And Not comprasAcaoNegada Then%>
     	<div align="center" class="alert alert-success" role="status">
         	<%
 			If codmsg = "1" Then
@@ -381,7 +402,7 @@ end if
 			End If	
 			%>
 </div>
-    <%ElseIf sucesso <> "" and codmsg <> "" Then%>
+    <%ElseIf sucesso <> "" And codmsg <> "" And Not comprasAcaoNegada Then%>
         <div align="center" class="alert alert-warning" role="status">
 			<%
 			If codmsg = "4" Then
@@ -391,15 +412,6 @@ end if
 			
 			Elseif codmsg = "300" Then
 				Response.Write("Pedido de Compra N&atilde;O alterado status, <br />pois voc&ecirc; n&atilde;o possui acesso ou o pedido j&aacute; foi mudado para o status que voc&ecirc; est&aacute; tentando mudar.")
-			
-			Elseif codmsg = "900" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a VISUALIZA&ccedil;&atilde;O!")
-			Elseif codmsg = "901" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a INCLUS&atilde;O!")
-			Elseif codmsg = "902" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a ALTERA&ccedil;&atilde;O!")	
-			Elseif codmsg = "903" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a EXCLUS&atilde;O!")
 			End If					
 			%>
 </div>
@@ -491,8 +503,9 @@ If Not rs.Eof Then
   <td role="cell" data-label="A&ccedil;&otilde;es"><div class="purchase-actions purchase-row-actions"><%
 		 'Impress&atilde;o somente se o status do pedido de compra for Enviado para o fornecedor, pois neste caso j&aacute; foi aprovado e mudado o status para Enviado para fornecedor para for&ccedil;ar o usu&aacute;rio a mudar o status para Enviado para Fornecedor e ter como controlar a data que foi enviado.
 		If status_pedido_compra > 1  Then%>
-         <a class="purchase-action" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener">
-          Pedido (2&ordf; via)</a>
+         <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_imprimir.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener">
+          Pedido (2&ordf; via)</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">" target="_blank" rel="noopener">
+          Pedido (2&ordf; via)</button><%End If%>
           <%
 		 End If
 
@@ -504,9 +517,10 @@ If Not rs.Eof Then
 		  %>
           
        
-            <a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=visualizar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
+            <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=visualizar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
           Ver
-          </a>
+          </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">">
+          Ver</button><%End If%>
         
         
         <%
@@ -518,13 +532,15 @@ If Not rs.Eof Then
         <%If int(status_pedido_compra) < 3 and int(status_pedido_compra) <> 99 Then%>
 			
                     
-                        <a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=alterar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
-              Editar</a> 	 	
+                        <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=alterar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
+              Editar</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">">
+              Editar</button><%End If%> 	 	
        
 			<%If  int(status_pedido_compra) <> 99 Then%>
-              <a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=excluir&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
+              <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=excluir&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
               Excluir
-              </a>
+              </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">">
+              Excluir</button><%End If%>
           	 <%End If%>
         <%End If%>
         </div></td>
