@@ -275,4 +275,43 @@ document.addEventListener('keydown', function (event) {
     }
 });
 </script>
+
+<%
+' Desative este aviso quando a modernizacao do Gerencial Fotos for concluida.
+Const ExibirAvisoModernizacaoGerencial = True
+If Session("GerencialAvisoModernizacaoPendente") = True Then
+    Session.Contents.Remove "GerencialAvisoModernizacaoPendente"
+    If ExibirAvisoModernizacaoGerencial Then
+%>
+<style>
+.modernizacao-dialog { box-sizing:border-box; width:min(560px,calc(100% - 24px)); max-height:calc(100% - 24px); padding:0; overflow:auto; border:1px solid #e4dfeb; border-radius:16px; background:#fff; color:#242738; box-shadow:0 18px 60px #24273845; }
+.modernizacao-dialog::backdrop { background:#242738a6; }
+.modernizacao-marca { display:flex; align-items:center; min-height:72px; padding:10px 24px; border-bottom:3px solid #b20b61; background:#292b40; }
+.modernizacao-marca img { display:block; width:150px; max-width:100%; height:auto; }
+.modernizacao-conteudo { padding:clamp(18px,5vw,30px); }
+.modernizacao-conteudo h2 { margin:0 0 12px; font-size:clamp(20px,4vw,26px); line-height:1.2; }
+.modernizacao-conteudo p { margin:0 0 12px; line-height:1.55; }
+.modernizacao-conteudo .modernizacao-assinatura { font-weight:650; color:#88134f; }
+.modernizacao-acoes { display:flex; justify-content:flex-end; margin:20px 0 0; }
+</style>
+<dialog class="modernizacao-dialog" id="avisoModernizacaoGerencial" aria-labelledby="avisoModernizacaoTitulo" aria-describedby="avisoModernizacaoResumo">
+  <div class="modernizacao-marca"><img src="images/logoparafundopreto.png" alt="Stillos"></div>
+  <div class="modernizacao-conteudo">
+    <h2 id="avisoModernizacaoTitulo">Boas-vindas ao Gerencial Fotos!</h2>
+    <p id="avisoModernizacaoResumo">O Departamento de TI est&aacute; modernizando o Gerencial Fotos por etapas para deixar a navega&ccedil;&atilde;o mais clara e as tarefas do dia a dia mais simples.</p>
+    <p>Durante esse per&iacute;odo, voc&ecirc; vai encontrar telas renovadas conforme as atualiza&ccedil;&otilde;es forem chegando. Agradecemos a paci&ecirc;ncia e o apoio de todos. O que voc&ecirc;s nos contam sobre o uso do sistema ajuda a orientar as pr&oacute;ximas melhorias.</p>
+    <p class="modernizacao-assinatura">Departamento de TI &middot; Stillos</p>
+    <form class="modernizacao-acoes" method="dialog"><button class="btn btn-primary" autofocus>Continuar para o Gerencial</button></form>
+  </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById('avisoModernizacaoGerencial');
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+})();
+</script>
+<%
+    End If
+End If
+%>
 </body></html>
