@@ -126,7 +126,8 @@ acesso_inclusao_exclusao_os_manual = validaUsuario(2,,51,false)
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ordens de Servi&ccedil;o | Portal Stillos</title>
 <!-- #include file="files/includes/scripts.asp" -->
 	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
 <script language="JavaScript" type="text/javascript">
@@ -458,44 +459,76 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 } 
 -->
 </style>    
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<style>
+.ppv-page .ppv-main { max-width: 1680px; }
+.ppv-page .ppv-tools { margin: 0 0 24px; padding: 12px 20px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.ppv-page .ppv-tools table { max-width: 100%; }
+.ppv-page .ppv-module { margin-bottom: 22px; }
+.ppv-page .subMenu { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; line-height: 2.6; }
+.ppv-page .subMenu a { display: inline-block; color: #53566b; text-decoration: none; padding: 0 8px; }
+.ppv-page .subMenu a[href="ppv_ordens_servico.asp"] { background: #f9eaf2; color: #9e125c; border-radius: 6px; font-weight: 700; }
+.ppv-page .ppv-filters { height: auto; margin-bottom: 24px; }
+.ppv-page .ppv-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 18px 0; align-items: end; }
+.ppv-page .ppv-fields label { display: block; font-weight: 600; margin-bottom: 6px; color: #44485b; }
+.ppv-page .ppv-fields input, .ppv-page .ppv-fields select { width: 100%; min-width: 0; height: auto; }
+.ppv-page .ppv-dates { display: flex; align-items: center; gap: 8px; }
+.ppv-page .ppv-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ppv-page .ocultarCompleto { display: none; }
+.ppv-page .ppv-results { background: #fff; border: 1px solid var(--line); border-radius: 12px; margin: 0 0 20px; overflow: hidden; }
+.ppv-page .ppv-result-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 18px 20px; }
+.ppv-page .ppv-scroll { overflow-x: auto; }
+.ppv-page .ppv-list { min-width: 1050px; width: 100%; border-collapse: collapse; margin: 0; }
+.ppv-page .ppv-list > thead > tr > th { background: #f3f2f8; color: #42465a; font-weight: 650; }
+.ppv-page .ppv-list > thead > tr > th, .ppv-page .ppv-list > tbody > tr > td { padding: 10px; vertical-align: middle; border: 0; border-bottom: 1px solid #ececf2; font-size: 12px; }
+.ppv-page .ppv-list > tbody > tr.ppv-group > td { background: #f8f6fa; }
+.ppv-page .ppv-list > tbody > tr:not(.ppv-group):hover > td { background: #faf9fc; }
+.ppv-page .ppv-status, .ppv-page .container_Faltam, .ppv-page .container_Vencido { display: inline-block; width: auto; border: 0; border-radius: 6px; padding: 4px 7px; font-weight: 650; }
+.ppv-page .ppv-status, .ppv-page .container_Faltam { background: #f1eff8; color: #494168; }
+.ppv-page .container_Vencido { background: #fbe7ed; color: #9b2044; }
+.ppv-page .ppv-guide { margin-top: 20px; height: auto; }
+.ppv-page .ppv-guide summary { font-weight: 650; cursor: pointer; }
+.ppv-page .ppv-guide table { width: auto; max-width: 100%; }
+.ppv-page .dashboard-nav a.active { background: transparent; color: #d4d5e1; font-weight: 400; }
+.ppv-page .dashboard-nav a[href="ppv_ordens_servico.asp"] { background: #b20b61; color: #fff; font-weight: 600; }
+@media(max-width: 1250px) { .ppv-page .ppv-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media(max-width: 540px) { .ppv-page .ppv-fields { grid-template-columns: minmax(0, 1fr); } }
+</style>
 </head>
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr> 
-    <td valign="top" style="border:dotted 1px #999999">
-	
-	  <h2>PPV - Produ&ccedil;&atilde;o de Produtos Vendidos</h2>
-      <br />
+<body class="ppv-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
+      <div class="topbar-actions"><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><p class="eyebrow">PRODU&Ccedil;&Atilde;O P&Oacute;S-VENDA</p><h1>Ordens de Servi&ccedil;o</h1><p>Acompanhe a produ&ccedil;&atilde;o, os respons&aacute;veis e os prazos de cada etapa.</p></div>
+        <a href="adm_index.asp" class="btn btn-outline-secondary">Vis&atilde;o geral</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="ppv-tools">
+      <%
+      Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
+      BTN_VOLTAR = 1
+      BTN_IMPRIMIR = 2
+      BTN_FONTE = 1
+      BTN_IMPRIMIR_LINK = "#"
+      %>
+      <!-- #include file="includes/sub_menu.asp" -->
+      </div>
+      <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
       <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
-      <br />
-
+      </nav>
  <%
 	Dim sucesso, codmsg
 	codmsg	= CStr(""&Request.QueryString("codmsg"))
@@ -554,48 +587,29 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 
 	abrirConexao()%>
 
-      <form action="ppv_ordens_servico.asp" style="margin:0px">
-      
-      <table style="border:#999999 dashed 1px; padding:2px; background:#FFFFCC" width="100%" border="0" align="left" cellpadding="5" cellspacing="0">
-      <tr>
-      <td>
-      
-	  <table width="670" border="0" align="left" cellpadding="5" cellspacing="0">
-			<tr>
-		    <td width="13%"><div align="right"><strong>Prazo Geral</strong></div></td>
-		    <td width="35%"><div align="left">
-		      <select name="prazo_geral_filtro" class="inputTamanho2">
-		        <option value="" <%If busca_prazo_geral_filtro = "" Then%> selected="selected" <%End If%>>Todos</option>
-		        <option value="1" <%If busca_prazo_geral_filtro = "1" Then%> selected="selected" <%End If%>>1 - Prazo geral Vencido</option>
-		        <option value="2" <%If busca_prazo_geral_filtro = "2" Then%> selected="selected" <%End If%>>2 - Prazo geral N&atilde;o vencido</option>
-		       </select>
-		      </div>
-              </td>
-		    <td width="16%" rowspan="2" valign="top" style="padding-top:7px;"><div align="right"><strong>Status</strong></div></td>
-		    <td width="36%" rowspan="2" valign="top"><div align="left">
-		      <select name="status_ordem_servico" onchange="exibirBuscaComplemento(this.value)" class="inputTamanho2">
+      <section class="dashboard-panel ppv-filters" aria-labelledby="ppvFiltros">
+        <h2 id="ppvFiltros">Filtrar ordens</h2>
+        <p class="panel-description">Combine os filtros para encontrar as ordens que precisa acompanhar.</p>
+        <form action="ppv_ordens_servico.asp" method="get">
+          <input type="hidden" name="filtro1" value="1" />
+          <div class="ppv-fields">
+        <div><label for="ppv_status_ordem_servico">Status da OS</label>
+<select id="ppv_status_ordem_servico" name="status_ordem_servico" onchange="exibirBuscaComplemento(this.value)" class="form-select">
 		        <option value="" <%If busca_status_ordem_servico = "" Then%> selected="selected" <%End If%>>Todos</option>
 		        <option value="1" <%If busca_status_ordem_servico = "1" Then%> selected="selected" <%End If%>>1 - Em andamento</option>
 		        <option value="2" <%If busca_status_ordem_servico = "2" Then%> selected="selected" <%End If%>>2 - Finalizados e n&atilde;o despachados</option>
 		        <option value="3" <%If busca_status_ordem_servico = "3" Then%> selected="selected" <%End If%>>3 - Despachados para o cliente</option>
             <option value="4" <%If busca_status_ordem_servico = "4" Then%> selected="selected" <%End If%>>4 - Entregue para o cliente</option>
 		        <option value="99" <%If busca_status_ordem_servico = "99" Then%> selected="selected" <%End If%>>99 - Cancelados</option>
-		       </select>
-		      </div>
-              <div align="left" id="comboComplementoBusca" <%If busca_status_ordem_servico <> "1" Then%> class="ocultarCompleto" <%End If%>><br />
-              Filtrar OSs com etapa atual: Em dia, Vencendo na data atual, Atrasadas<br />
-		      <select name="diferenca_etapa" class="inputTamanho2">
-                <option value="" <%If busca_diferenca_etapa = "" Then%> selected="selected" <%End If%>>Todas</option>
-                <option value="1" <%If busca_diferenca_etapa = "1" Then%> selected="selected" <%End If%>>Somente OSs com etapa atual atrasada</option>
-                <option value="2" <%If busca_diferenca_etapa = "2" Then%> selected="selected" <%End If%>>Somente OSs com etapa atual vencendo na data atual</option>
-                <option value="3" <%If busca_diferenca_etapa = "3" Then%> selected="selected" <%End If%>>Somente OSs com etapa atual em dia</option>
-              </select>
-		    </div></td>
-		    </tr>
-		  <tr>
-		    <td width="13%" valign="top"><div align="right"><strong>Respons&aacute;vel etapa atual</strong></div></td>
-		    <td><div align="left">
-		      <select name="cod_usuario_responsavel" class="inputTamanho2" <%If not validacao_listar_os_todos_usuarios Then%> disabled="disabled" <%End If%>>
+		       </select></div>
+        <div><label for="ppv_prazo_geral_filtro">Prazo geral</label>
+<select id="ppv_prazo_geral_filtro" name="prazo_geral_filtro" class="form-select">
+		        <option value="" <%If busca_prazo_geral_filtro = "" Then%> selected="selected" <%End If%>>Todos</option>
+		        <option value="1" <%If busca_prazo_geral_filtro = "1" Then%> selected="selected" <%End If%>>1 - Prazo geral Vencido</option>
+		        <option value="2" <%If busca_prazo_geral_filtro = "2" Then%> selected="selected" <%End If%>>2 - Prazo geral N&atilde;o vencido</option>
+		       </select></div>
+        <div><label for="ppv_cod_usuario_responsavel">Respons&aacute;vel pela etapa atual</label>
+<select id="ppv_cod_usuario_responsavel" name="cod_usuario_responsavel" class="form-select" <%If not validacao_listar_os_todos_usuarios Then%> disabled="disabled" <%End If%>>
 		        <option value="" <%If Cstr(""&busca_cod_usuario_responsavel) = "" Then%> selected="selected" <%End If%>>Todos</option>
 		        <%
 				Set rs=objConexao.Execute("SELECT cod_usuario, nome FROM TB_ADM_USUARIOS WHERE BLOQUEADO = 2 AND COD_USUARIO <> 1 ORDER BY NOME")
@@ -608,57 +622,38 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 				rs.Close
 				Set rs=nothing
 				%>
-		        </select>
-		      </div>
-		      </td>
-		    </tr>
-		  <tr>
-		    <td><div align="right"><strong>Nome do Formando</strong></div></td>
-		    <td><input type="text" value="<%=busca_nome_formando%>" name="nome_formando" class="inputTamanho2" /></td>
-		    <td><div align="right"><strong>C&oacute;d. Formando Ficha</strong></div></td>
-		    <td><div align="left">
-		      <input type="text" value="<%=busca_cod_formando%>" name="cod_formando" class="inputTamanho1" />
-		      </div></td>
-		    </tr>
-            <!--
-            <tr>
-		    <td><div align="right"><strong>N&uacute;mero Ordem de Servi&ccedil;o</strong></div></td>
-		    <td><div align="left"><input type="text" value="<%=busca_cod_ordem_servico%>" name="cod_ordem_servico" class="inputTamanho2" /></div></td>
-		    </tr>
-            -->
-            <tr>
-		    <td><div align="right"><strong>Data da Venda</strong></div></td>
-		    <td><table width="100%" border="0" cellspacing="0" cellpadding="0">
-		      <tr>
-		        <td width="45%"> <input type="text" class="campoData" name="DATA_VENDA_INICIAL" value="<%=busca_data_venda_inicial%>" /></td>
-		        <td width="7%"><div align="center">a</div></td>
-		        <td width="48%"> <input type="text" class="campoData" name="DATA_VENDA_FINAL" value="<%=busca_data_venda_final%>" /></td>
-		        </tr>
-		      </table></td>
-		    <td><div align="right"><strong>Cod. Pedido</strong></div></td>
-		    <td><div align="left">
-		      <input type="text" value="<%=busca_cod_pedido%>" name="cod_pedido" class="inputTamanho1" />
-		      </div></td>
-		    </tr>
-		  <tr>
-		    <td> </td>
-		    <td colspan="3"><div align="left">
-		      <input class="btnFiltrarAmarelo" type="submit" name="filtro1" value=" " />
-		      </div></td>
-		    </tr>
-        </table>
-      </td>
-      </tr>
-      </table>
-      </form>
-      
-      <br />
-
-        <em><strong>Listagem em Ordem Crescente pelo c&oacute;d. contrato e depois pelo nome do formando.. 
-        <%if not validacao_listar_os_todos_usuarios Then%>
-        Listagem somente de Ordens de Servi&ccedil;o que est&atilde;o com a etapa atual ou final sob a sua responsabilidade.
-        <%End If%></strong></em><br />
-        <br />
+		        </select></div>
+        <div id="comboComplementoBusca" <%If busca_status_ordem_servico <> "1" Then%>class="ocultarCompleto"<%End If%>>
+          <label for="ppv_diferenca_etapa">Prazo da etapa atual</label>
+<select id="ppv_diferenca_etapa" name="diferenca_etapa" class="form-select">
+                <option value="" <%If busca_diferenca_etapa = "" Then%> selected="selected" <%End If%>>Todas</option>
+                <option value="1" <%If busca_diferenca_etapa = "1" Then%> selected="selected" <%End If%>>Somente OSs com etapa atual atrasada</option>
+                <option value="2" <%If busca_diferenca_etapa = "2" Then%> selected="selected" <%End If%>>Somente OSs com etapa atual vencendo na data atual</option>
+                <option value="3" <%If busca_diferenca_etapa = "3" Then%> selected="selected" <%End If%>>Somente OSs com etapa atual em dia</option>
+              </select>
+        </div>
+        <div><label for="ppv_nome_formando">Nome do formando</label>
+<input id="ppv_nome_formando" type="text" name="nome_formando" value="<%=Server.HTMLEncode(busca_nome_formando)%>" class="form-control" /></div>
+        <div><label for="ppv_cod_formando">C&oacute;d. do formando (ficha)</label>
+<input id="ppv_cod_formando" type="text" name="cod_formando" value="<%=Server.HTMLEncode(busca_cod_formando)%>" class="form-control" /></div>
+        <div><label for="ppv_cod_pedido">C&oacute;d. do pedido</label>
+<input id="ppv_cod_pedido" type="text" name="cod_pedido" value="<%=Server.HTMLEncode(busca_cod_pedido)%>" class="form-control" /></div>
+        <div><label for="ppv_DATA_VENDA_INICIAL">Data da venda</label><div class="ppv-dates">
+          <input id="ppv_DATA_VENDA_INICIAL" type="text" name="DATA_VENDA_INICIAL" value="<%=Server.HTMLEncode(busca_data_venda_inicial)%>" class="form-control campoData" placeholder="dd/mm/aaaa" aria-label="Data inicial da venda" />
+          <span>a</span>
+          <input id="ppv_DATA_VENDA_FINAL" type="text" name="DATA_VENDA_FINAL" value="<%=Server.HTMLEncode(busca_data_venda_final)%>" class="form-control campoData" placeholder="dd/mm/aaaa" aria-label="Data final da venda" />
+        </div></div>
+          </div>
+          <div class="ppv-actions">
+            <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+            <a class="btn btn-outline-secondary" href="ppv_ordens_servico.asp">Limpar filtros</a>
+          </div>
+        </form>
+      </section>
+      <p class="panel-description mb-3">Ordenado pelo c&oacute;digo do contrato e pelo nome do formando.
+      <%If Not validacao_listar_os_todos_usuarios Then%>
+        A lista mostra ordens cuja etapa atual ou final est&aacute; sob sua responsabilidade.
+      <%End If%></p>
         <%
 		Dim temp
 		'Neste momento corrige o sqlWhere somente para o primeiro rs
@@ -696,36 +691,35 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 			rs2.Close
 			Set rs2=Nothing
 		%>
-     <table width="99%" border="0" align="center">
-  <tr>
-    <td width="47%"> 
-P&aacute;gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%>
-</td>
-    <td width="53%"><div align="right">Total<strong>  <%=qtdOSs%> </strong>Ordens de Servi&ccedil;o</div></td>
-  </tr>
-</table>   
-<table width="99%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
+      <section class="ppv-results" aria-labelledby="ppvResultado">
+        <div class="ppv-result-heading">
+          <h2 id="ppvResultado">Ordens encontradas <span class="subtle-badge"><%=qtdOSs%> OS</span></h2>
+          <span class="panel-description">P&aacute;gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%></span>
+        </div>
+        <div class="ppv-scroll" tabindex="0" role="region" aria-label="Listagem de ordens de servi&ccedil;o">
+        <table class="ppv-list">
+        <thead>
   <tr bgcolor="whitesmoke">
-  <td colspan="2" rowspan="2"><div align="center"><strong> OS</strong></div></td>
-  <td width="7%" rowspan="2"><div align="center"><strong>Produto</strong></div></td>
-  <td width="4%" rowspan="2"><div align="center"><strong>Qtd.</strong></div></td>
-  <td colspan="5"><div align="center" style="font-weight: bold">
-    <div align="center">Etapa Atual Informa&ccedil;&otilde;es</div>
-  </div></td>
-  <td width="10%" rowspan="2"><div align="center"><strong>Data Cadastro</strong></div></td>
-  <td width="8%" rowspan="2"><div align="center"><strong>Prazo Geral</strong></div></td>
-  <td width="6%" rowspan="2"><div align="center"><strong>Status</strong></div></td>
-  <td width="8%" rowspan="2"> </td>
-  <td width="6%" rowspan="2"><p align="center"> </p>
-    <p align="center"> </p></td>
+  <th colspan="2" rowspan="2"><div align="center"><strong> OS</strong></div></th>
+  <th width="7%" rowspan="2"><div align="center"><strong>Produto</strong></div></th>
+  <th width="4%" rowspan="2"><div align="center"><strong>Qtd.</strong></div></th>
+  <th colspan="5"><div align="center" style="font-weight: bold">
+    <div align="center">Etapa atual</div>
+  </div></th>
+  <th width="10%" rowspan="2"><div align="center"><strong>Data Cadastro</strong></div></th>
+  <th width="8%" rowspan="2"><div align="center"><strong>Prazo Geral</strong></div></th>
+  <th width="6%" rowspan="2"><div align="center"><strong>Status</strong></div></th>
+  <th width="8%" rowspan="2">A&ccedil;&otilde;es</th>
+  <th width="6%" rowspan="2">Sinaliza&ccedil;&atilde;o</th>
 </tr>
   <tr bgcolor="whitesmoke">
-    <td width="6%"><div align="center"><strong>Etapa / Total</strong></div></td>
-    <td width="10%"><div align="center"><strong>Descri&ccedil;&atilde;o</strong></div></td>
-    <td width="11%"><div align="center"><strong>Resp. Atual</strong></div></td>
-    <td width="5%"><div align="center"><strong>Data In&iacute;cio</strong></div></td>
-    <td width="7%"><div align="center"><strong>Prazo etapa</strong></div></td>
+    <th width="6%"><div align="center"><strong>Etapa / Total</strong></div></th>
+    <th width="10%"><div align="center"><strong>Descri&ccedil;&atilde;o</strong></div></th>
+    <th width="11%"><div align="center"><strong>Resp. Atual</strong></div></th>
+    <th width="5%"><div align="center"><strong>Data In&iacute;cio</strong></div></th>
+    <th width="7%"><div align="center"><strong>Prazo etapa</strong></div></th>
     </tr>
+</thead><tbody>
 <%
 
 'Neste momento que j� passou o group by corrige o sqlWhere para o rs2
@@ -739,10 +733,10 @@ For x=1 To rs.PageSize
 If Not rs.Eof Then
 %>
     
-<tr>
+<tr class="ppv-group">
 							<td colspan="14"><table width="650" border="0" cellspacing="0" cellpadding="1">
                                   <tr>
-                                    <td class="textoMedio"><strong><%=rs("cod_pedido")%></strong></td>
+                                    <td class="textoMedio"><strong>Pedido #<%=rs("cod_pedido")%></strong></td>
                                   </tr>
                                 </table></td>
 						  </tr>
@@ -769,7 +763,7 @@ sql = 	" SELECT "&_
 			   	
 				If not rs3.Eof Then
 		%>
-<tr>
+<tr class="ppv-group">
 							<td colspan="14"><table width="650" border="0" cellspacing="0" cellpadding="1">
                                   <tr>
                                     <td width="21" class="textoMedio">&nbsp;</td>
@@ -839,15 +833,24 @@ sql = 	" SELECT "&_
 														-
 														<%End If%>
 														</div></td>
-														<td><div align="center"><%=rs3("status_ordem_servico")%></div></td>
+														<td><div align="center"><span class="ppv-status"><%
+                    Select Case CStr(rs3("status_ordem_servico"))
+                        Case "1": Response.Write "Em andamento"
+                        Case "2": Response.Write "Aguardando despacho"
+                        Case "3": Response.Write "Despachada"
+                        Case "4": Response.Write "Entregue"
+                        Case "99": Response.Write "Cancelada"
+                        Case Else: Response.Write Server.HTMLEncode(rs3("status_ordem_servico") & "")
+                    End Select
+                    %></span></div></td>
 														<td><div align="center">
 																
 																<table border="0" cellspacing="0" cellpadding="2">
 				  <tr>
-					<td><div align="center"><a href="ppv_ordens_servico_formulario.asp?comando=visualizar&cod_ordem_servico=<%=rs3("cod_ordem_servico")%>"><img src="images/icons/icon_visualizar.png" width="16" height="16" border="0" /></a></div></td>
+					<td><div align="center"><a href="ppv_ordens_servico_formulario.asp?comando=visualizar&cod_ordem_servico=<%=rs3("cod_ordem_servico")%>"><img src="images/icons/icon_visualizar.png" alt="Visualizar OS" title="Visualizar OS" width="16" height="16" border="0" /></a></div></td>
 					<%If acesso_inclusao_exclusao_os_manual and int(rs3("status_ordem_servico")) = 1 and rs3("motivo_gerado_manualmente") <> Empty Then%>
-					<td><a href="ppv_ordens_servico_formulario.asp?comando=alterar&cod_ordem_servico=<%=rs3("cod_ordem_servico")%>"><img src="images/icons/icon_alterar.png" width="16" height="16" border="0" /></a></td>
-					<td><a href="ppv_ordens_servico_formulario.asp?comando=excluir&cod_ordem_servico=<%=rs3("cod_ordem_servico")%>"><img src="images/icons/icon_excluir.png" width="16" height="16" border="0" /></a></td>
+					<td><a href="ppv_ordens_servico_formulario.asp?comando=alterar&cod_ordem_servico=<%=rs3("cod_ordem_servico")%>"><img src="images/icons/icon_alterar.png" alt="Alterar OS" title="Alterar OS" width="16" height="16" border="0" /></a></td>
+					<td><a href="ppv_ordens_servico_formulario.asp?comando=excluir&cod_ordem_servico=<%=rs3("cod_ordem_servico")%>"><img src="images/icons/icon_excluir.png" alt="Excluir OS" title="Excluir OS" width="16" height="16" border="0" /></a></td>
 					<%End If%>
 				  </tr>                   
 					                  
@@ -911,14 +914,13 @@ Next
       	   <%call paginacao(paginacaocao,rs.PageCount)%>      </td>
     </tr>   
 <%End if%>
-        </table>
+        </tbody></table>
+        </div></section>
 
 <%
 	Else
 	%>
-    <div align="center" class="msgGrande">
-    Nenhuma OS encontrada!<br />
-</div>
+    <div class="alert alert-light border" role="status">Nenhuma ordem de servi&ccedil;o encontrada para os filtros selecionados.</div>
     <%End if
 	
 	rs.Close
@@ -926,10 +928,8 @@ Next
 	
 	FecharConexao()
 	%>
-	  </p>
-	   <br />
-	   <br />
-	   <strong>Legenda de Status:</strong><br />
+      <details class="dashboard-panel ppv-guide"><summary>Legendas e orienta&ccedil;&otilde;es</summary><div class="mt-3">
+<strong>Legenda de Status:</strong><br />
        1 - Em produ&ccedil;&atilde;o<br />
        2 - Finalizados e n&atilde;o despachados<br />
        3 - Despachado para cliente<br />
@@ -973,25 +973,31 @@ Next
 2) &Eacute; poss&iacute;vel excluir a OS somente se a OS foi lan&ccedil;ada manualmente e n&atilde;o foi exclu&iacute;da, se n&atilde;o desejar ter mais a OS utilize o bot&atilde;o  Cancelar dispon&iacute;vel no modo de visualiza&ccedil;&atilde;o da OS<br />
 3) Para trocar a responsabilidade da etapa utilize o modo de visualiza&ccedil;&atilde;o e em seguida o bot&atilde;o Trocar Responsabilidade (necess&aacute;rio valida&ccedil;&atilde;o especial)<br />
 </p>
-		<p align="center"> </p>
-	    </td>
-    </tr>
-</table>
-
- 
-  
-  </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+      </div></details>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
 </body>
 </html>
