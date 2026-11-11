@@ -878,11 +878,11 @@ sql = 	" SELECT "&_
 																diferenca = formatNumber(rs3("diferenca_etapa"))/1
 																'Response.Write(diferenca)
 																If diferenca > 0 Then%>
-														  <img src="images/icons/icon_balao_red.gif" alt="Etapa atrasada h&aacute; <%=diferenca%> dia(s)." title="Etapa atrasada h&aacute; <%=diferenca%> dia(s)." />
+														  <span class="ppv-badge late">Em atraso &middot; <%=diferenca%> d</span>
 														  <%Elseif diferenca = 0 Then%>
-														  <img src="images/icons/icon_balao_yellon.gif" alt="OS vencendo hoje." title="OS vencendo hoje" />
+														  <span class="ppv-badge today">Vence hoje</span>
 																<%Else%>
-														  <img src="images/icons/icon_balao_green.gif" alt="Faltam <%=(diferenca)*(-1)%> dia(s) para t&eacute;rmino do prazo da etapa." title="Faltam <%=(diferenca)*(-1)%> dia(s) para t&eacute;rmino do prazo da etapa." />                                                
+														  <span class="ppv-badge on-time">Em dia &middot; <%=-diferenca%> d restantes</span>                                                
 																<%End If%>
 															<%End If%>
 														
