@@ -389,7 +389,7 @@ Set rsTodos = objConexao.Execute("SELECT * FROM (SELECT "&_
       <tr>
       <td>
         
-        <div class="cap-doc-header"><strong>Recibo de pagamento</strong></div>
+        <div class="cap-doc-header"><strong>Recibo de pagamento</strong><img class="cap-doc-logo" src="images/logoparafundopreto.png" alt="Stillos"></div>
         <p class="style1"></p>
         <p align="justify">Recebi da empresa: Stillo's Reportagens  Fotográficas S/C Ltda., a importância de <strong><%=formatCurrency(TOTAL_A_RECEBER_LIQUIDO)%></strong>(<%=Extenso(TOTAL_A_RECEBER_LIQUIDO)%>) referente <strong>a comissão nas vendas </strong> dos pedidos:<%=TODOS_PEDIDOS_POR_VENDEDOR%> <% if TODOS_PEDIDOS_BOLETOS_POR_VENDEDOR <> "" then %> e também da compensasão dos boletos: <%= TODOS_PEDIDOS_BOLETOS_POR_VENDEDOR %>  <% end if %>
 
