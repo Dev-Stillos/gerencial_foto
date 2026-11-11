@@ -35,7 +35,9 @@ calendario_necessario = "SIM"
 .purchase-table td:nth-child(2) > div, .purchase-table td:nth-child(3) > div { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .purchase-row { cursor:pointer; }
 .purchase-row:hover > td { background:#faf7fb; }
-.purchase-order-link { display:inline-block; font-weight:700; white-space:nowrap; }
+.purchase-order-link { display:inline-flex; flex-direction:column; align-items:flex-start; gap:2px; padding:6px 10px; border-color:#e8c4d8; background:#faf0f6; color:#88134f; font-weight:700; white-space:nowrap; }
+.purchase-order-link:hover { background:#f3dce9; border-color:#c889ac; color:#741044; }
+.purchase-order-link small { font-size:.85em; font-weight:650; }
 .purchase-order-dialog { box-sizing:border-box; width:min(1180px,calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:0; border:1px solid #e4dfeb; border-radius:14px; color:var(--ink); background:#fff; }
 .purchase-order-dialog[open] { display:flex; flex-direction:column; }
 .purchase-order-dialog::backdrop { background:#24273899; }
@@ -466,7 +468,7 @@ If Not rs.Eof Then
 	qtd_atrasados= pedidoCompraTotais(rs("cod_pedido_compra"),7,true)
 %>
 <tr class="purchase-row" role="row">
-  <td role="cell" data-label="Pedido"><div align="center"><button class="btn btn-outline-secondary btn-sm purchase-order-link" type="button" aria-haspopup="dialog">#<%=rs("numero_pedido_compra")%></button>
+  <td role="cell" data-label="Pedido"><div align="center"><button class="btn btn-outline-secondary btn-sm purchase-order-link" type="button" aria-haspopup="dialog"><span class="purchase-order-number">#<%=rs("numero_pedido_compra")%></span><small>Ver detalhes <span aria-hidden="true">&rarr;</span></small></button>
   <% if rs("pedido_manual") = "S" Then%>
   	<small class="purchase-manual">Manual</small>
   <% end if %>
@@ -653,14 +655,17 @@ FecharConexao()
     document.querySelectorAll('.purchase-order-link').forEach(function (button) {
         button.addEventListener('click', function () {
             var cells = button.closest('tr').cells;
-            orderTitle = 'Pedido ' + button.textContent.trim();
+            var orderNumber = button.querySelector('.purchase-order-number').textContent.trim();
+            orderTitle = 'Pedido ' + orderNumber;
             fields.replaceChildren();
             for (var i = 0; i < cells.length - 1; i++) {
                 var field = document.createElement('div');
                 var label = document.createElement('dt');
                 var value = document.createElement('dd');
                 label.textContent = cells[i].dataset.label;
-                value.textContent = cells[i].textContent.trim();
+                value.textContent = i === 0
+                    ? orderNumber + (cells[i].querySelector('.purchase-manual') ? ' (manual)' : '')
+                    : cells[i].textContent.trim();
                 field.append(label, value);
                 fields.appendChild(field);
             }
