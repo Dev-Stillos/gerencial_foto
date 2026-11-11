@@ -439,12 +439,13 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 <link rel="stylesheet" href="css/dashboard.css" />
 <style>
 .ppv-page .ppv-main { max-width: 1680px; }
-.ppv-page .ppv-module { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
-.ppv-page .ppv-module a, .ppv-page .ppv-menu-unavailable { display: inline-block; padding: 7px 10px; border-radius: 6px; overflow-wrap: anywhere; }
-.ppv-page .ppv-module a { color: #53566b; text-decoration: none; }
-.ppv-page .ppv-module a:hover, .ppv-page .ppv-module a[aria-current="page"] { background: #f9eaf2; color: #9e125c; }
-.ppv-page .ppv-menu-unavailable { color: #64677b; background: #f5f5f8; }
-.ppv-page .ppv-menu-unavailable small { white-space: nowrap; }
+.ppv-page .ppv-module { margin-bottom: 22px; }
+.ppv-page .ppv-module .subMenu { max-width: 100%; white-space: normal; line-height: 2.3; }
+.ppv-page .ppv-module .subMenu a { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+.ppv-page .container_Vencido, .ppv-page .container_Faltam { display: inline-block; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-weight: 650; }
+.ppv-page .container_Vencido { background: #c00; color: #fff; }
+.ppv-page .container_Faltam { background: #f1eff8; color: #242738; }
+.ppv-page .ppv-legacy-signal img { vertical-align: middle; }
 .ppv-page .ppv-filters { height: auto; margin-bottom: 24px; }
 .ppv-page .ppv-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 18px 0; align-items: end; }
 .ppv-page .ppv-fields label { display: block; font-weight: 600; margin-bottom: 6px; color: #44485b; }
@@ -523,33 +524,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
       <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
       <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
       <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
-        <%
-        Dim ppvBaseMenu, ppvLinksMenu, ppvRotulosMenu, ppvPermissoesMenu, ppvItemMenu
-        Dim ppvPodeEditarEtapas, ppvPodeTriagemInicial, ppvPodeDespacho, ppvPodeInserirOS
-        ppvBaseMenu = Request.ServerVariables("SCRIPT_NAME")
-        ppvBaseMenu = Left(ppvBaseMenu, InStrRev(ppvBaseMenu, "/"))
-        AbrirConexao()
-        ppvPodeEditarEtapas = validaUsuario(2,,54,true)
-        ppvPodeTriagemInicial = validaUsuario(2,,52,true)
-        ppvPodeDespacho = validaUsuario(2,,53,true)
-        ppvPodeInserirOS = validaUsuario(2,,58,true)
-        FecharConexao()
-
-        ppvLinksMenu = Array("ppv_ordens_servico.asp", "ppv_produtos_etapas.asp", _
-                            "ppv_ordens_servico_triagem_inicial.asp", "ppv_ordens_servico_triagem_despacho.asp", _
-                            "ppv_ordens_servico_triagem_entrega.asp", "ppv_ordens_servico_os_manual_origem_vendas.asp", _
-                            "ppv_ordens_servico_triagem_entrega_correios.asp")
-        ppvRotulosMenu = Array("Ordens de Servi&ccedil;o", "Produtos Etapas", "Triagem Inicial", "Triagem Despacho", _
-                              "Triagem Entrega", "Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido", "Retorno Correios")
-        ppvPermissoesMenu = Array(True, ppvPodeEditarEtapas, ppvPodeTriagemInicial, ppvPodeDespacho, _
-                                  ppvPodeDespacho, ppvPodeInserirOS, ppvPodeDespacho)
-        For ppvItemMenu = 0 To UBound(ppvLinksMenu)
-            If ppvPermissoesMenu(ppvItemMenu) Then%>
-                <a href="<%=Server.HTMLEncode(ppvBaseMenu & ppvLinksMenu(ppvItemMenu))%>"<%If ppvItemMenu = 0 Then%> aria-current="page"<%End If%>><%=ppvRotulosMenu(ppvItemMenu)%></a>
-            <%Else%>
-                <span class="ppv-menu-unavailable"><%=ppvRotulosMenu(ppvItemMenu)%> <small>Sem acesso</small></span>
-            <%End If
-        Next%>
+        <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
       </nav>
  <%
 	Dim sucesso, codmsg
@@ -828,27 +803,29 @@ sql = 	" SELECT "&_
 														<td data-label="Data de in&#237;cio"><div align="center"><%=ArrumaData(rs3("data_inicio"))%></div></td>
 														<td data-label="Prazo da etapa"><div align="center"><%=ArrumaData(rs3("prazo_limite"))%></div></td>
 														<td data-label="Data de cadastro"><div align="center"><%=ArrumaData(rs3("data_cadastrado"))%></div></td>
-														<td data-label="Prazo geral">
-                        <div align="center">
-                            <%
-                            Dim ppvDiasGerais, ppvClassePrazoGeral
-                            ppvDiasGerais = rs3("dias_prazo_geral").Value
-                            If IsNumeric(ppvDiasGerais) Then
-                                ppvDiasGerais = CDbl(ppvDiasGerais)
-                                ppvClassePrazoGeral = "ppv-status"
-                                If ppvDiasGerais < 0 Then ppvClassePrazoGeral = "ppv-badge late"
-                            %>
-                                <span class="<%=ppvClassePrazoGeral%>"><%=ArrumaData(rs3("prazo_geral"))%></span>
-                                <%If ppvDiasGerais < 0 Then%>
-                                    <div class="text-muted">Vencido h&aacute; <%=Abs(ppvDiasGerais)%> d</div>
-                                <%Else%>
-                                    <div class="text-muted">Faltam <%=ppvDiasGerais%> d</div>
-                                <%End If
-                            Else%>
-                                <span class="text-muted">&mdash;</span>
-                            <%End If%>
-                        </div>
-                    </td>
+														<td data-label="Prazo geral"><div align="center">
+                    <%
+                    temp = Cstr(""&rs3("dias_prazo_geral"))
+														temp2 = ""
+														If temp <> "" Then
+															temp = formatNumber(temp)
+															
+															If temp > 10 Then
+																temp2 = "Faltam"
+															Else if temp >=0 and temp <=10 Then
+																temp2 = "Faltam"
+															Else
+																temp2 = "Vencido"
+																temp = temp*-1
+															End If
+															%>
+															
+															<%End If%>
+															<div class="container_<%=temp2%>" onclick="alert('<%=temp2%>:  <%=int(temp)%> dias');"><%=ArrumaData(rs3("prazo_geral"))%></div>
+														<%Else%>
+														-
+														<%End If%>
+														</div></td>
                     <td data-label="Status"><div align="center">
                     <%
                     Dim ppvStatus, ppvTextoStatus, ppvCorStatus
@@ -884,32 +861,41 @@ sql = 	" SELECT "&_
 														<td data-label="Situa&#231;&#227;o do prazo">
 														<div align="center">
 															<%
+                    %>
+                    <span class="ppv-legacy-signal">
+                    <%If int(rs3("status_ordem_servico")) = 4 Then%>
+																<img src="images/icons/icon_green.gif" width="16" height="15" />
+                              <%ElseIf int(rs3("status_ordem_servico")) = 3 Then%>
+                                <img src="images/icons/icon_entrega.png" width="16" height="15" />
+				                      <%ElseIf int(rs3("status_ordem_servico")) = 2 Then%> 
+																<img src="images/icons/icon_aguardando.png" width='16px' height='16px' />
+															<%Elseif  int(rs3("status_ordem_servico")) = 99  Then%>
+																<img src="images/icons/icon_red.gif" width="17" height="15" />
+															<%Else%>
+														  <%
+																
+																'Response.Write(rs2("diferenca_etapa"))
+																diferenca = formatNumber(rs3("diferenca_etapa"))/1
+																'Response.Write(diferenca)
+																If diferenca > 0 Then%>
+														  <img src="images/icons/icon_balao_red.gif" alt="Etapa atrasada h&aacute; <%=diferenca%> dia(s)." title="Etapa atrasada h&aacute; <%=diferenca%> dia(s)." />
+														  <%Elseif diferenca = 0 Then%>
+														  <img src="images/icons/icon_balao_yellon.gif" alt="OS vencendo hoje." title="OS vencendo hoje" />
+																<%Else%>
+														  <img src="images/icons/icon_balao_green.gif" alt="Faltam <%=(diferenca)*(-1)%> dia(s) para t&eacute;rmino do prazo da etapa." title="Faltam <%=(diferenca)*(-1)%> dia(s) para t&eacute;rmino do prazo da etapa." />                                                
+																<%End If%>
+															<%End If%>
+														
+                    </span>
+                    <%
                     Dim ppvDataStatus, ppvRotuloData
                     ppvDataStatus = rs3("ppv_data_status").Value
                     ppvRotuloData = ""
-
                     Select Case ppvStatus
-                        Case "2"
-                            ppvRotuloData = "Finalizada em"
-                        Case "3"
-                            ppvRotuloData = "Despachada em"
-                        Case "4"
-                            ppvRotuloData = "Entregue em"
-                        Case "1"
-                            diferenca = rs3("diferenca_etapa").Value
-                            If Not IsNumeric(diferenca) Then%>
-                                <span class="text-muted">Prazo indispon&iacute;vel</span>
-                            <%ElseIf CDbl(diferenca) > 0 Then%>
-                                <span class="ppv-badge late">Etapa atrasada &middot; <%=diferenca%> d</span>
-                            <%ElseIf CDbl(diferenca) = 0 Then%>
-                                <span class="ppv-badge today">Etapa vence hoje</span>
-                            <%Else%>
-                                <span class="ppv-badge on-time">Etapa no prazo &middot; <%=Abs(CDbl(diferenca))%> d</span>
-                            <%End If
+                        Case "2": ppvRotuloData = "Finalizada em"
+                        Case "3": ppvRotuloData = "Despachada em"
+                        Case "4": ppvRotuloData = "Entregue em"
                     End Select
-                    If ppvStatus <> "1" And Not IsDate(ppvDataStatus) Then%>
-                        <span class="text-muted">&mdash;</span>
-                    <%End If
                     If ppvRotuloData <> "" And IsDate(ppvDataStatus) Then%>
                         <details class="ppv-status-date">
                             <summary>Data registrada</summary>
