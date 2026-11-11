@@ -867,6 +867,13 @@ sql = 	" SELECT "&_
 														<div align="center">
 															<%
                     diferenca = rs3("diferenca_etapa").Value
+                    If CStr(rs3("status_ordem_servico")) = "1" And Not IsNumeric(diferenca) Then
+                        prazo_limite = rs3("prazo_limite").Value
+                        If IsDate(prazo_limite) Then
+                            diferenca = DateDiff("d", DateValue(CDate(prazo_limite)), Date())
+                        End If
+                    End If
+
                     If CStr(rs3("status_ordem_servico")) <> "1" Then%>
                         <span class="text-muted">Sem etapa ativa</span>
                     <%ElseIf Not IsNumeric(diferenca) Then%>
