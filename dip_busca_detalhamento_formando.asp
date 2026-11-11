@@ -431,7 +431,28 @@ function popUp(URL){
 .graduate-page .graduate-panel .graduate-scroll table { min-width:560px; }
 .graduate-page .graduate-panel .graduate-scroll table > tbody > tr:first-child > td { background:#f1edf6; }
 .graduate-page .graduate-panel .graduate-scroll table > tbody > tr > td { border-bottom:1px solid #eeeaf2; }
-.graduate-page .graduate-movement-legend { margin-top:14px; }
+.graduate-page .graduate-movement-table { width:100%; border-collapse:collapse; text-align:left; }
+.graduate-page .graduate-movement-table th,
+.graduate-page .graduate-movement-table td { padding:12px 14px; border:0; border-bottom:1px solid #eeeaf2; vertical-align:top; text-align:left; overflow-wrap:anywhere; }
+.graduate-page .graduate-movement-table th { background:#f1edf6; color:#3e344e; font-weight:700; }
+.graduate-page .graduate-movement-table .graduate-movement-previous > td { background:#faf8fc; }
+.graduate-page .graduate-movement-item strong { display:block; }
+.graduate-page .graduate-movement-tag { display:inline-block; margin-top:3px; padding:3px 8px; border-radius:6px; background:#eee8f4; color:#564468; font-size:.85em; font-weight:700; }
+.graduate-page .graduate-movement-pending { background:#f9e7ec; color:#872047; }
+.graduate-page .graduate-movement-label { display:none; }
+@media (max-width:900px) {
+    .graduate-page .graduate-movement-table,
+    .graduate-page .graduate-movement-table tbody { display:block; }
+    .graduate-page .graduate-movement-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+    .graduate-page .graduate-movement-table tbody > tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin:0 0 10px; border:1px solid #e4dfeb; border-radius:10px; overflow:hidden; }
+    .graduate-page .graduate-movement-table tbody > tr:last-child { margin-bottom:0; }
+    .graduate-page .graduate-movement-table td { display:block; width:auto; border:0; }
+    .graduate-page .graduate-movement-table td:first-child { grid-column:1 / -1; border-bottom:1px solid #eeeaf2; }
+    .graduate-page .graduate-movement-label { display:block; margin-bottom:4px; color:#564468; font-size:.85em; font-weight:700; }
+}
+@media (max-width:420px) {
+    .graduate-page .graduate-movement-table tbody > tr { grid-template-columns:minmax(0,1fr); }
+}
 .graduate-page .graduate-content .graduate-summary { margin-bottom:20px; }
 </style>
 </head>
@@ -900,15 +921,16 @@ function popUp(URL){
             <section class="dashboard-panel graduate-panel" aria-labelledby="movimentacoes_formando">
             <h2 class="graduate-section-heading" id="movimentacoes_formando">Movimenta&ccedil;&otilde;es</h2>
 				<%If SISTEMA_NOVO = 1 Then%>
-	  	        <div class="graduate-scroll" role="region" aria-label="Movimenta&ccedil;&otilde;es" tabindex="0">
-<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-                  <tr>
-                    <td width="10%"><div align="center"><strong>Item</strong></div></td>
-                    <td width="28%"><div align="center"><strong>Vendedor Respons&aacute;vel</strong></div></td>
-                    <td width="20%"><div align="center"><strong>Data Sa&iacute;da </strong></div></td>
-                    <td width="23%"><div align="center"><strong>Data Retorno </strong></div></td>
-                    <td width="19%"><div align="center"><strong>Local de Armazenagem </strong></div></td>
-                  </tr>
+                <div class="graduate-movements">
+<table class="graduate-movement-table" role="table" aria-labelledby="movimentacoes_formando">
+    <thead role="rowgroup"><tr role="row">
+        <th role="columnheader" scope="col">Item</th>
+        <th role="columnheader" scope="col">Vendedor respons&aacute;vel</th>
+        <th role="columnheader" scope="col">Data de sa&iacute;da</th>
+        <th role="columnheader" scope="col">Data de retorno</th>
+        <th role="columnheader" scope="col">Local de armazenagem</th>
+    </tr></thead>
+    <tbody role="rowgroup">
 				  <%
 				  AbrirConexao()
 				  
@@ -919,6 +941,11 @@ function popUp(URL){
 						"WHERE TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES.COD_FORMANDO="&COD_FORMANDO&" GROUP BY TIPO ORDER BY TIPO ASC, DATA_SAIDA DESC"
 				 
 				  Set rsMovimentacoesMaster = objConexao.Execute(sql)
+                  If rsMovimentacoesMaster.Eof Then
+                  %>
+                    <tr role="row"><td role="cell" colspan="5">Nenhuma movimenta&ccedil;&atilde;o registrada.</td></tr>
+                  <%
+                  End If
 				  
 				  While not rsMovimentacoesMaster.Eof
 				  		
@@ -945,24 +972,24 @@ function popUp(URL){
 						  
 						  If iMovimentacoes = 1 Then
 						  %>
-                 		 <tr>
-                    <td>
-                      <div align="center">
+                    <tr role="row">
+                    <td role="cell" class="graduate-movement-item">
                         <%
-					 Dim TIPO
-				  TIPO = formatNumber(0&rsMovimentacoes("TIPO"),0)
+                     Dim TIPO, movementItemLabel
+                  movementItemLabel = "Produto agregado"
+                  TIPO = formatNumber(0&rsMovimentacoes("TIPO"),0)
 				  
 				  If TIPO = 1 Then
-				  	Response.Write("Ficha")
+                    movementItemLabel = "Ficha"
 				  Elseif  TIPO = 0 Then
 						
 						If ENCADERNACOES_EXTRAS = 1 Then
-							Response.Write("&Aacute;lbum Duplo")
+                            movementItemLabel = "&Aacute;lbum Duplo"
 						Else
-							Response.Write("&Aacute;lbum")
+                            movementItemLabel = "&Aacute;lbum"
 						End If
 						Elseif TIPO = 2 Then
-    						Response.Write("Álbum Digital")
+                            movementItemLabel = "Álbum Digital"
 				  Else		
 						'Produto agregado, consultar qual &eacute;.
 						Dim rsProdAgrePend
@@ -974,9 +1001,7 @@ function popUp(URL){
 				
 				Set rsProdAgrePend = objConexao.Execute(sql)
 				If not rsProdAgrePend.Eof Then
-				%>
-                        <%=rsProdAgrePend("NOME_PRODUTO")%>					
-                        <%
+                    movementItemLabel = rsProdAgrePend("NOME_PRODUTO")
 				End If
 				rsProdAgrePend.Close
 				Set rsProdAgrePend = Nothing
@@ -984,21 +1009,21 @@ function popUp(URL){
 						
 				  End If
 					%>
-                        </div></td>
+                        <strong><%=movementItemLabel%></strong></td>
 					<%
 					Dim DATA_SAIDA, DATA_RETORNO
 					DATA_SAIDA		= ""&rsMovimentacoes("DATA_SAIDA")
 					DATA_RETORNO	= ""&rsMovimentacoes("DATA_RETORNO")
 					%>
-                    <td><%=rsMovimentacoes("NOME_VENDEDOR")%></td>
-                    <td><%=DATA_SAIDA%></td>
-                    <td>
+                    <td role="cell"><span class="graduate-movement-label">Vendedor respons&aacute;vel</span><%=rsMovimentacoes("NOME_VENDEDOR")%></td>
+                    <td role="cell"><span class="graduate-movement-label">Data de sa&iacute;da</span><%=DATA_SAIDA%></td>
+                    <td role="cell"><span class="graduate-movement-label">Data de retorno</span>
 					<%If Len(DATA_RETORNO) > 1 Then%>
 							<%=rsMovimentacoes("DATA_RETORNO")%>
 					<%Else%>
-						<span class="msg">Item n&atilde;o devolvido</span>	
+                        <span class="graduate-movement-tag graduate-movement-pending">Item n&atilde;o devolvido</span>
 					<%End If%>					</td>
-                    <td>
+                    <td role="cell"><span class="graduate-movement-label">Local de armazenagem</span>
                     <%If Len(DATA_RETORNO) > 1 Then%>                    
                     	<%If int(rsMovimentacoes("COD_CAIXA_ARMAZENADO")) = 0 Then%>
                         	Local Provis&oacute;rio de Armazenamento
@@ -1027,21 +1052,21 @@ function popUp(URL){
                     </td>
                   </tr>
 				          <%Else%>
-				 		 <tr bgcolor="#CCCCCC">
-                    <td><div align="center"><img src="images/icons/seta_superior.gif" /></div></td>
+                         <tr role="row" class="graduate-movement-previous">
+                    <td role="cell" class="graduate-movement-item"><strong><%=movementItemLabel%></strong> <span class="graduate-movement-tag">Anterior</span></td>
 					<%
 					DATA_SAIDA		= ""&rsMovimentacoes("DATA_SAIDA")
 					DATA_RETORNO	= ""&rsMovimentacoes("DATA_RETORNO")
 					%>
-                    <td><%=rsMovimentacoes("NOME_VENDEDOR")%></td>
-                    <td><%=DATA_SAIDA%></td>
-                    <td>
+                    <td role="cell"><span class="graduate-movement-label">Vendedor respons&aacute;vel</span><%=rsMovimentacoes("NOME_VENDEDOR")%></td>
+                    <td role="cell"><span class="graduate-movement-label">Data de sa&iacute;da</span><%=DATA_SAIDA%></td>
+                    <td role="cell"><span class="graduate-movement-label">Data de retorno</span>
 					<%If Len(DATA_RETORNO) > 1 Then%>
 							<%=rsMovimentacoes("DATA_RETORNO")%>
 					<%Else%>
-						<span class="msg">Item n&atilde;o devolvido</span>	
+                        <span class="graduate-movement-tag graduate-movement-pending">Item n&atilde;o devolvido</span>
 					<%End If%>					</td>
-                    <td>
+                    <td role="cell"><span class="graduate-movement-label">Local de armazenagem</span>
                     <%If Len(DATA_RETORNO) > 1 Then%>                    
                     	<%If int(rsMovimentacoes("COD_CAIXA_ARMAZENADO")) = 0 Then%>
                         	Local Provis&oacute;rio de Armazenamento
@@ -1082,19 +1107,9 @@ function popUp(URL){
 				  
 				  FecharConexao()
 				  %>
+                </tbody>
                 </table></div>
-                <br />
-<p class="graduate-movement-legend"><strong>Legenda das movimenta&ccedil;&otilde;es</strong></p>
-
-				<table width="200" border="0" cellspacing="0" cellpadding="2">
-  <tr>
-     <td width="39" bgcolor="#CCCCCC">&nbsp;</td>
-    <td width="161"><div align="center">Movimenta&ccedil;&otilde;es antigas do item</div></td>
-  </tr>
-</table>
-
-               
-	  	          <%Else%>
+                <%Else%>
 				   <div align="center">
 	  	          <span class="msg"><strong>Aten&ccedil;&atilde;o, as movimenta&ccedil;&otilde;es s&oacute; est&atilde;o dispon&iacute;veis para o sistema novo! </strong>	  	          </span>
 				  </div>
