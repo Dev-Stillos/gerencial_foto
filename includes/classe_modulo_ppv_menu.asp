@@ -1,5 +1,15 @@
 <%
 Dim ppvPaginasPermitidas, ppvRegistroPermissao, ppvConsultaPermissao, ppvPerfilMenu
+Dim ppvPaginaAtualMenu
+ppvPaginaAtualMenu = LCase(Request.ServerVariables("URL") & "")
+ppvPaginaAtualMenu = Mid(ppvPaginaAtualMenu, InStrRev(ppvPaginaAtualMenu, "/") + 1)
+Select Case ppvPaginaAtualMenu
+    Case "ppv_ordens_servico_formulario.asp"
+        ppvPaginaAtualMenu = "ppv_ordens_servico.asp"
+    Case "ppv_ordens_servico_triagem_despacho_alterar.asp"
+        ppvPaginaAtualMenu = "ppv_ordens_servico_triagem_despacho.asp"
+End Select
+
 Set ppvPaginasPermitidas = Server.CreateObject("Scripting.Dictionary")
 ppvPaginasPermitidas.CompareMode = 1
 
@@ -19,41 +29,41 @@ If Len(Session("COD_USUARIO") & "") > 0 And IsNumeric(Session("COD_PERFIL") & ""
     ppvRegistroPermissao.Close
     Set ppvRegistroPermissao = Nothing
 %>
-<div class="subMenu">Submenu:
+<div class="ppv-shared-menu" role="group" aria-label="Submenu de Produ&ccedil;&atilde;o P&oacute;s-Venda">
     <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico.asp") Then%>
-    <a href="ppv_ordens_servico.asp">Ordens de Servi&ccedil;o</a>
+    <a class="ppv-shared-item" href="ppv_ordens_servico.asp"<%If ppvPaginaAtualMenu = "ppv_ordens_servico.asp" Then%> aria-current="page"<%End If%>>Ordens de Servi&ccedil;o</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Ordens de Servi&ccedil;o</button>
-    <%End If%> |
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Ordens de Servi&ccedil;o</button>
+    <%End If%>
     <%If ppvPaginasPermitidas.Exists("ppv_produtos_etapas.asp") And validaUsuario(2,,54,true) Then%>
-    <a href="ppv_produtos_etapas.asp">Produtos Etapas</a>
+    <a class="ppv-shared-item" href="ppv_produtos_etapas.asp"<%If ppvPaginaAtualMenu = "ppv_produtos_etapas.asp" Then%> aria-current="page"<%End If%>>Produtos Etapas</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Produtos Etapas</button>
-    <%End If%> |
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Produtos Etapas</button>
+    <%End If%>
     <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_inicial.asp") And validaUsuario(2,,52,true) Then%>
-    <a href="ppv_ordens_servico_triagem_inicial.asp">Triagem Inicial</a>
+    <a class="ppv-shared-item" href="ppv_ordens_servico_triagem_inicial.asp"<%If ppvPaginaAtualMenu = "ppv_ordens_servico_triagem_inicial.asp" Then%> aria-current="page"<%End If%>>Triagem Inicial</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Inicial</button>
-    <%End If%> |
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Triagem Inicial</button>
+    <%End If%>
     <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_despacho.asp") And validaUsuario(2,,53,true) Then%>
-    <a href="ppv_ordens_servico_triagem_despacho.asp">Triagem Despacho</a>
+    <a class="ppv-shared-item" href="ppv_ordens_servico_triagem_despacho.asp"<%If ppvPaginaAtualMenu = "ppv_ordens_servico_triagem_despacho.asp" Then%> aria-current="page"<%End If%>>Triagem Despacho</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Despacho</button>
-    <%End If%> |
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Triagem Despacho</button>
+    <%End If%>
     <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_entrega.asp") And validaUsuario(2,,53,true) Then%>
-    <a href="ppv_ordens_servico_triagem_entrega.asp">Triagem Entrega</a>
+    <a class="ppv-shared-item" href="ppv_ordens_servico_triagem_entrega.asp"<%If ppvPaginaAtualMenu = "ppv_ordens_servico_triagem_entrega.asp" Then%> aria-current="page"<%End If%>>Triagem Entrega</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Triagem Entrega</button>
-    <%End If%> |
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Triagem Entrega</button>
+    <%End If%>
     <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_os_manual_origem_vendas.asp") And validaUsuario(2,,58,true) Then%>
-    <a href="ppv_ordens_servico_os_manual_origem_vendas.asp">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</a>
+    <a class="ppv-shared-item" href="ppv_ordens_servico_os_manual_origem_vendas.asp"<%If ppvPaginaAtualMenu = "ppv_ordens_servico_os_manual_origem_vendas.asp" Then%> aria-current="page"<%End If%>>Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</button>
-    <%End If%> |
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido</button>
+    <%End If%>
     <%If ppvPaginasPermitidas.Exists("ppv_ordens_servico_triagem_entrega_correios.asp") And validaUsuario(2,,53,true) Then%>
-    <a href="ppv_ordens_servico_triagem_entrega_correios.asp">Retorno Correios</a>
+    <a class="ppv-shared-item" href="ppv_ordens_servico_triagem_entrega_correios.asp"<%If ppvPaginaAtualMenu = "ppv_ordens_servico_triagem_entrega_correios.asp" Then%> aria-current="page"<%End If%>>Retorno Correios</a>
     <%Else%>
-    <button type="button" class="ppv-access-trigger" aria-haspopup="dialog">Retorno Correios</button>
+    <button type="button" class="ppv-shared-item ppv-access-trigger" aria-haspopup="dialog">Retorno Correios</button>
     <%End If%>
 </div>
 <%
@@ -62,11 +72,29 @@ End If
 Set ppvPaginasPermitidas = Nothing
 %>
 <style>
-.subMenu .ppv-access-trigger {
-    appearance:none; display:inline; padding:0; border:0; background:none;
-    color:inherit; font:inherit; text-decoration:underline; cursor:pointer;
+.dashboard-main .ppv-module:has(> .ppv-shared-menu) { margin-bottom:0; }
+.ppv-shared-menu {
+    box-sizing:border-box; display:flex; flex-wrap:wrap; gap:6px;
+    margin:0 0 20px; padding:10px; border:1px solid #e4dfeb;
+    border-radius:12px; background:#fff; font:600 14px/1.35 system-ui,sans-serif;
 }
-.subMenu .ppv-access-trigger:hover { color:#88134f; }
+.ppv-shared-menu .ppv-shared-item {
+    appearance:none; box-sizing:border-box; display:inline-flex; align-items:center;
+    min-height:42px; max-width:100%; margin:0; padding:8px 12px;
+    border:1px solid transparent; border-radius:8px; background:transparent;
+    color:#3e4057; font:inherit; text-align:left; text-decoration:none;
+    white-space:normal; overflow-wrap:anywhere; cursor:pointer;
+}
+.ppv-shared-menu .ppv-shared-item:hover { background:#f7edf3; color:#88134f; text-decoration:none; }
+.ppv-shared-menu .ppv-shared-item[aria-current="page"] { background:#b20b61; color:#fff; }
+.ppv-shared-menu .ppv-access-trigger { color:#66677b; }
+.ppv-shared-menu .ppv-shared-item:focus-visible { outline:2px solid #88134f; outline-offset:2px; }
+@media(max-width:640px) {
+    .ppv-shared-menu { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:360px) {
+    .ppv-shared-menu { grid-template-columns:minmax(0,1fr); }
+}
 .ppv-access-dialog {
     box-sizing:border-box; width:min(440px, calc(100% - 32px)); padding:24px;
     border:1px solid #e4dfeb; border-radius:14px; color:#242738;
@@ -90,7 +118,7 @@ Set ppvPaginasPermitidas = Nothing
 <script>
 (function () {
     var dialog = document.getElementById('ppvAccessDialog');
-    document.querySelectorAll('.subMenu .ppv-access-trigger').forEach(function (button) {
+    document.querySelectorAll('.ppv-shared-menu .ppv-access-trigger').forEach(function (button) {
         button.addEventListener('click', function () {
             dialog.showModal();
         });
