@@ -59,7 +59,15 @@
 .cap-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
 .cap-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
 .cap-page .cap-panel { height:auto; margin-bottom:16px; padding:clamp(14px,3vw,26px); }
+.cap-overview h2 { margin-bottom:10px; }
+.cap-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 16px; }
+.cap-metric { min-width:0; padding:16px; border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.cap-metric-primary { background:#faf0f6; border-color:#ebd3e1; }
+.cap-metric dt { color:#57566a; font-size:.87em; font-weight:650; }
+.cap-metric dd { margin:6px 0 0; font-size:clamp(19px,2vw,27px); line-height:1.15; font-weight:700; font-variant-numeric:tabular-nums; }
+.cap-metric small { display:block; margin-top:6px; color:#57566a; }
 .cap-tools { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:16px; }
+.cap-tools h2 { margin-bottom:10px; }
 .cap-tools p, .cap-muted { color:#57566a; }
 .cap-tools p { margin:6px 0 14px; }
 .cap-actions, .cap-heading { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
@@ -69,8 +77,9 @@
 .cap-period-field { flex:1 1 155px; max-width:230px; }
 .cap-tools form { align-items:flex-end; }
 .cap-period-field label, .cap-date-fields label { display:block; font-weight:650; margin-bottom:4px; }
-.cap-links { margin-top:12px; gap:6px 14px; }
-.cap-links a { color:#88134f; }
+.cap-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+.cap-links a { padding:8px 10px; border:1px solid #e4dfeb; border-radius:7px; color:#88134f; text-decoration:none; }
+.cap-links a:hover { background:#faf0f6; }
 .cap-table { width:100%; margin:0; }
 .cap-table th, .cap-table td { padding:10px; vertical-align:middle; overflow-wrap:anywhere; }
 .cap-table th { background:#f4f1f7; color:#42364e; }
@@ -83,12 +92,17 @@
 .cap-reports-dialog { width:min(720px,calc(100% - 24px)); }
 .cap-dialog::backdrop { background:#24273899; }
 .cap-dialog p { margin:10px 0; }
-.cap-report-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; align-items:start; }
-.cap-report .btn, .cap-report-grid > .btn { width:100%; white-space:normal; }
+.cap-report-meta { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 18px; padding:12px; border-radius:8px; background:#f7f5fa; }
+.cap-report-meta dt { font-size:.85em; color:#57566a; }
+.cap-report-meta dd { margin:4px 0 0; overflow-wrap:anywhere; }
+.cap-modal-section { margin:0 0 8px; font-size:1rem; font-weight:700; }
+.cap-report-grid { display:grid; gap:8px; }
+.cap-report .btn, .cap-report-grid > .btn { display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; text-align:left; white-space:normal; }
+.cap-report-grid .cap-muted { display:block; padding:8px 12px; border-radius:7px; background:#f7f5fa; }
 .cap-delete-area { margin-top:16px; padding-top:12px; border-top:1px solid #e4dfeb; }
 .cap-date-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:12px; }
 .cap-confirm-actions { justify-content:flex-end; margin-top:14px; }
-@media(max-width:980px) { .cap-tools { grid-template-columns:minmax(0,1fr); gap:0; } }
+@media(max-width:980px) { .cap-tools { grid-template-columns:minmax(0,1fr); gap:0; } .cap-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:700px) {
   .cap-table, .cap-table tbody { display:block; }
   .cap-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
@@ -97,7 +111,7 @@
   .cap-row td:first-child { grid-column:1/-1; background:#faf8fc; }
   .cap-row td::before { content:attr(data-label); display:block; color:#57566a; font-size:.85em; font-weight:650; }
 }
-@media(max-width:440px) { .cap-report-grid, .cap-date-fields { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:440px) { .cap-links, .cap-report-meta, .cap-date-fields { grid-template-columns:minmax(0,1fr); } .cap-metric { padding:10px; } .cap-dialog { padding:14px; } }
 </style>
 </head>
 <body class="cap-page">
@@ -127,73 +141,24 @@
     Dim cod_fechamento_periodo, data_pagamento_nao_processado
     Set rs2=objConexao.Execute("SELECT cod_fechamento_periodo, data_pagamento FROM TB_FECHAMENTO_PAGAMENTO_PERIODOS WHERE data_processado_pagamento IS NULL ORDER BY data_pagamento ASC ")
     
-    If not rs2.Eof Then
-        cod_fechamento_periodo = rs2(0)
-        data_pagamento_nao_processado = formatDateTime(rs2(1))
-    End If
-    
+    Dim capPeriodOptions, capPendingCount
+    capPeriodOptions = ""
+    capPendingCount = 0
+    While Not rs2.Eof
+        If capPendingCount = 0 Then
+            cod_fechamento_periodo = rs2(0)
+            data_pagamento_nao_processado = rs2(1)
+        End If
+        capPendingCount = capPendingCount + 1
+        capPeriodOptions = capPeriodOptions & "<option value=""" & Server.HTMLEncode(rs2(0) & "") & """>" & Server.HTMLEncode(ArrumaData(rs2(1)) & "") & "</option>"
+        rs2.MoveNext
+    Wend
     rs2.Close
-    Set rs2=Nothing
-    %>
+    Set rs2 = Nothing
+    FecharConexao()
+%>
 
 
-<div class="cap-tools">
-  <section class="dashboard-panel cap-panel" aria-labelledby="cap-preview-title">
-    <h2 id="cap-preview-title">Previs&atilde;o da folha de pagamento</h2>
-    <p>Consulte a previs&atilde;o de um per&iacute;odo ainda n&atilde;o processado.</p>
-    <form class="cap-actions" name="EXTRATO_APROVEITAMENTO" action="cap_fechamentos_IMPRESSAO_folha_geral.asp" target="_blank" method="get">
-      <div class="cap-period-field"><label for="cap-period">Data de pagamento</label><select id="cap-period" class="form-select" name="cod_fechamento_periodo" required<%If Len(cod_fechamento_periodo & "") = 0 Then%> disabled<%End If%>>
-				  <%
-		AbrirConexao()
-		Set rs2=objConexao.Execute("SELECT cod_fechamento_periodo, data_pagamento FROM TB_FECHAMENTO_PAGAMENTO_PERIODOS WHERE data_processado_pagamento IS NULL ORDER BY data_pagamento ASC ")
-								
-		If rs2.Eof Then%><option value="">Nenhum per&iacute;odo pendente</option><%Else
-				While not rs2.Eof
-					%>
-					<option <%if int(cod_fechamento_periodo) = int(rs2(0)) Then%> selected="selected" <%End If%> value="<%=rs2(0)%>"><%=ArrumaData(rs2(1))%></option>
-					<%
-				rs2.MoveNext()
-				Wend	
-		End If
-								
-	rs2.Close
-	Set rs2=Nothing
-	FecharConexao()
-	%>  
-     </select></div>
-      <button class="btn btn-primary" type="submit"<%If Len(cod_fechamento_periodo & "") = 0 Then%> disabled<%End If%>>Abrir previs&atilde;o</button>
-    </form>
-  </section>
-  <section class="dashboard-panel cap-panel" aria-labelledby="cap-routines-title">
-    <h2 id="cap-routines-title">Rotinas do fechamento</h2>
-    <p>Gerencie per&iacute;odos, comiss&otilde;es e pend&ecirc;ncias.</p>
-    <div class="cap-actions">
-      <%If Len(cod_fechamento_periodo & "") > 0 Then%>
-      <a class="btn btn-primary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento.asp?cod_fechamento_periodo=<%=cod_fechamento_periodo%>">Gerar fechamento de <%=ArrumaData(data_pagamento_nao_processado)%></a>
-      <%End If%>
-      <button class="btn btn-outline-secondary" id="cap-ranking-open" type="button" aria-haspopup="dialog">Ranking de vendedores</button>
-    </div>
-    <div class="cap-actions cap-links">
-      <a href="cap_fechamentos_periodos.asp">Per&iacute;odos de vendas</a>
-      <a href="cap_fechamentos_tabelas_comissao_vendedores.asp">Comiss&atilde;o de vendedores</a>
-      <a href="cap_fechamentos_comissionamento.asp">Comiss&atilde;o de coordenadores</a>
-      <a href="cap_fechamentos_pendencias.asp">Pend&ecirc;ncias de pagamento</a>
-    </div>
-  </section>
-</div>
-<%If Len(Request.QueryString("msg") & "") > 0 Then%>
-<p class="alert alert-info" role="status"><%=Server.HTMLEncode(Request.QueryString("msg") & "")%></p>
-<%End If
-Dim sucesso, codmsg
-codmsg = Request.QueryString("codmsg") & ""
-sucesso = Request.QueryString("sucesso") & ""
-If sucesso = "" And codmsg = "1" Then%>
-<p class="alert alert-success" role="status">Fechamento processado. Os recibos est&atilde;o dispon&iacute;veis na lista.</p>
-<%ElseIf sucesso = "" And codmsg = "3" Then%>
-<p class="alert alert-success" role="status">Fechamento exclu&iacute;do com sucesso.</p>
-<%ElseIf sucesso <> "" And codmsg = "41" Then%>
-<p class="alert alert-warning" role="status">O pagamento do m&ecirc;s de refer&ecirc;ncia j&aacute; foi conclu&iacute;do. A pend&ecirc;ncia n&atilde;o pode ser alterada ou exclu&iacute;da.</p>
-<%End If%>
 	  	  <%
 		  AbrirConexao()
 		  
@@ -241,7 +206,79 @@ If sucesso = "" And codmsg = "1" Then%>
 			rs.PageSize=12
 			rs.Open sql, objConexao		  
 		  
-		  If not rs.Eof then
+		  Dim capLatestDate, capLatestOrders, capHistoryCount
+          capHistoryCount = rs.RecordCount
+          If Not rs.Eof Then
+              capLatestDate = ArrumaData(rs("VENDEDOR_RECEBE_EM")) & ""
+              capLatestOrders = rs("QTD_PEDIDOS")
+          End If
+          %>
+<section class="cap-overview" aria-labelledby="cap-overview-title">
+  <h2 id="cap-overview-title">Resumo dos fechamentos</h2>
+  <dl class="cap-metrics">
+    <div class="cap-metric cap-metric-primary">
+      <dt>Pr&oacute;ximo pagamento pendente</dt>
+      <dd><%If capPendingCount > 0 Then%><%=ArrumaData(data_pagamento_nao_processado)%><%Else%>&mdash;<%End If%></dd>
+      <small><%=capPendingCount%> <%If capPendingCount = 1 Then%>per&iacute;odo a processar<%Else%>per&iacute;odos a processar<%End If%></small>
+    </div>
+    <div class="cap-metric">
+      <dt>Fechamento mais recente</dt>
+      <dd><%If Len(capLatestDate) > 0 Then%><%=capLatestDate%><%Else%>&mdash;<%End If%></dd>
+      <small>Data de pagamento</small>
+    </div>
+    <div class="cap-metric">
+      <dt>Pedidos no &uacute;ltimo fechamento</dt>
+      <dd><%If Len(capLatestDate) > 0 Then%><%=capLatestOrders%><%Else%>&mdash;<%End If%></dd>
+    </div>
+    <div class="cap-metric">
+      <dt>Fechamentos no hist&oacute;rico</dt>
+      <dd><%=capHistoryCount%></dd>
+    </div>
+  </dl>
+</section>
+<div class="cap-tools">
+  <section class="dashboard-panel cap-panel" aria-labelledby="cap-preview-title">
+    <h2 id="cap-preview-title">Previs&atilde;o da folha de pagamento</h2>
+    <p>Consulte a previs&atilde;o de um per&iacute;odo ainda n&atilde;o processado.</p>
+    <form class="cap-actions" name="EXTRATO_APROVEITAMENTO" action="cap_fechamentos_IMPRESSAO_folha_geral.asp" target="_blank" method="get">
+      <div class="cap-period-field"><label for="cap-period">Data de pagamento</label><select id="cap-period" class="form-select" name="cod_fechamento_periodo" required<%If Len(cod_fechamento_periodo & "") = 0 Then%> disabled<%End If%>>
+        <%If capPendingCount = 0 Then%><option value="">Nenhum per&iacute;odo pendente</option><%Else%><%=capPeriodOptions%><%End If%>
+      </select></div>
+      <button class="btn btn-primary" type="submit"<%If Len(cod_fechamento_periodo & "") = 0 Then%> disabled<%End If%>>Abrir previs&atilde;o</button>
+    </form>
+  </section>
+  <section class="dashboard-panel cap-panel" aria-labelledby="cap-routines-title">
+    <h2 id="cap-routines-title">Rotinas do fechamento</h2>
+    
+    <div class="cap-actions">
+      <%If Len(cod_fechamento_periodo & "") > 0 Then%>
+      <a class="btn btn-primary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento.asp?cod_fechamento_periodo=<%=cod_fechamento_periodo%>">Gerar fechamento de <%=ArrumaData(data_pagamento_nao_processado)%></a>
+      <%End If%>
+      <button class="btn btn-outline-secondary" id="cap-ranking-open" type="button" aria-haspopup="dialog">Ranking de vendedores</button>
+    </div>
+    <nav class="cap-links" aria-label="Cadastros e pend&ecirc;ncias">
+      <a href="cap_fechamentos_periodos.asp">Per&iacute;odos de vendas</a>
+      <a href="cap_fechamentos_tabelas_comissao_vendedores.asp">Comiss&atilde;o de vendedores</a>
+      <a href="cap_fechamentos_comissionamento.asp">Comiss&atilde;o de coordenadores</a>
+      <a href="cap_fechamentos_pendencias.asp">Pend&ecirc;ncias de pagamento</a>
+    </nav>
+  </section>
+</div>
+<%If Len(Request.QueryString("msg") & "") > 0 Then%>
+<p class="alert alert-info" role="status"><%=Server.HTMLEncode(Request.QueryString("msg") & "")%></p>
+<%End If
+Dim sucesso, codmsg
+codmsg = Request.QueryString("codmsg") & ""
+sucesso = Request.QueryString("sucesso") & ""
+If sucesso = "" And codmsg = "1" Then%>
+<p class="alert alert-success" role="status">Fechamento processado. Os recibos est&atilde;o dispon&iacute;veis na lista.</p>
+<%ElseIf sucesso = "" And codmsg = "3" Then%>
+<p class="alert alert-success" role="status">Fechamento exclu&iacute;do com sucesso.</p>
+<%ElseIf sucesso <> "" And codmsg = "41" Then%>
+<p class="alert alert-warning" role="status">O pagamento do m&ecirc;s de refer&ecirc;ncia j&aacute; foi conclu&iacute;do. A pend&ecirc;ncia n&atilde;o pode ser alterada ou exclu&iacute;da.</p>
+<%End If%>
+<%
+          If not rs.Eof then
 		  
 		  	Dim PAGINA_ATUAL
 			PAGINA_ATUAL = formatNumber(0&Request.QueryString("pagina"),0)
@@ -257,7 +294,7 @@ If sucesso = "" And codmsg = "1" Then%>
 		  %>
 
 <section class="dashboard-panel cap-panel" aria-labelledby="cap-history-title">
-  <div class="cap-heading"><div><h2 id="cap-history-title">Hist&oacute;rico de fechamentos</h2><span class="cap-muted"><%=rs.RecordCount%> fechamentos</span></div><span>P&aacute;gina <%=rs.AbsolutePage%> de <%=rs.PageCount%></span></div>
+  <div class="cap-heading"><div><h2 id="cap-history-title">Hist&oacute;rico de fechamentos</h2></div><span>P&aacute;gina <%=rs.AbsolutePage%> de <%=rs.PageCount%></span></div>
   <table class="table cap-table" role="table" aria-labelledby="cap-history-title">
     <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Pagamento</th><th scope="col" role="columnheader">Processamento</th><th scope="col" role="columnheader">Gerado por</th><th scope="col" role="columnheader">Pedidos</th></tr></thead>
     <tbody role="rowgroup">
@@ -288,8 +325,14 @@ If sucesso = "" And codmsg = "1" Then%>
         <td role="cell" data-label="Pagamento">
           <button type="button" class="btn btn-outline-secondary btn-sm cap-details" aria-haspopup="dialog" data-period="<%=Server.HTMLEncode(ArrumaData(rs("VENDEDOR_RECEBE_EM")) & "")%>"><strong><%=ArrumaData(rs("VENDEDOR_RECEBE_EM"))%></strong><small>Ver relat&oacute;rios &rarr;</small></button>
           <template>
+            <dl class="cap-report-meta">
+              <div><dt>Processamento</dt><dd><%=ArrumaData(rs("DATA_PROCESSAMENTO"))%></dd></div>
+              <div><dt>Gerado por</dt><dd><%=Server.HTMLEncode(PAGAMENTO_GERADO_POR & "")%></dd></div>
+              <div><dt>Pedidos</dt><dd><%=rs("QTD_PEDIDOS")%></dd></div>
+            </dl>
+            <h3 class="cap-modal-section">Relat&oacute;rios do per&iacute;odo</h3>
             <div class="cap-report-grid"><div class="cap-report"><%If acesso_4 Then%>
-                            	<a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_recibo_extenso_agrupado.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>">Recibos</a>
+                            	<a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_recibo_extenso_agrupado.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Recibos</span><span aria-hidden="true">&#8599;</span></a>
                             <%Else
 							Response.Write("<span class=""cap-muted"">Recibos &middot; acesso restrito</span>")
 							
@@ -298,7 +341,7 @@ If sucesso = "" And codmsg = "1" Then%>
                                 
 				            
 				              <div class="cap-report"><%If acesso_2 Then%>
-				              <a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_detalhamento_vendedores.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>">Extrato de vendedores e coordenadores</a>
+				              <a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_detalhamento_vendedores.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Extrato de vendedores e coordenadores</span><span aria-hidden="true">&#8599;</span></a>
 				              <%Else
 							Response.Write("<span class=""cap-muted"">Extrato de vendedores &middot; acesso restrito</span>")
 							
@@ -307,7 +350,7 @@ If sucesso = "" And codmsg = "1" Then%>
 				              
 				            
 				              <div class="cap-report"><%If acesso_3 Then%>
-				              <a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_folha_geral.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>">Folha Geral</a><%Else
+				              <a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="adm_rotina_fechamento_extrato_pagamento_part3_IMPRESSAO_folha_geral.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>"><span>Folha Geral</span><span aria-hidden="true">&#8599;</span></a><%Else
 							Response.Write("<span class=""cap-muted"">Folha geral &middot; acesso restrito</span>")
 							
 							End If
@@ -330,7 +373,7 @@ If sucesso = "" And codmsg = "1" Then%>
 									If temBoleto Then
 								%>
 									<a href="adm_controle_no_extrato_comissao_vendedores_boletos.asp?COD_FECHAMENTO_PERIODO=<%=rs("COD_FECHAMENTO_PERIODO")%>" 
-									class="btn btn-outline-secondary" target="_blank" rel="noopener">Comiss&atilde;o por boleto</a>
+									class="btn btn-outline-secondary" target="_blank" rel="noopener"><span>Comiss&atilde;o por boleto</span><span aria-hidden="true">&#8599;</span></a>
 								<% Else %>
 									<span class="cap-muted">Sem pagamentos por boleto</span>
 								<% 
@@ -391,6 +434,7 @@ FecharConexao()
 </dialog>
 <dialog class="cap-dialog" id="cap-ranking" aria-labelledby="cap-ranking-title">
   <h2 id="cap-ranking-title">Ranking de vendedores</h2>
+  <p>Selecione o intervalo das vendas para abrir o relat&oacute;rio.</p>
   <form method="get" action="adm_relatorios_ranking_vendedores_completo.asp" id="cap-ranking-form">
     <div class="cap-date-fields">
       <div><label for="cap-ranking-from">Data inicial</label><input class="form-control" id="cap-ranking-from" type="date" name="data_venda_inicio" required></div>
