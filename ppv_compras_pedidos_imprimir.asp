@@ -73,7 +73,7 @@ body { margin:0; background:#f6f7fb; color:#242738; font:14px/1.45 system-ui,Ari
 .report-toolbar button { background:#b20b61; color:white; border:0; border-radius:7px; padding:10px 14px; font:inherit; cursor:pointer; }
 .report { max-width:1080px; margin:16px auto; padding:clamp(14px,4vw,30px); background:#fff; border:1px solid #e4dfeb; border-radius:12px; }
 .report-header { display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:2px solid #b20b61; padding-bottom:12px; }
-.report-header img { width:60px; height:auto; }
+.report-logo { display:block; flex:0 0 auto; width:clamp(96px,24vw,168px); height:auto; border-radius:7px; background:#292b40; }
 h1 { font-size:clamp(19px,3vw,29px); margin:0; }
 h2 { font-size:1.05rem; margin:0 0 8px; }
 .report-meta { display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; padding:12px; background:#f7f5fa; border-radius:8px; }
@@ -102,6 +102,7 @@ dd { margin:2px 0 0; overflow-wrap:anywhere; }
 @media print {
   body { background:#fff; color:#111; font-size:9pt; }
   .report-toolbar { display:none; }
+  .report-logo { width:38mm; background:transparent; filter:brightness(0); }
   .report { max-width:none; margin:0; padding:0; border:0; }
   .report-table thead { display:table-header-group; }
   .report-table tr, .report-signatures, .report-totals { break-inside:avoid; }
@@ -116,7 +117,7 @@ dd { margin:2px 0 0; overflow-wrap:anywhere; }
 <main class="report" data-purchase-report>
 <header class="report-header">
     <h1>Pedido de compra n&ordm; <%=Server.HTMLEncode(numero_pedido_compra & "")%></h1>
-    <img src="images/layout/logomarca_foto_reportagens.jpg" alt="Stillos">
+    <img class="report-logo" src="images/logoparafundopreto.png" alt="Stillos">
 </header>
 <dl class="report-meta">
     <div><dt>Fornecedor</dt><dd><%=Server.HTMLEncode(UCase(nome_fantasia & ""))%></dd></div>
