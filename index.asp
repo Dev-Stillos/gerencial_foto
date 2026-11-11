@@ -137,6 +137,7 @@ If Request.Form("USUARIO")<> Empty Then
 						objConexao.Execute("INSERT INTO TB_ADM_LOG_USUARIOS (ACESSO_EM, COD_USUARIO) VALUES (CURRENT_TIMESTAMP , '"&Session("COD_USUARIO")&"')")
 
 					FecharConexao()
+					Session("GerencialAvisoModernizacaoPendente") = True
 					Response.Redirect("adm_index.asp")
 			End If
 End if	
