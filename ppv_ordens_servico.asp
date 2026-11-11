@@ -470,6 +470,7 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .ppv-page .ppv-badge { display: inline-block; border-radius: 999px; padding: 4px 9px; font-weight: 650; white-space: normal; }
 .ppv-page .ppv-status-date { margin-top: 6px; color: #53566b; }
 .ppv-page .ppv-status-date summary { cursor: pointer; }
+.ppv-page .ppv-status-date summary.ppv-badge { display: list-item; width: fit-content; margin-inline: auto; }
 .ppv-page .ppv-badge.late, .ppv-page .ppv-status.late { background: #fbe7ed; color: #9b2044; }
 .ppv-page .ppv-badge.today, .ppv-page .ppv-status.today { background: #fff1d6; color: #785100; }
 .ppv-page .ppv-status.dispatched { background: #e6effc; color: #244c80; }
@@ -878,7 +879,10 @@ sql = 	" SELECT "&_
 																diferenca = formatNumber(rs3("diferenca_etapa"))/1
 																'Response.Write(diferenca)
 																If diferenca > 0 Then%>
-														  <span class="ppv-badge late">Em atraso &middot; <%=diferenca%> d</span>
+														  <details class="ppv-status-date">
+                                    <summary class="ppv-badge late">Em atraso</summary>
+                                    <div><%=diferenca%> <%If diferenca = 1 Then%>dia<%Else%>dias<%End If%> de atraso</div>
+                                </details>
 														  <%Elseif diferenca = 0 Then%>
 														  <span class="ppv-badge today">Vence hoje</span>
 																<%Else%>
