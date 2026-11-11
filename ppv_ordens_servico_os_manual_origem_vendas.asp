@@ -1,19 +1,10 @@
-<%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 2
-  BTN_IMPRIMIR_LINK = "#"
-  titulo_pagina = "PPV - Produtos - Etapas de Ordens de Servi&ccedilos - Formul&aacuterio"
-%>
-				
-<%
-Dim calendario_necessario
-calendario_necessario = "N&AtildeO"
-%>
-<!-- #include file="files/includes/miolo-superior.asp" -->
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
 <%
+Dim caminho_pagina
+caminho_pagina = Replace(Request.ServerVariables("URL"), "/gerencial_foto/", "")
 Dim cod_pedido, sucesso, codmsg
 cod_pedido = Cstr(""&Request.Form("cod_pedido"))
 cod_pedido = Replace(cod_pedido,".","")
@@ -47,7 +38,7 @@ cod_pedido = Replace(cod_pedido,"-","")
 		
 		FecharConexao()
 		
-		Response.Redirect("ppv_ordens_servico_os_manual_origem_vendas.asp?cod_pedido="&cod_pedido&"&codmsg="&codmsg&"&sucesso="&sucesso)
+		Response.Redirect("ppv_ordens_servico_os_manual_origem_vendas.asp?cod_pedido="&Server.URLEncode(cod_pedido)&"&codmsg="&codmsg&"&sucesso="&sucesso)
 		
 	End if
 
@@ -55,66 +46,156 @@ cod_pedido = Replace(cod_pedido,"-","")
 '----------------------------------------------------------------------------------------
 
 %>
-<h2><%=titulo_pagina%></h2>
-<br />
-
-<!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
-<br />
-<br />
-<%
-	
-	codmsg	= CStr(""&Request.QueryString("codmsg"))
-	sucesso = CStr(""&Request.QueryString("sucesso"))
-	cod_pedido = CStr(""&Request.QueryString("cod_pedido"))
-		
-	If sucesso = "" and codmsg <> "" Then%>
-    	<div align="center" class="msgGrandeSucesso">
-        	<%
-			If codmsg = "1" Then
-				Response.Write("Ordens de Servi&ccedilo geradas com sucesso para a Venda "&cod_pedido&"!<br / >OSs geradas de acordo com as regras informadas abaixo")
-			End If	
-			%>
-            
-        
-        </div>
-    <%ElseIf sucesso <> "" and codmsg <> "" Then%>
-        <div align="center" class="msgGrandeErro">
-			<%
-			If codmsg = "100" Then
-				Response.Write("Pedido "&cod_pedido&" n&atildeo encontrado e/ou n&atildeo est&aacute corrigido pelos respons&aacuteveis.")
-			Elseif codmsg = "101" Then
-				Response.Write("OS j&aacute gerada anteriormente para o pedido "&cod_pedido&". Para gerar novamente para o mesmo pedido exclua se poss&iacutevel ou cancele as OS da venda.")
-			Else		
-				Response.Write(Response.Write(moduloPPVgerarOrdensServicoMsgRetorno(codmsg,cod_pedido)))
-			End If	
-			%>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gera&ccedil;&atilde;o manual de OS | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+.manual-os-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.manual-os-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.manual-os-page .ppv-module { margin-bottom:20px; }
+.manual-os-page .subMenu { padding:12px 16px; background:#fff; border:1px solid var(--line); border-radius:10px; line-height:2; }
+.manual-os-page .subMenu [aria-current="page"] { color:#88134f; font-weight:700; }
+.manual-os-grid { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:18px; }
+.manual-os-grid .dashboard-panel { height:auto; padding:clamp(16px,3vw,28px); }
+.manual-os-form { margin-top:18px; }
+.manual-os-form label { font-weight:650; }
+.manual-os-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:16px; }
+.manual-os-rules ol { padding-left:22px; margin:14px 0 0; }
+.manual-os-rules li + li { margin-top:10px; }
+.manual-os-dialog { box-sizing:border-box; width:min(480px,calc(100% - 24px)); padding:24px; border:1px solid var(--line); border-radius:14px; color:var(--ink); }
+.manual-os-dialog::backdrop { background:#24273899; }
+.manual-os-dialog p { margin:10px 0 0; overflow-wrap:anywhere; }
+@media(max-width:980px) { .manual-os-grid { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:420px) { .manual-os-actions .btn { width:100%; } }
+</style>
+</head>
+<body class="manual-os-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><p class="eyebrow">PRODU&Ccedil;&Atilde;O P&Oacute;S-VENDA</p><h1>Gerar OS a partir de uma venda</h1><p>Informe o c&oacute;digo da venda para gerar as ordens de servi&ccedil;o eleg&iacute;veis.</p></div>
+        <a href="ppv_ordens_servico.asp" class="btn btn-outline-secondary">Voltar &agrave;s ordens</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+      <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
+        <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+      </nav>
+      <%
+      Dim vendaExibida, mensagemGeracaoOS
+      codmsg = CStr("" & Request.QueryString("codmsg"))
+      sucesso = CStr("" & Request.QueryString("sucesso"))
+      vendaExibida = Server.HTMLEncode(Request.QueryString("cod_pedido") & "")
+      If sucesso = "" And codmsg = "1" Then
+      %>
+      <p class="alert alert-success" role="status">Ordens de servi&ccedil;o geradas para a venda <strong><%=vendaExibida%></strong>.</p>
+      <%ElseIf sucesso <> "" And codmsg <> "" Then%>
+      <div class="alert alert-warning" role="status">
+        <%Select Case codmsg
+          Case "100"%>
+          Pedido <strong><%=vendaExibida%></strong> indispon&iacute;vel. Confira o c&oacute;digo e se a corre&ccedil;&atilde;o da venda foi finalizada.
+        <%Case "101"%>
+          J&aacute; existem ordens de servi&ccedil;o para o pedido <strong><%=vendaExibida%></strong>. Para gerar novamente, cancele as OS da venda ou exclua-as quando permitido.
+        <%Case "1", "2", "3"
+            mensagemGeracaoOS = moduloPPVgerarOrdensServicoMsgRetorno(codmsg, "")
+            Response.Write Server.HTMLEncode(mensagemGeracaoOS & "")
+          Case Else%>
+          A gera&ccedil;&atilde;o das ordens n&atilde;o foi conclu&iacute;da.
+        <%End Select%>
+      </div>
+      <%End If%>
+      <div class="manual-os-grid">
+        <section class="dashboard-panel" aria-labelledby="manual-os-title">
+          <h2 id="manual-os-title">Identificar a venda</h2>
+          <form class="manual-os-form" id="manual-os-form" name="FORMULARIO_PADRAO" action="ppv_ordens_servico_os_manual_origem_vendas.asp" method="post">
+            <label class="form-label" for="manual-os-sale">C&oacute;digo da venda</label>
+            <input class="form-control" id="manual-os-sale" type="text" name="cod_pedido" inputmode="numeric" autocomplete="off" required>
+            <div class="manual-os-actions"><button class="btn btn-primary" type="submit">Gerar ordens de servi&ccedil;o</button></div>
+          </form>
+        </section>
+        <section class="dashboard-panel manual-os-rules" aria-labelledby="manual-os-rules">
+          <h2 id="manual-os-rules">Regras de gera&ccedil;&atilde;o</h2>
+          <ol>
+            <li>Ordens j&aacute; existentes impedem uma nova gera&ccedil;&atilde;o. A exce&ccedil;&atilde;o s&atilde;o as ordens canceladas.</li>
+            <li>A venda deve estar corrigida pelos respons&aacute;veis.</li>
+            <li>A gera&ccedil;&atilde;o se aplica a produtos vendidos &agrave; parte com prazo do cliente cadastrado.</li>
+          </ol>
+        </section>
+      </div>
+      <dialog class="manual-os-dialog" id="manual-os-dialog" aria-labelledby="manual-os-confirm-title" aria-describedby="manual-os-confirm-sale">
+        <h2 id="manual-os-confirm-title">Confirmar gera&ccedil;&atilde;o de OS?</h2>
+        <p id="manual-os-confirm-sale"></p>
+        <form class="manual-os-actions" method="dialog">
+          <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+          <button class="btn btn-primary" value="gerar">Confirmar gera&ccedil;&atilde;o</button>
+        </form>
+      </dialog>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
 </div>
-	<%End If%>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
 
-<form action='<%=actionformulario%>' name='FORMULARIO_PADRAO' method='post'>
-  <table width="600" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
-    <tr bgcolor="whitesmoke">
-    <td><strong>Informe o C&oacute;d. da Venda abaixo para Efetuar a gera&ccedil;&atilde;o Manual das Ordens de Servi&ccedil;o da Venda.<br />
-      Regras:<br />
-      1) 
-      Se j&aacute; tiver OS criada anteriormente n&atilde;o ser&aacute; gerado, exceto a OS estiver com status Cancelada.
-      <br />
-      2) Pedido dever&aacute; ter sido j&aacute; corrigido pelas pessoas respons&aacute;veis.<br />
-      3) Os geradas somente para produtos vendidos &agrave; parte com prazo do cliente cadastrado
-    </strong></td>
-    </tr>
-            <tr>
-              <td><div align="center">
-                <input type="text" class="inputTamanho3" name="cod_pedido" />
-              </div></td>
-              </tr>
-            <tr>
-              <td><div align="center"> <a href="javascript:document.FORMULARIO_PADRAO.submit();">
-                <img src="images/layout/btnGravar.jpg" />
-              </a></div></td>
-              </tr>
-    
-          </table>
-<br />
-<br /></form>
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+(function () {
+    var submenu = document.querySelector('.ppv-module a[href="ppv_ordens_servico_os_manual_origem_vendas.asp"]');
+    if (submenu) submenu.setAttribute('aria-current', 'page');
+    var form = document.getElementById('manual-os-form');
+    var sale = document.getElementById('manual-os-sale');
+    var dialog = document.getElementById('manual-os-dialog');
+    if (typeof dialog.showModal !== 'function') return;
+    form.addEventListener('submit', function (event) {
+        var code = sale.value.replace(/[. /-]/g, '');
+        if (!code) {
+            event.preventDefault();
+            sale.value = '';
+            sale.reportValidity();
+            return;
+        }
+        event.preventDefault();
+        document.getElementById('manual-os-confirm-sale').textContent = 'Venda ' + code;
+        dialog.returnValue = '';
+        dialog.showModal();
+    });
+    dialog.addEventListener('close', function () {
+        if (dialog.returnValue === 'gerar') form.submit();
+    });
+})();
+</script>
+</body>
+</html>

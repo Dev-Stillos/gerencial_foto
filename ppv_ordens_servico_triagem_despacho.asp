@@ -1,19 +1,10 @@
-<%
-Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-BTN_VOLTAR = 1
-BTN_IMPRIMIR = 1
-BTN_FONTE = 2
-BTN_IMPRIMIR_LINK = "#"
-
-Dim titulo_pagina
-titulo_pagina = "Triagem Entrega | Transpostadora"
-
-Dim calendario_necessario
-calendario_necessario = "NAO"
-%>
-<!-- #include file="files/includes/miolo-superior.asp" -->
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
 <%
+Dim caminho_pagina
+caminho_pagina = Replace(Request.ServerVariables("URL"), "/gerencial_foto/", "")
 Dim efetuar_despacho, despacho_transportador
 efetuar_despacho = Cstr(""&Request.Form("campo1"))	
 despacho_transportador = Cstr(""&Request.Form("despacho_transportador"))	
@@ -132,79 +123,128 @@ Dim acesso_inclusao_exclusao_os_manual
 acesso_inclusao_exclusao_os_manual = validaUsuario(2,,51,false)
 %>
 
-<h2>PPV - Despacho para Cliente</h2>
-<br />
-<!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
-<br />
-<br />
-	<div class="msgGrande">
-	<%=Response.Write("<a href='ppv_ordens_servico_triagem_despacho_imprimir.asp' target='_blank'>Imprimir o &uacuteltimo recibo novamente</a>")%>
-	</div>
-
-<form style="margin:0px">
-	<table style="border:#999999 dashed 1px;  margin-bottom:7px;padding:2px; background:#FFFFCC" width="99%" border="0" align="center" cellpadding="5" cellspacing="0">
-		<tr>
-			<td width="150px"><strong>Nome do Formando</strong></td>
-			<td width="300px">
-				<input type="text" value="<%=busca_nome_formando%>" name="nome_formando" class="inputTamanho2" />
-			</td>
-			<td rowspan="5">
-				<div align="left">
-					<input class="btnFiltrarAmarelo" type="submit" name="filtro1" value=" " />
-				</div>
-			</td>
-			<td rowspan="5">
-				<div align="center">
-					<div style="width:250px;" class='msgGrandeErro'>
-						<em><strong>Listagem em Ordem crescente pelo contrato, nome do formando com todas OS, cujo os produtos n&atildeo foram despachados para o cliente.</strong></em><br />
-					</div>
-				</div>
-			</td>
-			
-		</tr>
-		<tr>
-			<td>
-				<strong>C&oacuted. Formando Ficha</strong>
-				<a href="javascript:alert('(Cod. do formando acressido de \'1\' no final)')">[?]</a>
-			</td>
-			<td>
-				<input type="text" value="<%=busca_cod_formando%>" name="cod_formando" class="inputTamanho2" />
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<strong>Cod. Contrato</strong>
-			</td>
-			<td>
-				<input type="text" value="<%=busca_cod_contrato%>" name="cod_contrato" class="inputTamanho2" />
-			</td>
-		</tr>
-		<tr>
-			<td><strong>Respons&aacutevel  OS</strong></td>
-			<td>
-				<%If valida_para_despacho_qualquer_usuario Then%>
-					<%=PadraoFormularioSelect("cod_usuario_responsavel","","inputTamanho2","","","Todos",busca_cod_usuario_responsavel,"SELECT cod_usuario, nome FROM TB_ADM_USUARIOS WHERE COD_USUARIO IN(SELECT cod_usuario_responsavel FROM VW_TB_ORDENS_SERVICO WHERE status_ordem_servico = 2 GROUP BY cod_usuario_responsavel) ORDER BY NOME", "incluir", false, false, false )%>
-				<%Else%>
-					<strong style="font-size:14px;"><%=nomeUsuario(Session("cod_usuario"),false)%></strong>
-				<%End If%>
-			</td>
-		</tr>
-		<tr>
-			<td><div align="left"><strong> Filtrar pedidos que est&atilde;o finalizados parcialmente</strong></div></td>
-			<td>
-				<span style="padding-left:5px">
-					<input type="checkbox" class="inputRadio" value="S" <% if finalizados_parcialmente = "S" then%> checked="checked"<%end if%> name="finalizados_parcialmente" />
-				</span>
-			</td>
-		</tr>
-	</table>
-</form>
-
-<div class="subMenu">
-	<a href='ppv_ordens_servico_triagem_despacho_alterar.asp'>Alterar pedido j&aacute despachado</a>
-</div>
-
-<br />
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triagem de despacho | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+.dispatch-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.dispatch-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.dispatch-page .ppv-module { margin-bottom:20px; }
+.dispatch-page .subMenu { padding:12px 16px; background:#fff; border:1px solid var(--line); border-radius:10px; line-height:2; }
+.dispatch-page .subMenu [aria-current="page"] { color:#88134f; font-weight:700; }
+.dispatch-page .dispatch-panel { height:auto; margin-bottom:18px; padding:clamp(16px,3vw,26px); }
+.dispatch-panel p { margin:6px 0 0; color:#55576b; }
+.dispatch-tools { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px; }
+.dispatch-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.dispatch-actions .btn { white-space:normal; }
+.dispatch-filter { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:14px 0; }
+.dispatch-filter label, .dispatch-label, .dispatch-select label { display:block; font-weight:650; }
+.dispatch-filter input, .dispatch-select select { margin-top:5px; }
+.dispatch-select select { display:block; width:100%; min-height:40px; padding:6px 10px; border:1px solid #dfe0e9; border-radius:7px; background:#fff; color:var(--ink); font:inherit; }
+.dispatch-owner { padding:10px 0 0; overflow-wrap:anywhere; }
+.dispatch-filter small { display:block; margin-top:4px; color:#55576b; }
+.dispatch-check { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+.dispatch-check input { flex:none; margin:0; }
+.dispatch-filter-panel .dispatch-actions { margin-top:14px; }
+.dispatch-carrier { max-width:310px; margin:16px 0; }
+.dispatch-table { margin:16px 0 0; }
+.dispatch-table th, .dispatch-table td { padding:10px; vertical-align:top; overflow-wrap:anywhere; }
+.dispatch-table thead th, .dispatch-table .dispatch-group th { background:#f4f1f7; color:#42364e; }
+.dispatch-person { display:flex; flex-wrap:wrap; gap:4px 12px; margin-top:5px; font-weight:400; }
+.dispatch-status { display:inline-block; padding:3px 7px; border-radius:5px; background:#f0edf8; color:#51436e; font-weight:650; }
+.dispatch-status.is-delivered { background:#e7f3ec; color:#286143; }
+.dispatch-status.is-open { background:#fce9ee; color:#8e2045; }
+.dispatch-submit { justify-content:flex-end; margin-top:16px; }
+.dispatch-dialog { box-sizing:border-box; width:min(460px,calc(100% - 24px)); padding:24px; border:1px solid var(--line); border-radius:14px; color:var(--ink); }
+.dispatch-dialog::backdrop { background:#24273899; }
+.dispatch-dialog .dispatch-actions { justify-content:flex-end; margin-top:14px; }
+@media(max-width:1100px) {
+  .dispatch-filter { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media screen and (max-width:900px) {
+  .dispatch-table, .dispatch-table tbody { display:block; }
+  .dispatch-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .dispatch-group, .dispatch-group th { display:block; }
+  .dispatch-order { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-bottom:1px solid var(--line); }
+  .dispatch-order td { display:block; border:0; }
+  .dispatch-order td::before { content:attr(data-label); display:block; color:#66586e; font-size:.85em; font-weight:700; }
+}
+@media(max-width:480px) {
+  .dispatch-filter { grid-template-columns:minmax(0,1fr); }
+  .dispatch-tools .dispatch-actions, .dispatch-tools .dispatch-actions .btn { width:100%; }
+}
+@media print {
+  .dispatch-page .dashboard-layout { display:block; }
+  .dispatch-page .dashboard-sidebar, .dispatch-page .dashboard-topbar, .dispatch-page .ppv-module,
+  .dispatch-page .search-panel, .dispatch-page .session-notices, .dispatch-page .dashboard-heading .btn,
+  .dispatch-page .dashboard-footer, .dispatch-page .dispatch-tools[aria-label], .dispatch-filter-panel,
+  .dispatch-print, .dispatch-carrier, .dispatch-submit, .dispatch-dialog, .dispatch-check { display:none !important; }
+  .dispatch-page .dashboard-main, .dispatch-page .dispatch-panel { padding:0; border:0; }
+}
+</style>
+</head>
+<body class="dispatch-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><p class="eyebrow">PRODU&Ccedil;&Atilde;O P&Oacute;S-VENDA</p><h1>Triagem de despacho</h1><p>Selecione as ordens e informe como os produtos ser&atilde;o enviados ao cliente.</p></div>
+        <a href="ppv_ordens_servico.asp" class="btn btn-outline-secondary">Voltar &agrave;s ordens</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+      <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
+        <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+      </nav>
+      <section class="dashboard-panel dispatch-panel dispatch-tools" aria-label="Recibos e pedidos despachados">
+        <div><h2>Recibos e pedidos</h2><p>Consulte o &uacute;ltimo recibo ou altere um despacho j&aacute; registrado.</p></div>
+        <div class="dispatch-actions">
+          <a class="btn btn-outline-secondary" href="ppv_ordens_servico_triagem_despacho_imprimir.asp" target="_blank" rel="noopener">Reimprimir &uacute;ltimo recibo</a>
+          <a class="btn btn-outline-secondary" href="ppv_ordens_servico_triagem_despacho_alterar.asp">Alterar pedido despachado</a>
+        </div>
+      </section>
+      <section class="dashboard-panel dispatch-panel dispatch-filter-panel" aria-labelledby="dispatch-filter-title">
+        <h2 id="dispatch-filter-title">Filtrar ordens</h2>
+        <form method="get" action="ppv_ordens_servico_triagem_despacho.asp">
+          <input type="hidden" name="filtro1" value="1">
+          <div class="dispatch-filter">
+            <div><label for="dispatch-name">Nome do formando</label><input class="form-control" id="dispatch-name" name="nome_formando" value="<%=Server.HTMLEncode(busca_nome_formando)%>"></div>
+            <div><label for="dispatch-student">C&oacute;digo do formando (ficha)</label><input class="form-control" id="dispatch-student" name="cod_formando" aria-describedby="dispatch-student-help" value="<%=Server.HTMLEncode(busca_cod_formando)%>"><small id="dispatch-student-help">Informe o c&oacute;digo com 1 no final.</small></div>
+            <div><label for="dispatch-contract">C&oacute;digo do contrato</label><input class="form-control" id="dispatch-contract" name="cod_contrato" value="<%=Server.HTMLEncode(busca_cod_contrato)%>"></div>
+            <div class="dispatch-select">
+              <%If valida_para_despacho_qualquer_usuario Then%>
+                <label>Respons&aacute;vel pela OS
+<%=PadraoFormularioSelect("cod_usuario_responsavel","","inputTamanho2","","","Todos",busca_cod_usuario_responsavel,"SELECT cod_usuario, nome FROM TB_ADM_USUARIOS WHERE COD_USUARIO IN(SELECT cod_usuario_responsavel FROM VW_TB_ORDENS_SERVICO WHERE status_ordem_servico = 2 GROUP BY cod_usuario_responsavel) ORDER BY NOME", "incluir", false, false, false )%>
+                </label>
+              <%Else%>
+                <span class="dispatch-label">Respons&aacute;vel pela OS</span>
+                <div class="dispatch-owner"><%=Server.HTMLEncode(nomeUsuario(Session("cod_usuario"),false) & "")%></div>
+              <%End If%>
+            </div>
+          </div>
+          <label class="dispatch-check"><input class="form-check-input" type="checkbox" value="S" name="finalizados_parcialmente"<%If busca_finalizados_parcialmente = "S" Then%> checked<%End If%>> Incluir pedidos finalizados parcialmente</label>
+          <div class="dispatch-actions">
+            <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+            <a class="btn btn-outline-secondary" href="ppv_ordens_servico_triagem_despacho.asp">Limpar filtros</a>
+          </div>
+        </form>
+      </section>
 <%						
 sql = "SELECT cod_pedido FROM VW_TB_ORDENS_SERVICO WHERE status_ordem_servico = 2 "&sqlWhere&" GROUP BY cod_pedido ORDER BY cod_contrato, nome_formando LIMIT 100"
 
@@ -222,23 +262,24 @@ rs2.Close
 Set rs2=Nothing
 %>
 
-<form name="DESPACHO_CLIENTE" action="ppv_ordens_servico_triagem_despacho.asp" method="post" style="margin:0px">
-	<input name="campo1" value="S" type="hidden" />
-	<table width="99%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-		<tr bgcolor="#E1EDFF">
-		<td colspan="2" style="font-size:16px;"><div align="center"><strong> Informe o Transportador</strong> *</div></td>
-		<td colspan="5">
-			<%=PadraoFormularioSelect("despacho_transportador","","inputTamanho3","","","Selecione",letra,"PADRAO:TRANSPORTADORA#TRANSPORTADORA|CORREIOS#CORREIOS|RETIRADA#RETIRADA|STILLOS#STILLOS|STILLOS#STILLOS|PANDEMIA#PANDEMIA|LOGISTICA#LOGISTICA|ESPECIAL#ESPECIAL", "incluir", false, false, false )%>
-		</td>
-		</tr>
-			<tr bgcolor="whitesmoke">
-			<td colspan="2"><div align="center"><strong> OS</strong></div></td>
-			<td width="13%"><div align="center"><strong>Produto</strong></div></td>
-			<td width="12%"><div align="center"><strong>Data Finalizada</strong></div></td>
-			<td width="12%"><div align="center"><strong>Prazo Geral</strong></div></td>
-			<td width="27%"><div align="center"><strong>Dias faltantes para prazo Geral</strong></div></td>
-			<td width="11%"><div align="center"><strong>Despachar para cliente</strong></div></td>
-		</tr>
+<section class="dashboard-panel dispatch-panel" aria-labelledby="dispatch-orders-title">
+  <div class="dispatch-tools">
+    <div><h2 id="dispatch-orders-title">Ordens para despacho</h2><p>At&eacute; 100 pedidos por consulta, em ordem de contrato e formando.</p></div>
+    <button class="btn btn-outline-secondary dispatch-print" type="button" onclick="window.print()">Imprimir lista</button>
+  </div>
+  <form id="dispatch-form" name="DESPACHO_CLIENTE" action="ppv_ordens_servico_triagem_despacho.asp" method="post">
+    <input name="campo1" value="S" type="hidden">
+    <div class="dispatch-select dispatch-carrier"><label>Transportador
+      <%=PadraoFormularioSelect("despacho_transportador","","inputTamanho3","","","Selecione",letra,"PADRAO:TRANSPORTADORA#TRANSPORTADORA|CORREIOS#CORREIOS|RETIRADA#RETIRADA|STILLOS#STILLOS|STILLOS#STILLOS|PANDEMIA#PANDEMIA|LOGISTICA#LOGISTICA|ESPECIAL#ESPECIAL", "incluir", false, false, false )%>
+    </label></div>
+    <p id="dispatch-feedback" class="alert alert-warning" role="status" hidden></p>
+    <table class="table dispatch-table" role="table" aria-labelledby="dispatch-orders-title">
+      <thead role="rowgroup"><tr role="row">
+        <th scope="col" role="columnheader">OS</th><th scope="col" role="columnheader">Produto</th>
+        <th scope="col" role="columnheader">Finaliza&ccedil;&atilde;o</th><th scope="col" role="columnheader">Prazo geral</th>
+        <th scope="col" role="columnheader">Dias at&eacute; o prazo</th><th scope="col" role="columnheader">Despacho</th>
+      </tr></thead>
+      <tbody role="rowgroup">
 		<%
 		Dim numero_etapa, descricao, cod_usuario_responsavel, nome_usuario_responsavel, prazo_em_dias, data_inicio, prazo_limite, diferenca, qtd_etapas
 		While not rs.Eof
@@ -251,13 +292,9 @@ Set rs2=Nothing
 			rs2.Close
 			Set rs2=Nothing
 			%>
-			<tr>
-				<td colspan="6">
-					<table width="650" border="0" cellspacing="0" cellpadding="1">
-					<tr>
-						<td width="66" class="textoMedio"><strong><%=rs("cod_pedido")%></strong></td>
-						<td width="580">
-						<%
+            <tr class="dispatch-group" role="row"><th colspan="6" role="cell">
+              <strong>Pedido #<%=rs("cod_pedido")%></strong>
+              <%
 						sql = " SELECT "&_
 						" TB_PEDIDOS_FORMANDOS.COD_FORMANDO, "&_
 						" TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO, "&_
@@ -271,30 +308,17 @@ Set rs2=Nothing
 						" WHERE TB_PEDIDOS_FORMANDOS.COD_PEDIDO = "&rs("cod_pedido")&" ORDER BY NOME_FORMANDO"
 
 						Set rs2=objConexao.Execute(sql)
-						response.Write("<table cellpadding='0' width='580' cellspacing='0'>")
-						While not rs2.Eof
-							response.write("<tr>")
-							response.write("<td width='36%'>"&rs2("NOME_FORMANDO")&"</td>")
-							response.write("<td width='64%'>"&rs2("DESCRICAO")&"</td>")
-							response.write("</tr>")
-						rs2.MoveNext()
-						Wend
-						response.Write("</table>")
-						rs2.Close
-						Set rs2=Nothing
-						%>
-						</td>
-					</tr>
-					</table>
-				</td>
-				<td class="textoMedio"><div style="display:none" align="center">
-					<%If permitido Then%>
-						<input type="checkbox" value="S" name="despachar_<%=rs("cod_pedido")%>" class="inputRadio" />
-					<%Else%>
-						N&atildeo permitido
-					<%End If%>
-				</div></td>
-			</tr>
+                        While Not rs2.Eof
+              %>
+              <div class="dispatch-person"><strong><%=Server.HTMLEncode(rs2("NOME_FORMANDO") & "")%></strong><span><%=Server.HTMLEncode(rs2("DESCRICAO") & "")%></span></div>
+              <%
+                            rs2.MoveNext()
+                        Wend
+                        rs2.Close
+                        Set rs2 = Nothing
+              %>
+              <%If permitido Then%><input hidden type="checkbox" value="S" name="despachar_<%=rs("cod_pedido")%>"><%End If%>
+            </th></tr>
 			<%
 			sql = "SELECT VW_TB_ORDENS_SERVICO.*, A.data  FROM VW_TB_ORDENS_SERVICO LEFT JOIN TB_PEDIDOS_ITENS_ENTREGUES A ON A.cod_ordem_servico = VW_TB_ORDENS_SERVICO.cod_ordem_servico WHERE cod_pedido = "&rs("cod_pedido")&" and status_ordem_servico NOT IN (0,99) "&sql_usuario&" order by numero_ordem_servico desc, numero_ordem_servico_indice asc"
 			'Response.Write(sql)
@@ -311,49 +335,22 @@ Set rs2=Nothing
 				Set rs3=Nothing
 
 			%>                   
-			<tr <%If not isDate(data_finalizado) Then%> bgcolor="#FFAAAA" <%End If%>>
-				<td width="3%">
-					<div align="right">
-						<img src="images/icons/seta_superior.gif" width="19" height="15" />
-					</div>
-				</td>
-				<td width="22%">
-					<div align="center">
-						<%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%>
-					</div>
-				</td>
-				<td>
-					<div align="left">
-						<%=rs2("nome_produto")%>                                        
-					</div>
-				</td>
-				<td>
-					<div align="center">
-						<%=ArrumaData(data_finalizado)%>
-					</div>
-				</td>
-				<td>
-					<div align="center">
-						<%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%>
-					</div>
-				</td>
-				<td>
-					<div align="center">
-						<%=dateDiff("d",date(),DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%>
-					</div>
-				</td>
-				<td>
-					<div align="center">
-						<%If len(rs2("data")) > 3 Then%>
-							Entregue
-						<%elseIf len(rs2("data_despachado")) > 3 Then%>
-							Despachado
-						<%Else%>
-							<input type="checkbox" value="S" name="item_<%=rs2("cod_ordem_servico")%>" class="inputRadio" />
-						<%End If%>
-					</div>
-				</td>
-			</tr>
+			<tr class="dispatch-order" role="row">
+                <td role="cell" data-label="OS"><strong><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></strong></td>
+                <td role="cell" data-label="Produto"><%=Server.HTMLEncode(rs2("nome_produto") & "")%></td>
+                <td role="cell" data-label="Finaliza&ccedil;&atilde;o"><%If IsDate(data_finalizado) Then%><%=ArrumaData(data_finalizado)%><%Else%><span class="dispatch-status is-open">Em aberto</span><%End If%></td>
+                <td role="cell" data-label="Prazo geral"><%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></td>
+                <td role="cell" data-label="Dias at&eacute; o prazo"><%=dateDiff("d",date(),DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></td>
+                <td role="cell" data-label="Despacho">
+                    <%If len(rs2("data")) > 3 Then%>
+                        <span class="dispatch-status is-delivered">Entregue</span>
+                    <%elseIf len(rs2("data_despachado")) > 3 Then%>
+                        <span class="dispatch-status">Despachado</span>
+                    <%Else%>
+                        <label class="dispatch-check"><input type="checkbox" value="S" name="item_<%=rs2("cod_ordem_servico")%>" class="form-check-input"> Selecionar</label>
+                    <%End If%>
+                </td>
+            </tr>
 
 			<%
 			rs2.MoveNext()
@@ -365,60 +362,105 @@ Set rs2=Nothing
 		rs.MoveNext()
 		Wend
 	%>
-<tr>
-<td colspan="7"><div align="center"><a href="javascript:confirmaDespacho();"><img border="0" src="images/layout/btnGravar.jpg" /></a></div></td>
-</tr>
+      </tbody>
+    </table>
+    <div class="dispatch-actions dispatch-submit">
+      <span id="dispatch-count" role="status">0 OS selecionadas</span>
+      <button class="btn btn-primary" type="submit" aria-haspopup="dialog">Revisar despacho</button>
+    </div>
+  </form>
+</section>
+<dialog id="dispatch-confirm" class="dispatch-dialog" aria-labelledby="dispatch-confirm-title">
+  <h2 id="dispatch-confirm-title">Confirmar despacho?</h2>
+  <p id="dispatch-confirm-message"></p>
+  <form class="dispatch-actions" method="dialog">
+    <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+    <button class="btn btn-primary" value="confirmar">Confirmar despacho</button>
+  </form>
+</dialog>
 
-</table>
-</form>
-
-<%
-Else
-%>
-<div align="center" class="msgGrande">
-Nenhuma OS encontrada para despacho!<br />
-</div>
+<%Else%>
+<section class="dashboard-panel dispatch-panel" role="status">
+  <h2>Nenhuma OS para despacho</h2>
+  <p class="mb-0">Confira os filtros para buscar outros pedidos.</p>
+</section>
 <%End if
 
 rs.Close
 Set rs=Nothing
 
 FecharConexao()
-%>
-</p>
-<br />
-<br />
+%>    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
 
-Observa&ccedil;&otilde;es:<br />
-Linhas em vermelho significa que n&atilde;o ser&aacute; poss&iacute;vel despachar sem antes finalizar as outras OS da mesma venda
-<br />
+(function () {
+    var current = document.querySelector('.ppv-module a[href="ppv_ordens_servico_triagem_despacho.asp"]');
+    if (current) current.setAttribute('aria-current', 'page');
 
-</td>
-</tr>
-</table>
-<script type="text/javascript">
-	function confirmaDespacho(){
-		alert($("select[name='DESPACHO_TRANSPORTADOR']").val());
-		if($("select[name='DESPACHO_TRANSPORTADOR']").val() !== ''){
-			if(YNconfirm('Tem certeza que deseja efetuar o despacho das OSs selecionadas?')){
-				document.DESPACHO_CLIENTE.submit();
-			}	
-		}else{
-			alert('Informe o nome do transportador antes de continuar. Ex.: Correio.');
-			document.DESPACHO_CLIENTE.despacho_transportador.focus();
-		}
-	}
+    var form = document.getElementById('dispatch-form');
+    if (!form) return;
+    var dialog = document.getElementById('dispatch-confirm');
+    var feedback = document.getElementById('dispatch-feedback');
+    var carrier = form.querySelector('select[name="despacho_transportador" i]');
+    var counter = document.getElementById('dispatch-count');
+    var items = form.querySelectorAll('input[name^="item_"]');
+    function selectionCount() {
+        return form.querySelectorAll('input[name^="item_"]:checked').length;
+    }
+    function selectionText(count) {
+        return count + (count === 1 ? ' OS selecionada' : ' OS selecionadas');
+    }
+    form.addEventListener('change', function () {
+        counter.textContent = selectionText(selectionCount());
+        feedback.hidden = true;
+    });
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var count = selectionCount();
+        if (!carrier || !carrier.value.trim() || !count) {
+            feedback.textContent = !carrier || !carrier.value.trim()
+                ? 'Selecione o transportador para continuar.'
+                : 'Selecione pelo menos uma ordem para despacho.';
+            feedback.hidden = false;
+            if (!count && carrier && carrier.value.trim()) {
+                if (items.length) items[0].focus();
+            } else if (carrier) {
+                carrier.focus();
+            }
+            return;
+        }
+        var carrierName = carrier.options[carrier.selectedIndex].text.trim();
+        document.getElementById('dispatch-confirm-message').textContent =
+            selectionText(count) + '. Transportador: ' + carrierName + '.';
+        dialog.returnValue = '';
+        dialog.showModal();
+    });
+    dialog.addEventListener('close', function () {
+        if (dialog.returnValue === 'confirmar') form.submit();
+    });
+})();
 </script>
-<script type="text/javascript">
-
-function alterarOSAnterior(acao)
-{
-	if(acao == "exibir")
-	{
-		tinybox.show
-	}
-}
-
-</script>
-
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+</body>
+</html>

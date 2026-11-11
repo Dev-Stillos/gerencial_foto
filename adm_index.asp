@@ -5,34 +5,22 @@
 COD_USUARIO_INTERNO_LOGADO 	= Session("COD_USUARIO")
 COD_PERFIL_LOGADO			= Session("COD_PERFIL")
 
-'================ INÍCIO DO BLOCO DE FILTRO ========================
+Function DashboardNumero(nome, padrao, minimo, maximo)
+    Dim valor
+    valor = Trim(Request.QueryString(nome) & "")
+    DashboardNumero = padrao
+    If Len(valor) = 0 Or Len(valor) > 4 Then Exit Function
+    If Not IsNumeric(valor) Then Exit Function
+    valor = CDbl(valor)
+    If valor < minimo Or valor > maximo Then Exit Function
+    If valor <> Fix(valor) Then Exit Function
+    DashboardNumero = CInt(valor)
+End Function
 Dim MES_INICIO, ANO_INICIO, MES_FIM, ANO_FIM
-
-If IsNumeric(Request("MES_INICIO")) And CInt(Request("MES_INICIO")) >= 1 And CInt(Request("MES_INICIO")) <= 12 Then
-	MES_INICIO = CInt(Request("MES_INICIO"))
-Else
-	MES_INICIO = Month(Date)
-End If
-
-If IsNumeric(Request("ANO_INICIO")) Then
-	ANO_INICIO = CInt(Request("ANO_INICIO"))
-Else
-	ANO_INICIO = Year(Date)
-End If
-
-If IsNumeric(Request("MES_FIM")) And CInt(Request("MES_FIM")) >= 1 And CInt(Request("MES_FIM")) <= 12 Then
-	MES_FIM = CInt(Request("MES_FIM"))
-Else
-	MES_FIM = Month(Date)
-End If
-
-If IsNumeric(Request("ANO_FIM")) Then
-	ANO_FIM = CInt(Request("ANO_FIM"))
-Else
-	ANO_FIM = Year(Date)
-End If
-'================ FIM DO BLOCO DE FILTRO ==========================
-
+MES_INICIO = DashboardNumero("MES_INICIO", Month(Date), 1, 12)
+ANO_INICIO = DashboardNumero("ANO_INICIO", Year(Date), 2008, Year(Date)+1)
+MES_FIM = DashboardNumero("MES_FIM", Month(Date), 1, 12)
+ANO_FIM = DashboardNumero("ANO_FIM", Year(Date), 2008, Year(Date)+1)
 
 'Verifica se o usu�rio est� logado
 if COD_USUARIO_INTERNO_LOGADO=Empty OR COD_PERFIL_LOGADO=Empty then
@@ -174,539 +162,156 @@ FecharConexao()
 
 
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<%
+Dim dashboardFinanceiro, dashboardErroPeriodo
+Dim TOTAL_CARTAO, TOTAL_CHEQUE, TOTAL_BOLETO, TOTAL_DINHEIRO, TOTAL
+Dim PERIODO_INICIAL, PERIODO_FINAL, dashboardValores, dashboardNomes, dashboardCores, dashboardIndice, dashboardPercentual
+dashboardFinanceiro = (Session("COD_USUARIO") = 1 Or Session("COD_USUARIO") = 16)
+dashboardErroPeriodo = ""
+PERIODO_INICIAL = DateSerial(ANO_INICIO, MES_INICIO, 1)
+PERIODO_FINAL = DateSerial(ANO_FIM, MES_FIM + 1, 1)
+If PERIODO_INICIAL >= PERIODO_FINAL Then dashboardErroPeriodo = "Escolha um per&iacute;odo final igual ou posterior ao inicial."
+TOTAL_CARTAO = 0 : TOTAL_CHEQUE = 0 : TOTAL_BOLETO = 0 : TOTAL_DINHEIRO = 0 : TOTAL = 0
+If dashboardFinanceiro And dashboardErroPeriodo = "" Then
+    AbrirConexao()
+    sql = "SELECT SUM(IFNULL(PAGAMENTO_EM_DINHEIRO,0)) AS dinheiro, SUM(IFNULL(XTOTAL_CHEQUE,0)) AS cheque, SUM(IFNULL(XTOTAL_BOLETO,0)) AS boleto, SUM(IFNULL(XTOTAL_CARTAO,0)) AS cartao, SUM(IFNULL(XTOTAL,0)) AS total FROM VW_PEDIDOS_TOTAL_RECEBIDO WHERE cod_pedido IN (SELECT cod_pedido FROM TB_PEDIDOS WHERE FINALIZA_CORRECAO = 1 AND DATA_VENDA >= " & sqlData(PERIODO_INICIAL) & " AND DATA_VENDA < " & sqlData(PERIODO_FINAL) & ")"
+    Set rs = objConexao.Execute(sql)
+    If Not rs.EOF Then
+        If Not IsNull(rs("dinheiro")) Then TOTAL_DINHEIRO = CDbl(rs("dinheiro"))
+        If Not IsNull(rs("cheque")) Then TOTAL_CHEQUE = CDbl(rs("cheque"))
+        If Not IsNull(rs("boleto")) Then TOTAL_BOLETO = CDbl(rs("boleto"))
+        If Not IsNull(rs("cartao")) Then TOTAL_CARTAO = CDbl(rs("cartao"))
+        If Not IsNull(rs("total")) Then TOTAL = CDbl(rs("total"))
+    End If
+    rs.Close
+    Set rs = Nothing
+    FecharConexao()
+End If
+dashboardValores = Array(TOTAL_CARTAO, TOTAL_DINHEIRO, TOTAL_BOLETO, TOTAL_CHEQUE)
+dashboardNomes = Array("Cart&atilde;o de cr&eacute;dito", "Dinheiro", "Boleto", "Cheque")
+dashboardCores = Array("pink", "purple", "blue", "amber")
+%>
+<!doctype html>
+<html lang="pt-BR">
 <head>
-	<style>
-/* Estilo base para links nos menus */
-td a,
-td a:link,
-td a:visited {
-  color: black !important;
-  text-decoration: none !important;
-  background-color: inherit !important;
-}
-
-/* Hover aplicado a qualquer link dentro de tabelas ou células com fundo rosa ou escuro */
-td[style*="background-color: #2f2f44"] a:hover,
-td[style*="background-color: #ff007f"] a:hover,
-table[style*="background-color: #2f2f44"] a:hover,
-table[style*="background-color: #ff007f"] a:hover {
-  color: #ffe6f0 !important;
-  background-color: #cc0066 !important;
-  text-decoration: none !important;
-}
-</style>
-
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<style>
-table[style*="background-color: #2f2f44;"] a,
-table[style*="background-color: #2f2f44;"] a:link,
-table[style*="background-color: #2f2f44;"] a:visited,
-table[style*="background-color: #2f2f44;"] strong,
-table[style*="background-color: #2f2f44;"] td {
-  color: white !important;
-  background-color: #2f2f44 !important;
-  text-decoration: none !important;
-}
-
-table[style*="background-color: #2f2f44;"] a:hover,
-table[style*="background-color: #ff007f;"] a:hover {
-  color: #ffe6f0 !important;
-  background-color: #cc0066 !important;
-  text-decoration: none !important;
-}
-
-</style>
-
-<title>Painel Administrativo</title>
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-	<script type="text/javascript">
-function confirma(cod_formando,nomeFormando,comando){
-var mensagem
-
-	if (comando == "alterar"){
-		mensagem = "ATENÇÃO ALTERAÇÃO: \nDeseja resetar a ficha de: "+nomeFormando+" deseja continuar?\n*A ficha voltar� na forma original."	
-	}	
-	else {
-		mensagem = "ATENÇÃO EXCLUS�O: \nSe voc� continuar poder� perder as altera��es feitas nesta p�gina,\nalem de resetar a ficha do formando: "+nomeFormando+"  deseja continuar?"
-	}
-
-	var resposta=confirm(mensagem);
-		if (resposta==true) {
-			
-			if (comando == "excluir"){
-				//Nova confirma��o, Exclui
-				var resposta2=confirm("Deseja realmente EXCLUIR?")
-					if (resposta2==true){
-						document.producao["MODIFICACOES_"+cod_formando].value = "2";
-						document.producao.submit();
-					}	
-			}
-			else{
-			//Altera
-				document.producao["MODIFICACOES_"+cod_formando].value = "1"
-				document.producao.submit();
-			}
-			
-		}
-}
-</script>
-
-	
-	<script language="javascript">
-		function popUp(campo,URL,campoSelect,msgErro){
-			
-			if(document.producao[campo].value==1){
-				
-				if (campoSelect !== 'no'){
-					//Brinde = "Sim"
-					document.producao[campoSelect].options[1].selected = "true";
-				}
-			
-				win=window.open(URL,"","width=350,height=220,scrollbars=yes")
-				var text = "Se a janela n�o abrir desbloquei os Pop-ups!";
-				if(win == null) { alert(text); return; }
-				win.moveTo(350,150);
-					
-			}
-			else {
-				if (msgErro==1){alert('Para visualizar os brindes � necess�rio alterar a op��o Brinde para Sim.')}
-			}
-		
-		}
-		
-		function fecharPopUp(){
-			if(win){
-				win.close();
-			}
-		}
-		
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript" language="javascript">
-	<!--AJUDA F1 E CTRL PARA BUSCA R�PIDA-->
-		
-	function abrir(theURL,winName,features) 
-	{ 
-	
-		window.open(theURL,winName,features);
-	}
-	
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}	
-		
-		
-	
-
-	function buscaIni(){
-	d = document.buscaForm
-	d.busca.focus()
-	d.busca.select();
-	}
-	function mudacorBusca(CAMPO){
-	CAMPO.style.backgroundColor = '#F5ECBA'
-	}
-	function mudacorBusca2(CAMPO){
-	CAMPO.style.backgroundColor = '#FFFFFF'
-	}
-
- function Verificar()
- {
-  var tecla=window.event.keyCode;
-  if (tecla==17) {
-    buscaIni();
-	}
- }
- 	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-	</script>
-	
-	<script>
-
-function mascara(o,f){
-    v_obj=o
-    v_fun=f
-    setTimeout("execmascara()",1)
-}
-
-function execmascara(){
-    v_obj.value=v_fun(v_obj.value)
-}
-
-function leech(v){
-    v=v.replace(/o/gi,"0")
-    v=v.replace(/i/gi,"1")
-    v=v.replace(/z/gi,"2")
-    v=v.replace(/e/gi,"3")
-    v=v.replace(/a/gi,"4")
-    v=v.replace(/s/gi,"5")
-    v=v.replace(/t/gi,"7")
-    return v
-}
-
-function soNumeros(v){
-    return v.replace(/\D/g,"")
-}
-
-function telefone(v){
-    v=v.replace(/\D/g,"")
-    v=v.replace(/^(\d\d)(\d)/g,"($1) $2") 
-    v=v.replace(/(\d{4})(\d)/,"$1-$2")   
-    return v
-}
-
-function cpf(v){
-    v=v.replace(/\D/g,"")                   
-    v=v.replace(/(\d{3})(\d)/,"$1.$2")      
-    v=v.replace(/(\d{3})(\d)/,"$1.$2")      
-                                            
-    v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
-    return v
-}
-
-function cep(v){
-    v.replace(/\D/g,"")               
-    v=v.replace(/^(\d{5})(\d)/,"$1-$2") 
-    return v
-}
-
-function cnpj(v){
-    v=v.replace(/\D/g,"")                           
-    v=v.replace(/^(\d{2})(\d)/,"$1.$2")             
-    v=v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3") 
-    v=v.replace(/\.(\d{3})(\d)/,".$1/$2")         
-    v=v.replace(/(\d{4})(\d)/,"$1-$2")              
-    return v
-}
-
-function focusFormando(){
-	document.producao.<%="ALBUM_"&Request.QueryString("cod_form")%>.focus()
-}
-</script>
-	
-		<!-- CALEND�RIO SCRIPTS
-	<script type="text/javascript">
-	DHTMLSuite.include("calendar");
-	</script>
-	<script type="text/javascript">
-	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
-	
-		 
-	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
-	
-	function myOtherFunction()
-	{
-		
-		
-	}
-	function pickDate(buttonObj,inputObject)
-	{
-		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
-		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
-		if(calendarObjForForm.isVisible()){
-			calendarObjForForm.hide();
-		}else{
-			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
-			calendarObjForForm.display();
-		}		
-	}	
-	/* inputArray is an associative array with the properties
-	year
-	month
-	day
-	hour
-	minute
-	calendarRef - Reference to the DHTMLSuite.calendar object.
-	*/
-	function getDateFromCalendar(inputArray)
-	{
-		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
-		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
-//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
-		calendarObjForForm.hide();	
-		
-	}	
-	</script>
-	-->
-	<script language="javascript">
-	function confirmaFinalizarProducao(){
-	
-	var pergunta = confirm('Tem certeza que deseja finalizar est� produ��o?\nObs.: Esta produ��o n�o poder� ser alterada posteriormente somente com senha especial.')
-		if(pergunta==true){
-		abre('?cod_prod=<%=Request.QueryString("cod_prod")%>&comando=finalizar_producao')
-		}
-	}
-	function confirmaExclusao(){
-	var perguntaq = confirm('EXCLUIR PRODU��O:\nATENÇÃO caso queira continuar lembre-se que todas as fichas(se houver) ser�o exclu�das completamente, deseja continuar?')
-		if (perguntaq==true){
-			var perguntadeNovo = confirm("CONFIRMA EXCLUS�O DESTA PRODU��O E SUAS RESPECTIVAS FICHAS?")
-			if (perguntadeNovo==true){
-			abre('?cod_prod=<%=Request.QueryString("cod_prod")%>&comando=excluir_producao')
-			}
-		}
-	
-	}
-	</script>
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vis&atilde;o geral | Stillos Fotos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-  <!-- #include file="includes/topo.asp" -->
-  <table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-<table width="100%" style="border-bottom: dotted 1px #999999; background-color: #2f2f44;" border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->	
-	</td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-	
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 2
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 2
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-
-		<!-- CÓDIGOS DE USUÁRIOS AUTORIZADOS -->
-		<%If Session("COD_USUARIO") = 1 Or Session("COD_USUARIO") = 16 Then%>
-
-	
-	  <!-- CAIXA ROSA CENTRALIZADA -->
-<div style="margin: 20px auto; display: flex; justify-content: center;">
-  <div style="background-color: #ff007f; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 16px;">
-    Painel Administrativo | Resumo de Vendas
-  </div>
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+<aside class="dashboard-sidebar" id="menuPrincipal">
+<a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180"><span>GERENCIAL FOTOS</span></a>
+<div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+<!-- #include file="includes/dashboard_menu.asp" -->
+<div class="sidebar-footer">Stillos &middot; Produ&ccedil;&otilde;es e eventos</div>
+</aside>
+<div class="dashboard-workspace">
+<header class="dashboard-topbar">
+<button class="btn menu-toggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+<div class="topbar-title">Portal Stillos <span>/ Painel administrativo</span></div>
+<div class="topbar-actions"><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><span class="user-name"><%=Server.HTMLEncode(Session("NOME") & "")%></span><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+</header>
+<main id="conteudo" class="dashboard-main">
+<div class="dashboard-heading"><div><p class="eyebrow">SEU DIA NO GERENCIAL</p><h1>Vis&atilde;o geral</h1><p>Bem-vindo(a), <strong><%=Server.HTMLEncode(Session("NOME") & "")%></strong>. Acompanhe os resultados e acesse suas ferramentas.</p></div><span class="date-chip"><%=Day(Date)%> de <%=MonthName(Month(Date))%> de <%=Year(Date)%></span></div>
+<section class="search-panel" aria-label="Busca no sistema"><div><strong>Encontre o que precisa</strong><p>Consulte pedidos, formandos e produ&ccedil;&otilde;es.</p></div><!-- #include file="includes/dashboard_busca.asp" --></section>
+<%If Request.QueryString("codmsg") = "1" Then%><div class="alert alert-warning" role="alert">Voc&ecirc; n&atilde;o possui acesso &agrave; altera&ccedil;&atilde;o de pedidos ap&oacute;s baixa da Diretoria. Solicite a Diretoria para alterar o pedido.</div><%End If%>
+<%If dashboardFinanceiro Then%>
+<section class="filter-panel" aria-labelledby="tituloResultados"><div><h2 id="tituloResultados">Resumo de vendas</h2><p>Vendas conclu&iacute;das no per&iacute;odo selecionado</p></div>
+<form method="get" action="adm_index.asp" class="period-filter">
+<%Dim dashboardCampos, dashboardRotulos, dashboardSelecionados
+dashboardCampos = Array("MES_INICIO", "ANO_INICIO", "MES_FIM", "ANO_FIM")
+dashboardRotulos = Array("M&ecirc;s inicial", "Ano inicial", "M&ecirc;s final", "Ano final")
+dashboardSelecionados = Array(MES_INICIO, ANO_INICIO, MES_FIM, ANO_FIM)
+For dashboardIndice = 0 To 3%>
+<div><label for="<%=dashboardCampos(dashboardIndice)%>"><%=dashboardRotulos(dashboardIndice)%></label><select class="form-select" id="<%=dashboardCampos(dashboardIndice)%>" name="<%=dashboardCampos(dashboardIndice)%>">
+<%Dim dashboardMin, dashboardMax
+dashboardMin = 1 : dashboardMax = 12
+If dashboardIndice = 1 Or dashboardIndice = 3 Then
+    dashboardMin = 2008 : dashboardMax = Year(Date)+1
+End If
+For i = dashboardMin To dashboardMax
+    selected = ""
+    If i = dashboardSelecionados(dashboardIndice) Then selected = " selected"
+%><option value="<%=i%>"<%=selected%>><%If dashboardIndice = 0 Or dashboardIndice = 2 Then%><%=MonthName(i)%><%Else%><%=i%><%End If%></option><%Next%>
+</select></div><%Next%><button class="btn btn-primary" type="submit">Aplicar filtro</button></form></section>
+<%If dashboardErroPeriodo <> "" Then%><div class="alert alert-warning" role="alert"><%=dashboardErroPeriodo%></div><%Else%>
+<div class="period-caption"><%=MonthName(MES_INICIO)%> de <%=ANO_INICIO%> &mdash; <%=MonthName(MES_FIM)%> de <%=ANO_FIM%></div>
+<div class="row g-3 mb-4">
+<div class="col-12 col-xl-4"><article class="metric-card metric-total"><span class="metric-label">Total geral</span><strong>R$ <%=FormatNumber(TOTAL,2)%></strong><span>Pagamentos vinculados &agrave;s vendas conclu&iacute;das</span><div class="metric-decoration" aria-hidden="true">&#8599;</div></article></div>
+<%For dashboardIndice = 0 To 1%><div class="col-12 col-sm-6 col-xl-4"><article class="metric-card"><span class="metric-icon <%=dashboardCores(dashboardIndice)%>" aria-hidden="true"><%If dashboardIndice = 0 Then%>&#9635;<%Else%>$<%End If%></span><span class="metric-label"><%=dashboardNomes(dashboardIndice)%></span><strong>R$ <%=FormatNumber(dashboardValores(dashboardIndice),2)%></strong><span>Valor registrado no per&iacute;odo</span></article></div><%Next%>
 </div>
+<div class="row g-4"><div class="col-12 col-xl-7"><section class="dashboard-panel"><div class="panel-heading"><h2>Distribui&ccedil;&atilde;o dos pagamentos</h2><span class="subtle-badge">4 modalidades</span></div><p class="panel-description">Participa&ccedil;&atilde;o de cada forma no total geral.</p>
+<%If TOTAL = 0 Then%><p class="empty-state">Nenhum valor registrado neste per&iacute;odo.</p><%End If%>
+<%For dashboardIndice = 0 To 3
+dashboardPercentual = 0
+If TOTAL > 0 Then dashboardPercentual = dashboardValores(dashboardIndice) / TOTAL * 100
+%><div class="payment-row"><div class="payment-label"><span><i class="dot <%=dashboardCores(dashboardIndice)%>"></i><%=dashboardNomes(dashboardIndice)%></span><strong>R$ <%=FormatNumber(dashboardValores(dashboardIndice),2)%></strong></div><div class="payment-bar" aria-hidden="true"><span class="<%=dashboardCores(dashboardIndice)%>" style="width:<%=Replace(CStr(Round(dashboardPercentual,2)),",",".")%>%"></span></div><span class="payment-percentage"><%=FormatNumber(dashboardPercentual,1)%>% do total</span></div><%Next%>
+</section></div><div class="col-12 col-xl-5"><section class="dashboard-panel"><div class="panel-heading"><h2>Valores por modalidade</h2></div><p class="panel-description">Detalhamento financeiro do per&iacute;odo.</p><div class="table-responsive"><table class="table payment-table"><thead><tr><th scope="col">Forma de pagamento</th><th scope="col" class="text-end">Valor</th></tr></thead><tbody><%For dashboardIndice = 0 To 3%><tr><td><%=dashboardNomes(dashboardIndice)%></td><td class="text-end">R$ <%=FormatNumber(dashboardValores(dashboardIndice),2)%></td></tr><%Next%></tbody><tfoot><tr><th scope="row">Total geral</th><td class="text-end">R$ <%=FormatNumber(TOTAL,2)%></td></tr></tfoot></table></div></section></div></div>
+<%End If%><%End If%>
+<section class="dashboard-panel shortcuts"><div class="panel-heading"><h2>Acesso r&aacute;pido</h2><span class="panel-description">Ferramentas do seu perfil</span></div><div class="row g-3">
+<%If MENU_5 = 1 Then%><div class="col-12 col-md-6 col-xl-3"><a class="shortcut-card" href="lca_pedidos_pendentes.asp"><span class="shortcut-symbol">&#9636;</span><strong>Pedidos pendentes</strong><span>Acompanhar lan&ccedil;amentos &#8594;</span></a></div><%End If%>
+<%If MENU_1 = 1 Then%><div class="col-12 col-md-6 col-xl-3"><a class="shortcut-card" href="dip_producoes.asp"><span class="shortcut-symbol">&#9673;</span><strong>Produ&ccedil;&otilde;es</strong><span>Consultar produ&ccedil;&otilde;es &#8594;</span></a></div><%End If%>
+<%If MENU_15 = 1 Then%><div class="col-12 col-md-6 col-xl-3"><a class="shortcut-card" href="cap_fechamentos.asp"><span class="shortcut-symbol">&#10003;</span><strong>Fechamentos</strong><span>Acessar per&iacute;odos e recibos &#8594;</span></a></div><%End If%>
+<%If MENU_4 = 1 Then%><div class="col-12 col-md-6 col-xl-3"><a class="shortcut-card" href="adm_relatorios.asp"><span class="shortcut-symbol">&#8599;</span><strong>Relat&oacute;rios</strong><span>Consultar resultados &#8594;</span></a></div><%End If%>
+</div><p class="shortcut-hint">Todas as op&ccedil;&otilde;es dispon&iacute;veis para seu perfil est&atilde;o no menu.</p></section>
+<div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+<section class="session-panel"><div><strong><%=Server.HTMLEncode(Session("DEPARTAMENTO") & "")%></strong><p><%If Session("ACESSO_EM") <> Empty Then%>&Uacute;ltimo acesso em <%=Server.HTMLEncode(Session("ACESSO_EM") & "")%> &middot; <%=Server.HTMLEncode(Session("QTDACESSOS") & "")%> acessos<%Else%>Este &eacute; seu primeiro acesso.<%End If%></p></div><%If Session("COD_PERFIL") = 12 Then%><a href="ple_projetos.asp" class="btn btn-outline-secondary">Visualizar projetos de TI</a><%End If%></section>
+</main><footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+</div></div>
+<script>
+document.querySelector('.menu-toggle').addEventListener('click', function () {
+    var opened = this.getAttribute('aria-expanded') !== 'true';
+    this.setAttribute('aria-expanded', String(opened));
+    document.getElementById('menuPrincipal').classList.toggle('is-open', opened);
+});
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+        document.getElementById('menuPrincipal').classList.remove('is-open');
+        document.querySelector('.menu-toggle').setAttribute('aria-expanded', 'false');
+    }
+});
+</script>
 
 <%
-' Parâmetros recebidos do filtro
-
-MES_INICIO = Request("MES_INICIO") : If MES_INICIO = "" Then MES_INICIO = Month(Date)
-ANO_INICIO = Request("ANO_INICIO") : If ANO_INICIO = "" Then ANO_INICIO = Year(Date)
-MES_FIM = Request("MES_FIM") : If MES_FIM = "" Then MES_FIM = Month(Date)
-ANO_FIM = Request("ANO_FIM") : If ANO_FIM = "" Then ANO_FIM = Year(Date)
-
-Dim TOTAL_CARTAO, TOTAL_CHEQUE, TOTAL_BOLETO, TOTAL_DINHEIRO, TOTAL
-TOTAL_CARTAO = 0 : TOTAL_CHEQUE = 0 : TOTAL_BOLETO = 0 : TOTAL_DINHEIRO = 0 : TOTAL = 0
-
-AbrirConexao()
-
-Dim PERIODO_INICIAL, PERIODO_FINAL
-PERIODO_INICIAL = formatDateTime("01/" & MES_INICIO & "/" & ANO_INICIO)
-PERIODO_FINAL = formatDateTime(QuantidadeDiasMes("01/" & MES_FIM & "/" & ANO_FIM) & "/" & MES_FIM & "/" & ANO_FIM)
-
-sql = "SELECT SUM(IFNULL(PAGAMENTO_EM_DINHEIRO,0)) as dinheiro, SUM(IFNULL(XTOTAL_CHEQUE,0)) as cheque, SUM(IFNULL(XTOTAL_BOLETO,0)) as boleto, SUM(IFNULL (XTOTAL_CARTAO,0)) as cartao, SUM(IFNULL (XTOTAL,0)) as total FROM VW_PEDIDOS_TOTAL_RECEBIDO WHERE cod_pedido IN (SELECT cod_pedido FROM TB_PEDIDOS WHERE FINALIZA_CORRECAO = 1 AND DATA_VENDA BETWEEN " & sqlData(PERIODO_INICIAL) & " AND " & sqlData(PERIODO_FINAL) & ")"
-
-Set rs = objConexao.Execute(sql)
-If Not rs.EOF Then
-    TOTAL_DINHEIRO = FormatNumber(0 & rs("dinheiro"), 2)
-    TOTAL_CHEQUE = FormatNumber(0 & rs("cheque"), 2)
-	TOTAL_BOLETO = FormatNumber(0 & rs("boleto"), 2)
-    TOTAL_CARTAO = FormatNumber(0 & rs("cartao"), 2)
-    TOTAL = FormatNumber(0 & rs("total"), 2)
-End If
-rs.Close
-Set rs = Nothing
-FecharConexao()
+' Desative este aviso quando a modernizacao do Gerencial Fotos for concluida.
+Const ExibirAvisoModernizacaoGerencial = True
+If Session("GerencialAvisoModernizacaoPendente") = True Then
+    Session.Contents.Remove "GerencialAvisoModernizacaoPendente"
+    If ExibirAvisoModernizacaoGerencial Then
 %>
-
-<!-- CARD VISUAL -->
-<div style="margin: 20px auto; width: 80%; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px #ccc;">
-  
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2 style="margin: 0; color: #000000 !important;">Resumo de Vendas (Painel)</h2>
-
-
-<form method="get" action="adm_index.asp" style="display:flex; gap:6px; align-items:center;">
-  <select name="MES_INICIO">
-    <%For i = 1 To 12
-      If MES_INICIO = i Then selected="selected" Else selected=""
-    %>
-      <option value="<%=i%>" <%=selected%>><%=UCase(MonthName(i))%></option>
-    <%Next%>
-  </select>
-
-  <select name="ANO_INICIO">
-    <%For i = 2008 To Year(Date)+1
-      If ANO_INICIO = i Then selected="selected" Else selected=""
-    %>
-      <option value="<%=i%>" <%=selected%>><%=i%></option>
-    <%Next%>
-  </select>
-
-  <span style="margin: 0 6px;">at&eacute;</span>
-
-  <select name="MES_FIM">
-    <%For i = 1 To 12
-      If MES_FIM = i Then selected="selected" Else selected=""
-    %>
-      <option value="<%=i%>" <%=selected%>><%=UCase(MonthName(i))%></option>
-    <%Next%>
-  </select>
-
-  <select name="ANO_FIM">
-    <%For i = 2008 To Year(Date)+1
-      If ANO_FIM = i Then selected="selected" Else selected=""
-    %>
-      <option value="<%=i%>" <%=selected%>><%=i%></option>
-    <%Next%>
-  </select>
-
-  <input type="submit" value="Filtrar" style="padding: 4px 12px; border: 1px solid #ccc; background-color: #ff007f; color: white; font-weight: bold; border-radius: 4px;">
-</form>
-
-</div>
-
-
-  <!-- Período atual -->
-  <p style="text-align:center; color:#666; margin-top: 10px; font-weight: bold; font-size: 16px">
-    Per&iacute;odo: <%=UCase(MonthName(MES_INICIO))%> de <%=ANO_INICIO%> &agrave; <%=UCase(MonthName(MES_FIM))%> de <%=ANO_FIM%>
-  </p>
-
-  <!-- Tabela de valores -->
-  <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse: collapse; font-size: 14px;">
-    <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
-      <td>Forma de Pagamento</td>
-      <td>Valor</td>
-    </tr>
-	<tr>
-      <td style="text-align: left;">Boleto</td>
-      <td style="text-align: right; color: #2c3e50;"><%=TOTAL_BOLETO%></td>
-    </tr>
-    <tr>
-      <td style="text-align: left;">Cart&atilde;o de Cr&eacute;dito</td>
-      <td style="text-align: right; color: #2c3e50;"><%=TOTAL_CARTAO%></td>
-    </tr>
-    <tr>
-      <td style="text-align: left;">Cheque</td>
-      <td style="text-align: right; color: #2c3e50;"><%=TOTAL_CHEQUE%></td>
-    </tr>
-    <tr>
-      <td style="text-align: left;">Dinheiro</td>
-      <td style="text-align: right; color: #2c3e50;"><%=TOTAL_DINHEIRO%></td>
-    </tr>
-    <tr style="background-color: #ff007f; color: white; font-weight: bold;">
-      <td style="text-align: left;">Total Geral</td>
-      <td style="text-align: right;"><%=TOTAL%></td>
-    </tr>
-  </table>
-</div>
-<% End If ' <-- Fim da verificação do perfil %>
-
-			
-            <%If Request.QueryString("codmsg") = 1 Then%>
-            	<div class="msgGrandeErro">Voc&ecirc; n&atilde;o possui acesso a altera&ccedil;&atilde;o de pedidos ap&oacute;s baixa da Diretoria. Solicite a Diretoria para alterar o pedido</div>
-            <%End If%>
-            
-            
-		<h4 align="center">Bem vindo(a) <%=Session("NOME")%>!<br />
-        
-        
-		  <%=Session("DEPARTAMENTO")%></h4>
-		  
-           <%
-            if Session("COD_PERFIL") = 12 then
-        %>
-            <style>
-                .bt_projetos{
-                    margin: auto;
-                    width: 230px;
-                    display: block;
-                    text-align: center;
-                    padding-top: 20px;
-                    padding-bottom: 20px;
-                    border: 1px solid #808080;
-                    background-color: #B4D0F5;
-                    font-size: 18px;
-                    color: #383030;
-                    text-decoration: none;
-                }
-                .bt_projetos:hover{
-                    background-color: #88B6F1;
-                }
-            </style>
-            <a href="ple_projetos.asp" class="bt_projetos"> Visualizar projetos - TI </a>
-        <%
-            end if
-        %>
-        
-        
-		<%If Session("ACESSO_EM") <> Empty then%>
-		<p align="center">&Uacute;ltimo acesso em: <%=Session("ACESSO_EM")%>. <br />Total de acessos: <%=Session("QTDACESSOS")%></p>
-		<%else%>
-		<p align="center">Este &eacute; seu 1&ordm; acesso! A qualquer momento pressione F1 para ajuda nas telas. </p>
-		<%end if%>
-		<p>
-	  </p>
-	  		<p align="center"></p>
-		<p align="center"></p>
-		<p align="center"></p>
-	    </td>
-    </tr>
-</table>
-
-  
-  
-  
-  </td>
-    </tr>
-</table>  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
-</body>
-</html>
-
-
-
-
-
-
+<style>
+.modernizacao-dialog { box-sizing:border-box; width:min(560px,calc(100% - 24px)); max-height:calc(100% - 24px); padding:0; overflow:auto; border:1px solid #e4dfeb; border-radius:16px; background:#fff; color:#242738; box-shadow:0 18px 60px #24273845; }
+.modernizacao-dialog::backdrop { background:#242738a6; }
+.modernizacao-marca { display:flex; align-items:center; min-height:72px; padding:10px 24px; border-bottom:3px solid #b20b61; background:#292b40; }
+.modernizacao-marca img { display:block; width:150px; max-width:100%; height:auto; }
+.modernizacao-conteudo { padding:clamp(18px,5vw,30px); }
+.modernizacao-conteudo h2 { margin:0 0 12px; font-size:clamp(20px,4vw,26px); line-height:1.2; }
+.modernizacao-conteudo p { margin:0 0 12px; line-height:1.55; }
+.modernizacao-conteudo .modernizacao-assinatura { font-weight:650; color:#88134f; }
+.modernizacao-acoes { display:flex; justify-content:flex-end; margin:20px 0 0; }
+</style>
+<dialog class="modernizacao-dialog" id="avisoModernizacaoGerencial" aria-labelledby="avisoModernizacaoTitulo" aria-describedby="avisoModernizacaoResumo">
+  <div class="modernizacao-marca"><img src="images/logoparafundopreto.png" alt="Stillos"></div>
+  <div class="modernizacao-conteudo">
+    <h2 id="avisoModernizacaoTitulo">Boas-vindas ao Gerencial Fotos!</h2>
+    <p id="avisoModernizacaoResumo">O Departamento de TI est&aacute; modernizando o Gerencial Fotos por etapas para deixar a navega&ccedil;&atilde;o mais clara e as tarefas do dia a dia mais simples.</p>
+    <p>Durante esse per&iacute;odo, voc&ecirc; vai encontrar telas renovadas conforme as atualiza&ccedil;&otilde;es forem chegando. Agradecemos a paci&ecirc;ncia e o apoio de todos. O que voc&ecirc;s nos contam sobre o uso do sistema ajuda a orientar as pr&oacute;ximas melhorias.</p>
+    <p class="modernizacao-assinatura">Departamento de TI &middot; Stillos</p>
+    <form class="modernizacao-acoes" method="dialog"><button class="btn btn-primary" autofocus>Continuar para o Gerencial</button></form>
+  </div>
+</dialog>
+<script>
+(function () {
+    var dialog = document.getElementById('avisoModernizacaoGerencial');
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+})();
+</script>
+<%
+    End If
+End If
+%>
+</body></html>

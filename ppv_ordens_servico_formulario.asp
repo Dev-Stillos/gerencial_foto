@@ -23,7 +23,71 @@ End If
 '//////////////////////////
 Dim calendario_necessario : calendario_necessario = "NÃO"
 %>
-<!-- #include file="files/includes/miolo-superior.asp" -->
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<%
+Dim caminho_pagina
+caminho_pagina = Replace(Request.ServerVariables("URL"),"/gerencial_foto/","")
+%>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Detalhes da ordem de servi&ccedil;o | Portal Stillos</title>
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/chosen.min.css" />
+<link rel="stylesheet" href="css/modal-message.css" />
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<!-- #include file="files/includes/scripts.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
+<style>
+.os-detail { box-sizing:border-box; width:100%; min-width:0; color:#292738; font:14px/1.5 system-ui,sans-serif; }
+.os-detail *, .os-detail *::before, .os-detail *::after { box-sizing:border-box; }
+.os-detail .os-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+.os-detail .os-context { color:#9e125c; font-size:12px; font-weight:750; text-transform:uppercase; letter-spacing:.06em; }
+.os-detail .os-heading h2 { color:#26243a; font:700 clamp(22px,3vw,32px)/1.2 system-ui,sans-serif; margin:5px 0 0; }
+.os-detail .os-back { display:inline-block; padding:8px 12px; border:1px solid #ded9e6; background:#fff; border-radius:8px; color:#6d1749; font-weight:650; text-decoration:none; }
+.os-detail .subMenu { margin-bottom:18px; padding:10px 12px; border:1px solid #e4dfeb; border-radius:10px; background:#fff; white-space:normal; line-height:2.3; }
+.os-detail .subMenu a { display:inline-block; max-width:100%; overflow-wrap:anywhere; }
+.os-detail fieldset.os-panel { min-width:0; margin:0 0 18px; padding:14px 16px 16px; border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.os-detail .os-panel legend { float:none; width:auto; margin:0; padding:0 8px; color:#292738; font:700 16px/1.5 system-ui,sans-serif; border:0; }
+.os-detail .os-table { width:100%; margin:0; border:0; border-collapse:collapse; color:inherit; }
+.os-detail .os-table > tbody > tr > td { padding:10px 12px; border:0; border-bottom:1px solid #eeeaf2; vertical-align:middle; overflow-wrap:anywhere; }
+.os-detail .os-summary > tbody > tr > td:first-child:not([colspan]) { background:#f8f6fa; color:#494258; }
+.os-detail .os-summary > tbody > tr > td[colspan] { border-bottom:0; padding:12px; }
+.os-detail .os-stages > tbody > tr:first-child > td { background:#f1edf6; color:#443b56; }
+.os-detail .os-stage-scroll { overflow:auto; }
+.os-detail .os-stages { min-width:940px; }
+.os-detail .os-stage-status, .os-detail .os-status { display:inline-block; border-radius:999px; background:#f0ecf7; color:#514369; padding:4px 8px; font-size:12px; font-weight:700; }
+.os-detail .os-stage-status.done, .os-detail .os-status[data-status="4"] { background:#e1f3e9; color:#215b42; }
+.os-detail .os-status[data-status="99"] { background:#fbe7ed; color:#8d2543; }
+.os-detail .os-status[data-status="3"] { background:#e6effb; color:#254e82; }
+.os-detail .os-status[data-status="2"] { background:#fff1d6; color:#785100; }
+.os-detail .btnGeral { display:inline-block; max-width:100%; white-space:normal; padding:7px 11px; margin:3px; border:1px solid #ded5e4; border-radius:8px; color:#7c174e; background:#fff; text-decoration:none; font-weight:650; }
+.os-detail .btnGeral.os-cancel { color:#8d2543; border-color:#edccd6; background:#fff2f5; }
+.os-detail input, .os-detail select, .os-detail textarea, .os-detail table { max-width:100%; }
+.os-detail .os-stage-scroll .os-stages { max-width:none; }
+.os-detail .os-stages > tbody > tr > td { overflow-wrap:normal; word-break:normal; }
+.os-detail .os-stages > tbody > tr > td:first-child { min-width:108px; }
+.os-detail .os-stages > tbody > tr > td:nth-child(5) { min-width:85px; }
+.os-detail .os-stages > tbody > tr > td:nth-child(6) { min-width:115px; }
+.os-detail .os-stage-status { white-space:nowrap; }
+.os-detail .os-summary > tbody > tr > td[colspan] > br { display:none; }
+.os-form-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
+.dashboard-sidebar a[href="ppv_ordens_servico.asp"][aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.os-detail iframe { display:block; width:100%; height:1px; margin-top:10px; border:1px solid #eeeaf2; border-radius:8px; }
+.os-detail a:focus-visible { outline:2px solid #9e125c; outline-offset:2px; }
+@media (max-width:650px) {
+    .os-detail fieldset.os-panel { padding:10px; }
+    .os-detail .os-summary, .os-detail .os-summary > tbody, .os-detail .os-summary > tbody > tr, .os-detail .os-summary > tbody > tr > td { display:block; width:100%; }
+    .os-detail .os-summary > tbody > tr > td:first-child:not([colspan]) { padding-bottom:5px; border-bottom:0; }
+}
+</style>
+</head>
+<body class="os-form-page">
+<div class="bloqueio_tela hidden"></div>
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
 <%
 
@@ -226,9 +290,33 @@ End sub
 
 '----------------------------------------------------------------------------------------
 %>
-<h2><%=titulo_pagina%></h2>
-<br />
-<!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+<section class="os-detail" aria-labelledby="os-detalhe-titulo">
+    <header class="os-heading">
+        <div>
+            <div class="os-context">Produ&ccedil;&atilde;o p&oacute;s-venda</div>
+            <h2 id="os-detalhe-titulo"><%If comando = "visualizar" Then%>Detalhes da ordem de servi&ccedil;o<%Else%><%=titulo_pagina%><%End If%></h2>
+        </div>
+        <a class="os-back" href="ppv_ordens_servico.asp">Voltar &agrave;s ordens</a>
+    </header>
+    <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+    <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+    <nav aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
+        <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+    </nav>
 <%
 Dim msg : msg = Request.QueryString("msg")
 
@@ -237,11 +325,11 @@ If msg <> Empty Then
 End If
 %>
 <form action='<%=actionformulario%>?comando=<%=comando%>' name='FORMULARIO_PADRAO' onsubmit='return validaFormMaster()' method='post'>
-    <fieldset>
+    <fieldset class="os-panel">
     	<legend>Dados Básicos da OS</legend>
 		<input type="hidden" value="<%=pagina_origem%>" name="pagina_retornar" />   
     	
-    	<table width='96%' border='1' align='center' cellpadding='5' style='border-collapse:collapse'>
+    	<table class="os-table os-summary">
 		<%If comando <> "incluir" Then %>
 		<tr>
     		<td width='27%'><strong>Ordem de Servi&ccedil;o</strong></td>
@@ -256,7 +344,16 @@ End If
     	<%End If%>
     	<tr>
     		<td width='27%'><strong>Status</strong></td>
-    		<td width='73%'><%=moduloPPVStatus(status_ordem_servico)%></td>
+    		<td width='73%'><span class="os-status" data-status="<%=Server.HTMLEncode(status_ordem_servico & "")%>"><%
+                Select Case CStr(status_ordem_servico & "")
+                    Case "1": Response.Write "Em produ&ccedil;&atilde;o"
+                    Case "2": Response.Write "Aguardando despacho"
+                    Case "3": Response.Write "Despachada"
+                    Case "4": Response.Write "Entregue"
+                    Case "99": Response.Write "Cancelada"
+                    Case Else: Response.Write moduloPPVStatus(status_ordem_servico)
+                End Select
+            %></span></td>
     	</tr>
     	<tr>
     		<td width='27%'><strong>Formando</strong></td>
@@ -432,7 +529,7 @@ End If
 			'--------------------------------------------------------------------------------------
 			If validaUsuario(2,,55,false) Then
 			%>
-            	<a href="javascript:motivoCancelamento()" class="btnGeral">CANCELAR ORDEM DE SERVIÇO</a>
+            	<a href="javascript:motivoCancelamento()" class="btnGeral os-cancel">CANCELAR ORDEM DE SERVIÇO</a>
                 <div id="containerCancelamento" class="ocultarCompleto" style="padding:15px;">   
 					<br />
 					<br />
@@ -503,17 +600,20 @@ End If
     </table>
 </fieldset>
 
-<fieldset>
+<fieldset class="os-panel">
 <legend>Descrição / Histórico</legend>
     <%If comando <> "incluir" Then%>
-    	<div align="center"><a href="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" target="_blank">Abrir Histórico em nova janela</a></div>
-      	<iframe width="98%" height="220px;" src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" frameborder="0"></iframe>
+    	<div class="os-history-toolbar">
+            <button type="button" class="os-back" id="openHistoryReport">Visualizar e imprimir hist&oacute;rico</button>
+        </div>
+      	<iframe id="osHistoryFrame" title="Hist&oacute;rico da ordem de servi&ccedil;o" width="100%" height="1" src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>" frameborder="0"></iframe>
      <%End if%>
 </fieldset>
 
-<fieldset>
+<fieldset class="os-panel">
 	<legend>Etapas</legend>
-    	<table width='96%' border='1' align='center' cellpadding='5' style='border-collapse:collapse'>
+    	<div class="os-stage-scroll" tabindex="0" role="region" aria-label="Tabela de etapas">
+        <table class="os-table os-stages">
 		<tr bgcolor="whitesmoke">
     		<td width="7%"><div align="center" style="font-weight: bold">Status</div></td>
         	<td width="20%"><div align="center" style="font-weight: bold">Etapa</div></td>
@@ -533,9 +633,9 @@ End If
         <tr>
     		<td width="7%"><div align="center">
         	<% If rs("data_termino") Then %>
-        		<img src="images/icons/icon_green.gif" alt="Etapa Finalizada" />
+        		<span class="os-stage-status done">Finalizada</span>
         	<% Else %>
-       			<img src="images/icons/icon_red.gif" alt="Etapa N&atilde;o Finalizada"  /> 
+       			<span class="os-stage-status">Pendente</span> 
         	<% End If %>
        		</div></td>
         	<td width="20%">
@@ -597,10 +697,12 @@ End If
         	Etapa: <span class="textoMedio"><%=numero_etapa_atual%> de <%=qtd_etapas%></span></span></td>
     </tr>
 	</table>
+    </div>
 </fieldset>
 <input type='hidden' value='1' name='campo1'  />
 <input type='hidden' name='COD_ORDEM_SERVICO' value="<%=COD_ORDEM_SERVICO%>" />
 </form>
+</section>
 <script type='text/javascript'>
 <%If comando <> "visualizar" and comando <> "excluir"  Then%>
 function validaFormMaster() {
@@ -612,4 +714,114 @@ return true
 }
 <%End If%>
 </script>
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+<!-- #include file="files/includes/scripts_rodape.asp" -->
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<style>
+.os-history-toolbar { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.os-history-modal { width:min(1000px,calc(100vw - 24px)); height:calc(100dvh - 40px); max-height:900px; padding:0; border:1px solid #e7dfeb; border-radius:14px; background:#fff; color:#292738; }
+.os-history-modal::backdrop { background:rgba(30,24,39,.55); }
+.os-history-modal[open] { display:flex; flex-direction:column; }
+.os-history-modal header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 20px; border-bottom:1px solid #e7dfeb; }
+.os-history-modal h2 { margin:0; font:700 18px/1.4 system-ui,sans-serif; color:#292738; }
+.os-history-modal button { border:1px solid #ded5e4; background:#fff; border-radius:7px; padding:7px 12px; cursor:pointer; color:#6d1749; }
+.os-history-modal iframe { flex:1; min-height:0; width:100%; border:0; }
+</style>
+<dialog id="osHistoryReportModal" class="os-history-modal" aria-labelledby="historyReportTitle">
+    <header>
+        <h2 id="historyReportTitle">Hist&oacute;rico da OS</h2>
+        <button type="button" id="closeHistoryReport" autofocus>Fechar</button>
+    </header>
+    <iframe id="osHistoryReportFrame" title="Relat&oacute;rio do hist&oacute;rico da OS" data-report-src="ppv_ordens_servico_formulario_consulta_historico.asp?COD_ORDEM_SERVICO=<%=COD_ORDEM_SERVICO%>&amp;modo=relatorio"></iframe>
+</dialog>
+<script>
+(function () {
+    var trigger = document.getElementById('openHistoryReport');
+    var modal = document.getElementById('osHistoryReportModal');
+    var frame = document.getElementById('osHistoryReportFrame');
+    var previousOverflow;
+    if (!trigger) return;
+    trigger.addEventListener('click', function () {
+        frame.src = frame.getAttribute('data-report-src');
+        previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        modal.showModal();
+    });
+    document.getElementById('closeHistoryReport').addEventListener('click', function () {
+        modal.close();
+    });
+    modal.addEventListener('close', function () {
+        document.body.style.overflow = previousOverflow;
+        trigger.focus();
+    });
+})();
+</script>
+<script>
+(function () {
+    var frame = document.getElementById('osHistoryFrame');
+    if (!frame) return;
+
+    var observer;
+    var pending = false;
+
+    function resizeHistory() {
+        if (pending) return;
+        pending = true;
+        window.requestAnimationFrame(function () {
+            pending = false;
+            var body = frame.contentDocument && frame.contentDocument.body;
+            if (!body) return;
+            var style = frame.contentWindow.getComputedStyle(body);
+            var height = Math.ceil(body.getBoundingClientRect().height
+                + parseFloat(style.marginTop || 0)
+                + parseFloat(style.marginBottom || 0)) + 4;
+            if (frame.style.height !== height + 'px') frame.style.height = height + 'px';
+        });
+    }
+
+    function observeHistory() {
+        if (observer) observer.disconnect();
+        var body = frame.contentDocument && frame.contentDocument.body;
+        if (!body) return;
+        if (window.ResizeObserver) {
+            observer = new ResizeObserver(resizeHistory);
+            observer.observe(body);
+        }
+        resizeHistory();
+        if (frame.contentDocument.fonts) {
+            frame.contentDocument.fonts.ready.then(resizeHistory);
+        }
+    }
+
+    frame.addEventListener('load', observeHistory);
+    window.addEventListener('resize', resizeHistory);
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+        observeHistory();
+    }
+})();
+</script>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

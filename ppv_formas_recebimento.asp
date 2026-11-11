@@ -1,507 +1,204 @@
 <!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
 <!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-<script language="JavaScript" type="text/javascript">
-// JavaScript Document
-
-	function abrir(theURL,winName,features) 
-	{ 
-	  window.open(theURL,winName,features);
-	}
-
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}
-
-//adiciona mascara de cnpj
-function MascaraCNPJ(cnpj){
-    if(mascaraInteiro(cnpj)==false){
-        event.returnValue = false;
-    }    
-    return formataCampo(cnpj, '00.000.000/0000-00', event);
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formas de Recebimento | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+.payment-method-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.payment-method-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.methods-panel { height:auto; padding:clamp(14px,3vw,26px); }
+.methods-heading, .methods-actions, .methods-pagination { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.methods-heading { justify-content:space-between; margin-bottom:14px; }
+.methods-heading p { margin:5px 0 0; color:#57566a; }
+.methods-table { margin:0; }
+.methods-table th, .methods-table td { padding:12px 10px; vertical-align:middle; overflow-wrap:anywhere; }
+.methods-table thead th { background:#f4f1f7; color:#42364e; }
+.methods-table td:first-child { font-weight:700; white-space:nowrap; }
+.methods-status { display:inline-block; padding:4px 8px; border-radius:6px; background:#f0edf8; color:#51436e; font-weight:650; }
+.methods-status.active { background:#e7f3ec; color:#286143; }
+.methods-action { background:#fff; color:#88134f; border:1px solid #e4dfeb; }
+.methods-action:hover { background:#f7edf3; color:#741044; }
+.methods-pagination { justify-content:center; margin-top:16px; }
+@media(max-width:1050px) {
+  .methods-table, .methods-table tbody { display:block; }
+  .methods-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .methods-table tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px; border:1px solid #e4dfeb; border-radius:9px; }
+  .methods-table td { display:block; min-width:0; border:0; }
+  .methods-table td::before { content:attr(data-label); display:block; margin-bottom:4px; color:#57566a; font-size:.85em; font-weight:650; }
+  .methods-table td:nth-child(2), .methods-table td:last-child { grid-column:1/-1; }
+  .methods-table td:last-child { border-top:1px solid #e4dfeb; }
 }
+</style>
+</head>
+<body class="payment-method-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Compras</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><h1>Formas de Recebimento</h1></div>
+        <a href="ppv_compras_pedidos.asp" class="btn btn-outline-secondary">Voltar aos pedidos</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
 
-//adiciona mascara de cep
-function MascaraCep(cep){
-        if(mascaraInteiro(cep)==false){
-        event.returnValue = false;
-    }    
-    return formataCampo(cep, '00.000-000', event);
-}
-
-//adiciona mascara de data
-function MascaraData(data){
-    if(mascaraInteiro(data)==false){
-        event.returnValue = false;
-    }    
-    return formataCampo(data, '00/00/0000', event);
-}
-
-//adiciona mascara ao telefone
-function MascaraTelefone(tel){    
-    if(mascaraInteiro(tel)==false){
-        event.returnValue = false;
-    }    
-    return formataCampo(tel, '(00) 0000-0000', event);
-}
-
-//adiciona mascara ao CPF
-function MascaraCPF(cpf){
-    if(mascaraInteiro(cpf)==false){
-        event.returnValue = false;
-    }    
-    return formataCampo(cpf, '000.000.000-00', event);
-}
-
-//valida telefone
-function ValidaTelefone(tel){
-    exp = /\(\d{2}\)\ \d{4}\-\d{4}/
-    if(!exp.test(tel.value))
-        alert('Numero de Telefone Invalido!');
-}
-
-//valida CEP
-function ValidaCep(cep){
-    exp = /\d{2}\.\d{3}\-\d{3}/
-    if(!exp.test(cep.value))
-        alert('Numero de Cep Invalido!');        
-}
-
-//valida data
-function validarData(campo){
-var expReg = /^(([0-2]\d|[3][0-1])\/([0]\d|[1][0-2])\/[1-2][0-9]\d{2})$/;
-var msgErro = 'Formato inv&aacutelido de data.';
-if ((campo.value.match(expReg)) && (campo.value!='')){
-var dia = campo.value.substring(0,2);
-var mes = campo.value.substring(3,5);
-var ano = campo.value.substring(6,10);
-if(mes==4 || mes==6 || mes==9 || mes==11 && dia > 30){
-campo.focus();
-alert("Dia incorreto ! O m&ecircs especificado cont&eacutem no m&aacuteximo 30 dias.");
-return false;
-} else{
-if(ano%4!=0 && mes==2 && dia>28){
-campo.focus();
-alert("Data incorreta! O m&ecircs especificado cont&eacutem no m&aacuteximo 28 dias.");
-return false;
-} else{
-if(ano%4==0 && mes==2 && dia>29){
-campo.focus();
-alert("Data incorreta! O m&ecircs especificado cont&eacutem no m&aacuteximo 29 dias.");
-return false;
-} else{ 
-return true;
-}}}} else {
-alert(msgErro);
-campo.focus();
-return false;
-}}
-
-
-//valida o CPF digitado
-function ValidarCPF(Objcpf){
-    var cpf = Objcpf.value;
-    exp = /\.|\-/g
-    cpf = cpf.toString().replace( exp, "" ); 
-    var digitoDigitado = eval(cpf.charAt(9)+cpf.charAt(10));
-    var soma1=0, soma2=0;
-    var vlr =11;
-    
-    for(i=0;i<9;i++){
-        soma1+=eval(cpf.charAt(i)*(vlr-1));
-        soma2+=eval(cpf.charAt(i)*vlr);
-        vlr--;
-    }    
-    soma1 = (((soma1*10)%11)==10 ? 0:((soma1*10)%11));
-    soma2=(((soma2+(2*soma1))*10)%11);
-    
-    var digitoGerado=(soma1*10)+soma2;
-    if(digitoGerado!=digitoDigitado)    
-        alert('CPF Invalido!');        
-}
-
-//valida numero inteiro com mascara
-function mascaraInteiro(){
-    if (event.keyCode < 48 || event.keyCode > 57){
-        event.returnValue = false;
-        return false;
-    }
-    return true;
-}
-
-//valida o CNPJ digitado
-function ValidarCNPJ(ObjCnpj){
-    var cnpj = ObjCnpj.value;
-    var valida = new Array(6,5,4,3,2,9,8,7,6,5,4,3,2);
-    var dig1= new Number;
-    var dig2= new Number;
-    
-    exp = /\.|\-|\//g
-    cnpj = cnpj.toString().replace( exp, "" ); 
-    var digito = new Number(eval(cnpj.charAt(12)+cnpj.charAt(13)));
-        
-    for(i = 0; i<valida.length; i++){
-        dig1 += (i>0? (cnpj.charAt(i-1)*valida[i]):0);    
-        dig2 += cnpj.charAt(i)*valida[i];    
-    }
-    dig1 = (((dig1%11)<2)? 0:(11-(dig1%11)));
-    dig2 = (((dig2%11)<2)? 0:(11-(dig2%11)));
-    
-    if(((dig1*10)+dig2) != digito)    
-        alert('CNPJ Invalido!');
-        
-}
-
-//formata de forma generica os campos
-function formataCampo(campo, Mascara, evento) { 
-    var boleanoMascara; 
-    
-    var Digitato = evento.keyCode;
-    exp = /\-|\.|\/|\(|\)| /g
-    campoSoNumeros = campo.value.toString().replace( exp, "" ); 
-   
-    var posicaoCampo = 0;     
-    var NovoValorCampo="";
-    var TamanhoMascara = campoSoNumeros.length;; 
-    
-    if (Digitato != 8) { // backspace 
-        for(i=0; i<= TamanhoMascara; i++) { 
-            boleanoMascara  = ((Mascara.charAt(i) == "-") || (Mascara.charAt(i) == ".")
-                                || (Mascara.charAt(i) == "/")) 
-            boleanoMascara  = boleanoMascara || ((Mascara.charAt(i) == "(") 
-                                || (Mascara.charAt(i) == ")") || (Mascara.charAt(i) == " ")) 
-            if (boleanoMascara) { 
-                NovoValorCampo += Mascara.charAt(i); 
-                  TamanhoMascara++;
-            }else { 
-                NovoValorCampo += campoSoNumeros.charAt(posicaoCampo); 
-                posicaoCampo++; 
-              }            
-          }     
-        campo.value = NovoValorCampo;
-          return true; 
-    }else { 
-        return true; 
-    }
-}
-</script> 
-
-<script language="javascript">
-//Formata n&uacutemero tipo moeda usando o evento onKeyDown
-function Limpar(valor, validos) {
-// retira caracteres invalidos da string
-var result = "";
-var aux;
-for (var i=0; i < valor.length; i++) {
-aux = validos.indexOf(valor.substring(i, i+1));
-if (aux>=0) {
-result += aux;
-}
-}
-return result;
-}
-function Formata(campo,tammax,teclapres,decimal) {
-var tecla = teclapres.keyCode;
-vr = Limpar(campo.value,"0123456789");
-tam = vr.length;
-dec=decimal
-
-if (tam < tammax && tecla != 8){ tam = vr.length + 1 ; }
-
-if (tecla == 8 )
-{ tam = tam - 1 ; }
-
-if ( tecla == 8 || tecla >= 48 && tecla <= 57 || tecla >= 96 && tecla <= 105 )
-{
-
-if ( tam <= dec )
-{ campo.value = vr ; }
-
-if ( (tam > dec) && (tam <= 5) ){
-campo.value = vr.substr( 0, tam - 2 ) + "," + vr.substr( tam - dec, tam ) ; }
-if ( (tam >= 6) && (tam <= 8) ){
-campo.value = vr.substr( 0, tam - 5 ) + "." + vr.substr( tam - 5, 3 ) + "," + vr.substr( tam - dec, tam ) ; 
-}
-if ( (tam >= 9) && (tam <= 11) ){
-campo.value = vr.substr( 0, tam - 8 ) + "." + vr.substr( tam - 8, 3 ) + "." + vr.substr( tam - 5, 3 ) + "," + vr.substr( tam - dec, tam ) ; }
-if ( (tam >= 12) && (tam <= 14) ){
-campo.value = vr.substr( 0, tam - 11 ) + "." + vr.substr( tam - 11, 3 ) + "." + vr.substr( tam - 8, 3 ) + "." + vr.substr( tam - 5, 3 ) + "," + vr.substr( tam - dec, tam ) ; }
-if ( (tam >= 15) && (tam <= 17) ){
-campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + vr.substr( tam - 11, 3 ) + "." + vr.substr( tam - 8, 3 ) + "." + vr.substr( tam - 5, 3 ) + "," + vr.substr( tam - 2, tam ) ;}
-} 
-
-}
-</script>
-	<script language="javascript">
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript">	
-	
-		function exibeOcultaDinamico(div)
-		{
-			var o = document.getElementById(div);
-			
-			
-			if(o){
-				if (o.style.display == "none" || o.style.display == "")
-					{
-						o.style.visibility = "visible";
-						o.style.display = "inline";
-					}
-					else
-					{
-						o.style.visibility = "hidden";
-						o.style.display = "none";
-					}
-			}	
-	}
-		
-	function exibeOculta(div,acao){
-	
-		var o = document.getElementById(div);
-		
-		if(o){
-			if(acao == "ocultar"){
-				//Oculta
-					o.style.visibility = "hidden";
-					o.style.display = "none";
-			}else{
-				//Exibe
-					o.style.visibility = "visible";
-					o.style.display = "inline";		
-			}
-		}
-	}
-	
-	function exibirBuscaComplemento(valor){
-		if (valor == 1){	
-			exibeOculta('comboComplementoBusca','exibir'); 
-		}else{
-			exibeOculta('comboComplementoBusca','ocultar'); 
-		}
-	
-	}
-	
-	</script>
-    
-    
-    </head>
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-<table width="100%" border="0" cellspacing="0" cellpadding="5">
-<tr>
-	<td>
-     <h2>Formas de Recebimento</h2><br />
- <div class="subMenu">Sub-Menu: <a href="ppv_formas_recebimento_formulario.asp?comando=incluir">Incluir Forma de Recebimento</a></div>
+<!-- #include file="includes/compras_sub_menu.asp" -->
 <%
-AbrirConexao()
-	
-	sql = "SELECT * FROM TB_FORMAS_RECEBIMENTO order by descricao"
-	
-
-	Set rs=server.CreateObject("ADODB.recordset")
-	rs.CursorLocation=3  'Cursor no cliente
-	rs.PageSize=50
-	rs.Open sql, objConexao
-	
-	Dim paginacaocao
-	paginacaocao = formatNumber(0&Request.QueryString("paginacao"),0)
-	
-	If not rs.Eof Then
-	
-		If paginacaocao > 0 Then
-			rs.AbsolutePage=paginacaocao
-		Else
-			paginacaocao = 1
-			rs.AbsolutePage=1
-		End If	
-%>
-	
-    <%
-	Dim sucesso, codmsg
-	codmsg	= CStr(""&Request.QueryString("codmsg"))
-	sucesso = CStr(""&Request.QueryString("sucesso"))
-		
-	If sucesso = "" and codmsg <> "" Then%>
-    	<div align="center" class="msgGrandeSucesso">
-        	<%
-			If codmsg = "1" Then
-				Response.Write("Fornecedor inclu&iacutedo com sucesso!")
-			Elseif codmsg = "2" Then
-				Response.Write("Fornecedor alterado com sucesso!")
-			Elseif codmsg = "3" Then	
-				Response.Write("Fornecedor exclu&iacutedo com sucesso!")
-			End If	
-			%>
-</div>
-<%ElseIf sucesso <> "" and codmsg <> "" Then%>
-        <div align="center" class="msgGrandeErro">
-			<%
-			If codmsg = "4" Then
-				Response.Write("Forma de recebimento n&atildeo alterada para n&atildeo haver duplicidade de informa&ccedil&atildeo!<BR>O conte&uacutedo do campo """&Request.QueryString("chaveUnica")&""" j&aacute possui uma informa&ccedil&atildeo igual em outra Forma de recebimento.<br />")
-			Elseif codmsg = "5" Then
-				Response.Write("Forma de recebimento n&atildeo exclu&iacuteda, pois h&aacute registros que dependem ou relacionam com esta Forma de recebimento.<BR>Se n&atildeo desejar ter mais esta Forma de recebimento inative ao inv&eacutes de excluir.<br />")
-			
-			Elseif codmsg = "900" Then
-				Response.Write("Voc&ecirc n&atildeo possui acesso a VISUALIZA&Ccedil&AtildeO!")
-			Elseif codmsg = "901" Then
-				Response.Write("Voc&ecirc n&atildeo possui acesso a INCLUS&AtildeO!")
-			Elseif codmsg = "902" Then
-				Response.Write("Voc&ecirc n&atildeo possui acesso a ALTERA&Ccedil&AtildeO!")	
-			Elseif codmsg = "903" Then
-				Response.Write("Voc&ecirc n&atildeo possui acesso a EXCLUS&AtildeO!")
-			End If					
-			%>
-</div>
-<%End If%>
-<br />
-
-<table width="99%" border="0" align="center">
-  <tr>
-    <td width="47%"> 
-P&aacutegina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%>
-</td>
-    <td width="53%"><div align="right">Total <strong><%=rs.RecordCount%></strong> fornecedores</div></td>
-  </tr>
-</table>
-<table width="99%" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
-<tr bgcolor="whitesmoke">
-<td width="15%"><div align="center" style="font-weight: bold">C&oacute;d. Forma Recebimento.</div></td>
-<td width="38%"><div align="center" style="font-weight: bold">Descri&ccedil;&atilde;o</div></td>
-
-
-<td width="17%"><div align="center" style="font-weight: bold">Data Ultima modifica&ccedil;&atilde;o</div></td>
-<td width="23%"><div align="center" style="font-weight: bold">Situa&ccedil;&atilde;o</div></td>
-<td width="7%">&nbsp;</td>
-</tr>
-<%
-Dim x
-For x=1 To rs.PageSize
-If Not rs.Eof Then
-%>
-<tr>
-  <td><div align="center"><%=formatNumber(rs(0),0)%></div></td>
-  <td><div align="left"><%=rs("descricao")%></div></td>
- 
-
-  <td><div align="center"><%=ArrumaData(rs("modificado"))%></div></td>
-  <td><div align="center"><%=booleano(rs("situacao"))%></div></td>
-  <td>
-  
-  <table border="0" align="center" cellpadding="3" cellspacing="0"> 
-  <tr>
-      <td>    <a href="ppv_formas_recebimento_formulario.asp?comando=visualizar&cod_forma_recebimento=<%=rs("cod_forma_recebimento")%>">
-  <img src="images/icons/icon_visualizar.png" alt="Visualizar Registro" title="Visualizar Registro" border="0" />
-  	</a></td>
-    <td>
-    <a href="ppv_formas_recebimento_formulario.asp?comando=alterar&cod_forma_recebimento=<%=rs("cod_forma_recebimento")%>">
-  <img src="images/icons/icon_alterar.png" alt="Alterar Registro" title="Alterar Registro" width="16" height="16" border="0" /></a>  </td>
-    <td>  <a href="ppv_formas_recebimento_formulario.asp?comando=excluir&cod_forma_recebimento=<%=rs("cod_forma_recebimento")%>">
-  <img src="images/icons/icon_excluir.png" alt="Excluir Registro" title="Excluir Registro" border="0" />
-  </a></td>
-  </tr>
-</table>  </td>
-  </tr>
-<%
-rs.MoveNext()
+Dim formasFormularioPermitido, formasPermissao, formasConsulta, formasPerfil
+formasFormularioPermitido = False
+If IsNumeric(Session("COD_PERFIL") & "") Then
+    formasPerfil = CLng(Session("COD_PERFIL"))
+    formasConsulta = "SELECT p.COD_PAGINA FROM TB_ADM_PAGINAS_HABILITADAS p " & _
+        "WHERE p.CAMINHO_VALIDA = 'ppv_formas_recebimento_formulario.asp' " & _
+        "AND (COALESCE(p.HABILITADA_PARA_TODOS, 0) <> 2 OR EXISTS (SELECT 1 FROM TB_ADM_PERFIS_PAGINAS_HABILITADAS a " & _
+        "WHERE a.COD_PAGINA = p.COD_PAGINA AND a.COD_PERFIL = " & formasPerfil & "))"
+    Set formasPermissao = objConexao.Execute(formasConsulta)
+    formasFormularioPermitido = Not formasPermissao.Eof
+    formasPermissao.Close
+    Set formasPermissao = Nothing
 End If
-Next
+
+Dim sucesso, codmsg
+codmsg = Request.QueryString("codmsg") & ""
+sucesso = Request.QueryString("sucesso") & ""
+Select Case codmsg
+    Case "900", "901", "902", "903"
 %>
-<%If rs.PageCount > 1 Then %>                                  
-     <tr bgcolor="whitesmoke">
-      <td colspan="9">
-      	   <%call paginacao(paginacaocao,rs.PageCount)%>      </td>
-    </tr>   
-<%End if%>
-</table>	
-<%
-	Else
-	%>
-    <div align="center" class="msgGrande">
-    Nenhuma Forma de Recebimento encontrada!<br />
-</div>
-    <%End if
-	
-	rs.Close
-	Set rs=Nothing
-	
-	FecharConexao()
-    %></td>
-</tr> 
-</table>
+<span id="purchase-access-denied" hidden></span>
+<noscript><p role="status">Seu perfil n&atilde;o tem permiss&atilde;o para realizar esta a&ccedil;&atilde;o.</p></noscript>
+<%Case "1", "2", "3"
+    If sucesso = "" Then
+        Dim formasAcao
+        Select Case codmsg
+            Case "1": formasAcao = "inclu&iacute;da"
+            Case "2": formasAcao = "alterada"
+            Case "3": formasAcao = "exclu&iacute;da"
+        End Select
+%><p class="alert alert-success" role="status">Forma de recebimento <%=formasAcao%> com sucesso.</p>
+<%End If
+Case "4"%><p class="alert alert-warning" role="status">J&aacute; existe outro cadastro com o mesmo valor no campo <strong><%=Server.HTMLEncode(Request.QueryString("chaveUnica") & "")%></strong>.</p>
+<%Case "5"%><p class="alert alert-warning" role="status">Este cadastro tem registros vinculados. Se precisar deixar de us&aacute;-lo, altere a situa&ccedil;&atilde;o para Inativa.</p>
+<%End Select
 
- 
-  
-  </td>
+sql = "SELECT * FROM TB_FORMAS_RECEBIMENTO order by descricao"
+Set rs = Server.CreateObject("ADODB.Recordset")
+rs.CursorLocation = 3
+rs.PageSize = 50
+rs.Open sql, objConexao
+Dim paginacaocao, formasPaginaNumero
+paginacaocao = 1
+Set formasPaginaNumero = New RegExp
+formasPaginaNumero.Pattern = "^[0-9]{1,8}$"
+If formasPaginaNumero.Test(Request.QueryString("paginacao") & "") Then
+    paginacaocao = CLng(Request.QueryString("paginacao"))
+    If paginacaocao < 1 Then paginacaocao = 1
+End If
+If Not rs.Eof Then
+    If paginacaocao > rs.PageCount Then paginacaocao = rs.PageCount
+    rs.AbsolutePage = paginacaocao
+End If
+%>
+<section class="dashboard-panel methods-panel" aria-labelledby="methods-title">
+  <div class="methods-heading">
+    <div><h2 id="methods-title">Cadastros</h2><p><%=rs.RecordCount%> <%If rs.RecordCount = 1 Then%>registro<%Else%>registros<%End If%></p></div>
+    <%If formasFormularioPermitido Then%>
+    <a class="btn btn-primary" href="ppv_formas_recebimento_formulario.asp?comando=incluir">Incluir forma de recebimento</a>
+    <%Else%>
+    <button class="btn btn-primary compras-access-trigger" type="button" aria-haspopup="dialog">Incluir forma de recebimento</button>
+    <%End If%>
+  </div>
+<%If rs.Eof Then%>
+  <p class="mb-0">Nenhuma forma de recebimento cadastrada.</p>
+<%Else%>
+  <table class="table methods-table" role="table" aria-labelledby="methods-title">
+    <thead role="rowgroup"><tr role="row">
+      <th scope="col" role="columnheader">C&oacute;digo</th>
+      <th scope="col" role="columnheader">Descri&ccedil;&atilde;o</th>
+      <th scope="col" role="columnheader">&Uacute;ltima modifica&ccedil;&atilde;o</th>
+      <th scope="col" role="columnheader">Situa&ccedil;&atilde;o</th>
+      <th scope="col" role="columnheader">A&ccedil;&otilde;es</th>
+
+    </tr></thead>
+    <tbody role="rowgroup">
+    <%Dim x
+    For x = 1 To rs.PageSize
+        If rs.Eof Then Exit For
+    %>
+    <tr role="row">
+      <td role="cell" data-label="C&oacute;digo"><%=formatNumber(rs(0),0)%></td>
+      <td role="cell" data-label="Descri&ccedil;&atilde;o"><%=Server.HTMLEncode(rs("descricao") & "")%></td>
+      <td role="cell" data-label="&Uacute;ltima modifica&ccedil;&atilde;o"><%=ArrumaData(rs("modificado"))%></td>
+      <td role="cell" data-label="Situa&ccedil;&atilde;o"><%Select Case UCase(Trim(rs("situacao") & ""))
+Case "A"%><span class="methods-status active">Ativa</span>
+<%Case "I"%><span class="methods-status">Inativa</span>
+<%Case Else%><span class="methods-status"><%=Server.HTMLEncode(rs("situacao") & "")%></span>
+<%End Select%></td>
+      <td role="cell" data-label="A&ccedil;&otilde;es"><div class="methods-actions">
+      <%If formasFormularioPermitido Then%><a class="btn btn-sm methods-action" href="ppv_formas_recebimento_formulario.asp?comando=visualizar&amp;cod_forma_recebimento=<%=Server.URLEncode(rs("cod_forma_recebimento") & "")%>">Ver</a>
+      <%Else%><button class="btn btn-sm methods-action compras-access-trigger" type="button" aria-haspopup="dialog">Ver</button><%End If%>
+      <%If formasFormularioPermitido Then%><a class="btn btn-sm methods-action" href="ppv_formas_recebimento_formulario.asp?comando=alterar&amp;cod_forma_recebimento=<%=Server.URLEncode(rs("cod_forma_recebimento") & "")%>">Editar</a>
+      <%Else%><button class="btn btn-sm methods-action compras-access-trigger" type="button" aria-haspopup="dialog">Editar</button><%End If%>
+      <%If formasFormularioPermitido Then%><a class="btn btn-sm methods-action" href="ppv_formas_recebimento_formulario.asp?comando=excluir&amp;cod_forma_recebimento=<%=Server.URLEncode(rs("cod_forma_recebimento") & "")%>">Excluir</a>
+      <%Else%><button class="btn btn-sm methods-action compras-access-trigger" type="button" aria-haspopup="dialog">Excluir</button><%End If%></div></td>
+
     </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+    <%rs.MoveNext
+    Next%>
+    </tbody>
+  </table>
+  <%If rs.PageCount > 1 Then%>
+  <nav class="methods-pagination" aria-label="P&aacute;ginas dos cadastros">
+    <%If paginacaocao > 1 Then%><a class="btn btn-outline-secondary btn-sm" href="ppv_formas_recebimento.asp?paginacao=<%=paginacaocao - 1%>">Anterior</a><%End If%>
+    <span>P&aacute;gina <%=paginacaocao%> de <%=rs.PageCount%></span>
+    <%If paginacaocao < rs.PageCount Then%><a class="btn btn-outline-secondary btn-sm" href="ppv_formas_recebimento.asp?paginacao=<%=paginacaocao + 1%>">Pr&oacute;xima</a><%End If%>
+  </nav>
+  <%End If%>
+<%End If%>
+</section>
+<%
+rs.Close
+Set rs = Nothing
+FecharConexao()
+%>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_compras_pedidos.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
 </body>
 </html>

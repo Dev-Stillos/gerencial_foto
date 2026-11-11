@@ -120,12 +120,150 @@ End If
 Dim acesso_inclusao_exclusao_os_manual
 acesso_inclusao_exclusao_os_manual = validaUsuario(2,,51,false)
 %>
+<%
+Dim triageView
+triageView = Request.QueryString("painel_triagem") & ""
+If Request.ServerVariables("REQUEST_METHOD") = "GET" And (triageView = "pendentes" Or triageView = "concluidos" Or triageView = "historico") Then
+    ExibirPainelTriagem triageView
+    Response.End
+End If
+
+Sub ExibirPainelTriagem(ByVal modo)
+    Dim digitosPagina, registros, consulta, filtro, codigo, termo, pagina, inicio, tamanho, exibidos, urlBase, condPendente, condConcluida, escopo, podeVerTodas, osAnterior, osAtual
+    Response.CodePage = 65001
+    Response.Charset = "utf-8"
+    Response.CacheControl = "no-cache"
+    Response.AddHeader "X-Triagem-Painel", "1"
+    codigo = Left(Trim(Request.QueryString("contrato") & ""), 30)
+    termo = Left(Trim(Request.QueryString("busca") & ""), 30)
+    pagina = Request.QueryString("pagina") & ""
+    Set digitosPagina = New RegExp
+    digitosPagina.Pattern = "^[0-9]{1,5}$"
+    If Not digitosPagina.Test(pagina) Then pagina = "1"
+    pagina = CLng(pagina)
+    If pagina < 1 Then pagina = 1
+    tamanho = 30
+    condPendente = "(o.status_ordem_servico = 1 AND o.descricao = 'triagem')"
+    podeVerTodas = validaUsuario(2,,57,false)
+    escopo = "1=1"
+    If Not podeVerTodas Then escopo = "o.cod_usuario_responsavel = " & sqlNumero(Session("COD_USUARIO"))
+    condConcluida = "(t.data_termino >= '1000-01-01' AND NOT " & condPendente & " AND " & escopo & ")"
+    urlBase = "?painel_triagem=" & modo & "&contrato=" & Server.URLEncode(codigo) & "&busca=" & Server.URLEncode(termo)
+    AbrirConexao()
+    If modo = "historico" Then
+        tamanho = 10
+        inicio = (pagina - 1) * tamanho
+        consulta = "SELECT ordens.cod_ordem_servico, e.numero_etapa, e.descricao, e.data_inicio, e.data_termino, u.nome AS responsavel " & _
+            "FROM (SELECT o.cod_ordem_servico FROM VW_TB_ORDENS_SERVICO o WHERE o.cod_contrato = " & sqlTexto(codigo) & " AND " & escopo & _
+            " AND EXISTS (SELECT 1 FROM TB_ORDENS_SERVICO_ETAPAS h WHERE h.cod_ordem_servico = o.cod_ordem_servico)" & _
+            " GROUP BY o.cod_ordem_servico ORDER BY o.cod_ordem_servico DESC LIMIT " & inicio & "," & (tamanho + 1) & ") ordens " & _
+            "INNER JOIN TB_ORDENS_SERVICO_ETAPAS e ON e.cod_ordem_servico = ordens.cod_ordem_servico " & _
+            "LEFT JOIN TB_ADM_USUARIOS u ON u.cod_usuario = e.cod_usuario_responsavel ORDER BY ordens.cod_ordem_servico DESC, e.numero_etapa"
+        Set registros = objConexao.Execute(consulta)
+%>
+        <h3 class="triage-history-title">Contrato <%=Server.HTMLEncode(codigo)%></h3>
+        <p>In&iacute;cio, t&eacute;rmino e respons&aacute;vel registrado em cada etapa. As ordens seguem as permiss&otilde;es do seu perfil.</p>
+        <% If registros.Eof Then %><p>Nenhuma etapa dispon&iacute;vel para exibi&ccedil;&atilde;o.</p><% End If %>
+        <% osAnterior = ""
+           exibidos = 0
+           Do While Not registros.Eof
+               osAtual = registros("cod_ordem_servico") & ""
+               If osAtual <> osAnterior Then
+                   If exibidos = tamanho Then Exit Do
+                   If exibidos > 0 Then Response.Write "</ul></details>"
+                   exibidos = exibidos + 1
+                   osAnterior = osAtual
+        %>
+        <details class="triage-history-os"<%If exibidos = 1 Then%> open<%End If%>>
+            <summary>OS <%=Server.HTMLEncode(moduloPPVOSMascara(osAtual,"",true) & "")%></summary>
+            <a href="ppv_ordens_servico_formulario.asp?comando=visualizar&amp;cod_ordem_servico=<%=Server.URLEncode(osAtual)%>">Abrir ficha da OS e anota&ccedil;&otilde;es</a>
+            <ul class="triage-history-steps">
+        <% End If %>
+            <li>
+                <strong><%=Server.HTMLEncode(registros("numero_etapa") & ". " & registros("descricao"))%></strong>
+                <span><b>In&iacute;cio</b><%=TextoPainelTriagem(registros("data_inicio"))%></span>
+                <span><b>T&eacute;rmino</b><%=TextoPainelTriagem(registros("data_termino"))%></span>
+                <span><b>Respons&aacute;vel</b><%=TextoPainelTriagem(registros("responsavel"))%></span>
+            </li>
+        <%     registros.MoveNext()
+           Loop
+           If exibidos > 0 Then Response.Write "</ul></details>"
+        %>
+<%
+    Else
+        inicio = (pagina - 1) * tamanho
+        filtro = "o.cod_contrato IS NOT NULL AND o.cod_contrato <> ''"
+        If termo <> "" Then filtro = filtro & " AND INSTR(UPPER(o.cod_contrato), " & sqlTexto(UCase(termo)) & ") > 0"
+        If modo = "pendentes" Then
+            consulta = "SELECT o.cod_contrato, COUNT(*) AS quantidade, NULL AS ultima FROM VW_TB_ORDENS_SERVICO o WHERE " & filtro & _
+                " AND " & condPendente & " GROUP BY o.cod_contrato ORDER BY o.cod_contrato LIMIT " & inicio & "," & (tamanho + 1)
+        Else
+            consulta = "SELECT o.cod_contrato, COUNT(DISTINCT CASE WHEN " & condConcluida & " THEN o.cod_ordem_servico END) AS quantidade, " & _
+                "MAX(CASE WHEN " & condConcluida & " THEN t.data_termino END) AS ultima " & _
+                "FROM VW_TB_ORDENS_SERVICO o LEFT JOIN TB_ORDENS_SERVICO_ETAPAS t ON t.cod_ordem_servico = o.cod_ordem_servico AND t.numero_etapa = 1 AND t.descricao = 'triagem' " & _
+                "WHERE " & filtro & " GROUP BY o.cod_contrato HAVING quantidade > 0 AND SUM(CASE WHEN " & condPendente & _
+                " THEN 1 ELSE 0 END) = 0 ORDER BY ultima DESC, o.cod_contrato LIMIT " & inicio & "," & (tamanho + 1)
+        End If
+        Set registros = objConexao.Execute(consulta)
+%>
+        <form class="triage-filter triage-panel-search" method="get">
+            <input type="hidden" name="painel_triagem" value="<%=modo%>">
+            <div><label for="triage-modal-search">Buscar contrato</label><input class="form-control" id="triage-modal-search" name="busca" maxlength="30" value="<%=Server.HTMLEncode(termo)%>"></div>
+            <button class="btn btn-primary" type="submit">Buscar</button>
+        </form>
+        <% If modo = "concluidos" Then %>
+        <p>Contratos sem ordens aguardando triagem e com conclus&atilde;o registrada nas ordens que seu perfil pode consultar.</p>
+        <% Else %>
+        <p>A quantidade ao lado de cada contrato indica quantas ordens ainda aguardam triagem.</p>
+        <% End If %>
+        <% If registros.Eof Then %><p>Nenhum contrato encontrado.</p><% End If %>
+        <ul class="triage-modal-list">
+        <% exibidos = 0
+           While Not registros.Eof And exibidos < tamanho
+               codigo = registros("cod_contrato") & ""
+        %>
+            <li>
+                <div><strong><%=Server.HTMLEncode(codigo)%></strong> <span class="triage-count"><%=registros("quantidade")%> OS</span>
+                <% If modo = "concluidos" Then %><small>&Uacute;ltima triagem <%=TextoPainelTriagem(registros("ultima"))%></small><% End If %></div>
+                <div class="triage-modal-actions">
+                    <a class="btn btn-outline-secondary btn-sm" data-triage-load href="?painel_triagem=historico&amp;contrato=<%=Server.URLEncode(codigo)%>">Ver etapas</a>
+                    <% If modo = "pendentes" Then %><a class="btn btn-primary btn-sm" href="?filtro1=1&amp;COD_CONTRATO=<%=Server.URLEncode(codigo)%>">Abrir triagem</a><% End If %>
+                </div>
+            </li>
+        <%     exibidos = exibidos + 1
+               registros.MoveNext()
+           Wend %>
+        </ul>
+<%
+    End If
+%>
+        <nav class="triage-modal-actions" aria-label="P&aacute;ginas dos resultados">
+            <% If pagina > 1 Then %><a class="btn btn-outline-secondary btn-sm" data-triage-load href="<%=Server.HTMLEncode(urlBase & "&pagina=" & (pagina - 1))%>">Anterior</a><% End If %>
+            <% If Not registros.Eof Then %><a class="btn btn-outline-secondary btn-sm" data-triage-load href="<%=Server.HTMLEncode(urlBase & "&pagina=" & (pagina + 1))%>">Pr&oacute;xima</a><% End If %>
+        </nav>
+<%
+    registros.Close
+    Set registros = Nothing
+    FecharConexao()
+End Sub
+
+Function TextoPainelTriagem(ByVal valor)
+    If Len(Trim(valor & "")) = 0 Then
+        TextoPainelTriagem = "&mdash;"
+    Else
+        TextoPainelTriagem = Server.HTMLEncode(valor & "")
+    End If
+End Function
+%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triagem inicial | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
 <!-- #include virtual="gerencial_foto/files/includes/scripts.asp" -->
 	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
 <script language="JavaScript" type="text/javascript">
@@ -433,12 +571,6 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		}
 	}
 	
-	function confirmaTriagem(){
-		if(YNconfirm('Tem certeza que deseja efetuar a triagem das OSs?')){
-			document.TRIAGEM_INICIAL.submit();
-		}
-	}
-	
 	function selecionarVendedores(cod_pedido,cod_ordem_servico){
 		var temp = "", a = "", cod_usuario_responsavel = "";
 		var i=0
@@ -450,121 +582,122 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 			document.TRIAGEM_INICIAL["cod_usuario_responsavel_"+a[i]].value = cod_usuario_responsavel;
 		}		
 	}
-	function filtrarContrato(contrato){
-		if(contrato !== ''){
-			var d = document.FILTRO_PADRAO;
-			d.COD_CONTRATO.value = contrato;
-			d.submit();
-		}
-	}
 	
 	</script>
     
     
-    </head>
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td><!-- #include file="includes/menu.asp" --></td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr> 
-    <td valign="top" style="border:dotted 1px #999999">
-	
-	  <h2>PPV - Triagem Inicial de Ordens de Servi&ccedil;o</h2>
-         <br />
-      <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
-	  <br />
-   
-    <%
-	Dim sucesso, codmsg
-	codmsg	= CStr(""&Request.QueryString("codmsg"))
-	sucesso = CStr(""&Request.QueryString("sucesso"))
-		
-	If sucesso = "" and codmsg <> "" Then%>
-    	<div align="center" class="msgGrandeSucesso">
-        	<%
-			If codmsg = "201" Then	
-				Response.Write("Triagem inicial realizada com sucesso!")
-			End If	
-			%>
-            
-        
-        </div>
-        
-   <%End If %>
-
-
-      <form action="ppv_ordens_servico_triagem_inicial.asp" name="FILTRO_PADRAO" style="margin:0px">
-	  <table style="border:#999999 dashed 1px; padding:2px; background:#FFFFCC" width="99%" border="0" align="center" cellpadding="5" cellspacing="0">
-      <!--
-		  <tr>
-		    <td width="19%"><div align="right"><strong>Produto</strong></div></td>
-		    <td width="81%"><div align="left"><select name='COD_PRODUTO' class='inputTamanho3'>
-    <option value=''>Todos</option>
-    <%AbrirConexao()
-	
-    Set rsE3=objConexao.Execute("SELECT COD_PRODUTO, NOME_PRODUTO FROM TB_PRODUTOS WHERE ATIVO = 1 AND gera_ordem_servico_prazo_cliente > 0 ORDER BY NOME_PRODUTO ")
-    While not rsE3.Eof 
-    'Padrao
-    Dim selRelPadrao3, verificador3
-    verificador3 = ""&rsE3(0)
     
-    selRelPadrao3 = "" 
-    
-    
-    If CStr(verificador3) = CStr(busca_cod_produto)  Then%>
-    <option selected='selected' value="<%=rsE3(0)%>"><%=rsE3(1)%></option>
-    <%Else%>
-    <option value="<%=rsE3(0)%>"><%=rsE3(1)%></option>
-    <%End if%>
-    <%rsE3.MoveNext()
-    Wend
-    rsE3.Close
-    Set rsE3=Nothing
-    FecharConexao()%>
-    
-    </select></div></td>
-		    </tr>
-       -->
-            <tr>
-		    <td width="19%"><div align="right"><strong>Contrato</strong></div></td>
-		    <td width="81%"><div align="left"><input type="text" name="COD_CONTRATO" value="<%=busca_COD_CONTRATO%>" /></div></td>
-		    </tr>
-		  <tr>
-		    <td> </td>
-		    <td><div align="left">
-		      <input class="btnFiltrarAmarelo" type="submit" name="filtro1" value=" " />
-		      </div></td>
-		    </tr>
-        </table>
-      </form>
-        <br />
+<style>
+.triage-page .dashboard-main { min-width:0; }
+.triage-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.triage-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.triage-page .ppv-module { margin-bottom:20px; }
+.triage-page .subMenu { padding:12px 16px; border:1px solid var(--line); border-radius:10px; background:white; line-height:2; }
+.triage-page .subMenu [aria-current="page"] { font-weight:700; color:#88134f; }
+.triage-page .triage-panel { height:auto; margin-bottom:18px; padding:clamp(16px, 3vw, 26px); }
+.triage-heading { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.triage-heading h2 { color:#242738; }
+.triage-count { padding:4px 9px; border-radius:6px; background:#f3eaf3; color:#714064; font-weight:650; }
+.triage-filter { display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px; }
+.triage-filter label { display:block; margin-bottom:5px; font-weight:600; }
+.triage-dialog.triage-browser {
+  box-sizing:border-box;
+  width:min(1440px, calc(100% - 48px));
+  max-width:none;
+  height:calc(100vh - 48px);
+  height:calc(100dvh - 48px);
+  max-height:none;
+  padding:0;
+  overflow:hidden;
+}
+.triage-browser[open] { display:flex; flex-direction:column; }
+.triage-browser-header { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:16px 20px; border-bottom:1px solid var(--line); }
+.triage-browser-content { flex:1; overflow:auto; overscroll-behavior:contain; min-height:0; padding:20px 24px; }
+.triage-modal-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.triage-panel-search { margin-bottom:14px; }
+.triage-modal-list, .triage-history-steps { list-style:none; padding:0; }
+.triage-modal-list li { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 0; border-bottom:1px solid var(--line); }
+.triage-modal-list small { display:block; margin-top:4px; color:#55475e; }
+.triage-history-os { padding:12px; margin:10px 0; border:1px solid var(--line); border-radius:8px; }
+.triage-history-os summary { font-weight:700; cursor:pointer; }
+.triage-history-steps { margin:8px 0 0; }
+.triage-history-title { margin:16px 0 6px; color:var(--ink); font:700 1.25rem/1.3 system-ui,sans-serif; }
+.triage-history-steps li { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px 16px; padding:12px 0; border-top:1px solid var(--line); overflow-wrap:anywhere; }
+.triage-history-steps strong { grid-column:1/-1; }
+.triage-history-steps span b { display:block; font-size:.85em; color:#55475e; }
+.triage-table { margin-bottom:0; }
+.triage-table th, .triage-table td { padding:12px 8px; vertical-align:top; overflow-wrap:anywhere; }
+.triage-table thead th, .triage-table .triage-order-group th { background:#f4f1f7; color:#42364e; }
+.triage-table .form-select { min-width:140px; }
+.triage-copy { margin-top:7px; white-space:normal; }
+.triage-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:16px; }
+.triage-dialog { width:min(450px, calc(100% - 24px)); padding:24px; border:1px solid var(--line); border-radius:14px; color:var(--ink); }
+.triage-dialog::backdrop { background:#24273899; }
+.triage-dialog p { margin:10px 0; }
+@media(max-width:1050px) {
+  .triage-table, .triage-table tbody { display:block; }
+  .triage-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .triage-order-group { display:block; margin-top:12px; }
+  .triage-order-group th { display:block; border-radius:7px; }
+  .triage-order { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-bottom:1px solid var(--line); }
+  .triage-order td { display:block; border:0; }
+  .triage-order td:last-child { grid-column:1/-1; }
+  .triage-order td::before { content:attr(data-label); display:block; margin-bottom:4px; color:#66586e; font-size:.85em; font-weight:700; }
+}
+@media(max-width:640px) {
+  .triage-dialog.triage-browser {
+    width:calc(100% - 16px);
+    height:calc(100vh - 16px);
+    height:calc(100dvh - 16px);
+  }
+  .triage-browser-header, .triage-browser-content { padding:12px 14px; }
+  .triage-browser-header h2 { min-width:0; overflow-wrap:anywhere; }
+  .triage-browser .triage-modal-list li { flex-direction:column; align-items:stretch; }
+  .triage-browser .triage-modal-list .triage-modal-actions > .btn { flex:1 1 130px; }
+  .triage-browser .triage-history-steps li { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:420px) {
+  .triage-filter > div, .triage-filter > button { width:100%; }
+}
+</style>
+</head>
+<body class="triage-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Produ&ccedil;&atilde;o p&oacute;s-venda</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><p class="eyebrow">PRODU&Ccedil;&Atilde;O P&Oacute;S-VENDA</p><h1>Triagem inicial</h1><p>Selecione um contrato e atribua respons&aacute;veis &agrave;s ordens de servi&ccedil;o.</p></div>
+        <a href="ppv_ordens_servico.asp" class="btn btn-outline-secondary">Voltar &agrave;s ordens</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+      <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
+        <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+      </nav>
 
-        <em><strong>Listagem em Ordem alfab&eacute;tica com todas OS, cuja as etapas iniciais estão em aberto e o nome da etapa é "Triagem".</strong></em><br />
-        <br />
-    	
+      <%If CStr("" & Request.QueryString("sucesso")) = "" And CStr("" & Request.QueryString("codmsg")) = "201" Then%>
+      <p class="alert alert-success" role="status">Triagem inicial realizada com sucesso.</p>
+      <%End If%>
+      <section class="dashboard-panel triage-panel" aria-labelledby="triage-filter-title">
+        <div class="triage-heading"><h2 id="triage-filter-title">Filtrar por contrato</h2></div>
+        <form class="triage-filter" action="ppv_ordens_servico_triagem_inicial.asp" method="get" name="FILTRO_PADRAO">
+          <input type="hidden" name="filtro1" value="1">
+          <div><label for="triage-contract">C&oacute;digo do contrato</label><input class="form-control" id="triage-contract" name="COD_CONTRATO" value="<%=Server.HTMLEncode(busca_COD_CONTRATO & "")%>"></div>
+          <button class="btn btn-primary" type="submit">Filtrar ordens</button>
+          <%If Len(busca_COD_CONTRATO & "") > 0 Then%><a class="btn btn-outline-secondary" href="ppv_ordens_servico_triagem_inicial.asp">Limpar filtro</a><%End If%>
+        </form>
+      </section>
         <%
 		AbrirConexao()
 		
@@ -581,35 +714,27 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		%>
         
         	
-            <div align="center" style="padding:10px; background-color:#F2F2F2">Qtd. Total Triagem Pendente Geral:  <strong><%=qtd_geral_triagem%></strong><br />Contratos: 
-            <%		
-			Dim contratos
-			contratos = ""
-			Set rsCont = objConexao.Execute("SELECT COD_CONTRATO FROM VW_TB_ORDENS_SERVICO WHERE descricao = 'triagem' AND status_ordem_servico = 1 GROUP BY COD_CONTRATO ORDER BY COD_CONTRATO ASC")
-			While not rsCont.Eof
-				If contratos="" Then
-					contratos = "<a href=""javascript:filtrarContrato('"&rsCont("COD_CONTRATO")&"')"">"&rsCont("COD_CONTRATO")&"</a>"
-				Else
-					contratos = contratos&", <a href=""javascript:filtrarContrato('"&rsCont("COD_CONTRATO")&"')"">"&rsCont("COD_CONTRATO")&"</a>"
-				End If
-			rsCont.MoveNext()
-			Wend
-			
-			rsCont.Close
-			Set rsCont = Nothing
-			
-			If contratos = "" Then
-				contratos = "NÃO HÁ ORDENS DE serviço PARA SEREM TRIADAS!"
-			End If
-			Response.Write(contratos)
-			%>
-            
-            </div>
-            <br />
-<br />
 
-        
-        
+      <section class="dashboard-panel triage-panel" aria-labelledby="triage-pending">
+        <div class="triage-heading">
+          <h2 id="triage-pending">Contratos por situa&ccedil;&atilde;o</h2>
+          <span class="triage-count">Total na fila: <%=qtd_geral_triagem%> OS</span>
+        </div>
+        <div class="triage-modal-actions">
+          <button class="btn btn-primary" type="button" aria-haspopup="dialog" data-triage-mode="pendentes">Triagem pendente</button>
+          <button class="btn btn-outline-secondary" type="button" aria-haspopup="dialog" data-triage-mode="concluidos">Triagem completa</button>
+        </div>
+      </section>
+      <dialog class="triage-dialog triage-browser" id="triage-browser" aria-labelledby="triage-browser-title">
+        <header class="triage-browser-header">
+          <h2 id="triage-browser-title" tabindex="-1">Contratos</h2>
+          <form method="dialog"><button class="btn btn-outline-secondary" autofocus>Fechar</button></form>
+        </header>
+        <div class="triage-browser-content">
+          <button class="btn btn-outline-secondary btn-sm" id="triage-browser-back" type="button" hidden>Voltar aos contratos</button>
+          <div id="triage-browser-results" aria-busy="false"></div>
+        </div>
+      </dialog>
         <%If Request.QueryString("filtro1") <> Empty  Then%>
             
         <%
@@ -631,18 +756,24 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 			rs2.Close
 			Set rs2=Nothing
 		%>
-        <form name="TRIAGEM_INICIAL" action="ppv_ordens_servico_triagem_inicial.asp" method="post" style="margin:0px">
+        <section class="dashboard-panel triage-panel" aria-labelledby="triage-orders">
+        <div class="triage-heading">
+          <h2 id="triage-orders">Ordens para triagem</h2>
+          <span class="triage-count"><%=qtdOSs%> OS</span>
+        </div>
+        <form id="triage-form" name="TRIAGEM_INICIAL" action="ppv_ordens_servico_triagem_inicial.asp" method="post" style="margin:0px">
         	<input name="campo1" value="S" type="hidden" />
-            <table width="99%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-              <tr bgcolor="whitesmoke">
-        <td colspan="2"><div align="center"><strong> OS</strong></div></td>
-        <td width="11%"><div align="center"><strong>Formando</strong></div></td>
-        <td width="7%"><div align="center"><strong>Contrato</strong></div></td>
-        <td width="20%"><div align="center"><strong>Produto</strong></div></td>
-        <td width="13%"><div align="center"><strong>Data Cadastro</strong></div></td>
-        <td width="17%"><div align="center"><strong>Prazo Geral</strong></div></td>
-        <td width="24%"><div align="center"><strong>Respons&aacute;vel pela OS</strong></div></td>
-        </tr>
+            <table class="table triage-table" aria-labelledby="triage-orders" role="table">
+              <thead role="rowgroup"><tr role="row">
+                <th scope="col" role="columnheader">OS</th>
+                <th scope="col" role="columnheader">Formando</th>
+                <th scope="col" role="columnheader">Contrato</th>
+                <th scope="col" role="columnheader">Produto</th>
+                <th scope="col" role="columnheader">Cadastro</th>
+                <th scope="col" role="columnheader">Prazo geral</th>
+                <th scope="col" role="columnheader">Respons&aacute;vel pela OS</th>
+              </tr></thead>
+              <tbody role="rowgroup">
       <%
     
     'Neste momento que já passou o group by corrige o sqlWhere para o rs2
@@ -654,14 +785,10 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
     While not rs.Eof
     %>
         
-    <tr>
-                                <td colspan="8"><table width="650" border="0" cellspacing="0" cellpadding="1">
-                                  <tr>
-                                    <td class="textoMedio"><strong><%=rs("cod_pedido")%></strong>                                    </td>
-                                  </tr>
-                                </table></td>
-                              </tr>
-                              
+              <tr class="triage-order-group" role="row">
+                <th colspan="7" role="cell">Pedido #<%=rs("cod_pedido")%></th>
+              </tr>
+
            <%	   
            sql = "SELECT * FROM VW_TB_ORDENS_SERVICO WHERE cod_pedido = "&rs("cod_pedido")&sqlWhere&" order by numero_ordem_servico desc, numero_ordem_servico_indice asc"
            'Response.Write(sql)
@@ -684,10 +811,9 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
            
            %>                   
                               
-                <tr>
-                                            <td width="3%"><div align="right"><img src="images/icons/seta_superior.gif" width="19" height="15" /></div></td>
-                              <td width="5%"><div align="center"><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></div></td>
-                              <td><%
+                <tr class="triage-order" role="row">
+                              <td role="cell" data-label="OS"><strong><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></strong></td>
+                              <td role="cell" data-label="Formando"><%
 									sql = 	" SELECT "&_
 											" TB_PEDIDOS_FORMANDOS.COD_FORMANDO, "&_
 											" TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO, "&_
@@ -716,16 +842,11 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 														rs5.Close
 														Set rs5=Nothing
 														%></td>
-                              <td><%=(COD_CONTRATO)%></td>
-                                            <td><div align="left">
-                                            <%=rs2("nome_produto")%>                                        
-                                            </div></td>
-                                            <td><div align="center"><%=ArrumaData(rs2("data_cadastrado"))%></div></td>
-                                            <td><div align="center"> <%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></div></td>
-                                            <td><table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                              <tr>
-                                                <td><div align="center">
-                                                <%
+                              <td role="cell" data-label="Contrato"><%=(COD_CONTRATO)%></td>
+                                            <td role="cell" data-label="Produto"><%=rs2("nome_produto")%></td>
+                                            <td role="cell" data-label="Cadastro"><%=ArrumaData(rs2("data_cadastrado"))%></td>
+                                            <td role="cell" data-label="Prazo geral"><%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></td>
+                                            <td role="cell" data-label="Respons&aacute;vel pela OS"><%
 												ultimo_responsavel = ""
 												'Verifica último responsável, sem ser desta OS
 												Set rs3=objConexao.Execute("SELECT cod_usuario_responsavel, nome_formando FROM `VW_TB_ORDENS_SERVICO` WHERE cod_contrato = "&sqlTexto(rs2("cod_contrato"))&" and cod_ordem_servico <> "&rs2("cod_ordem_servico")&" and cod_produto = "&rs2("cod_produto")&" LIMIT 1")
@@ -738,8 +859,8 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 												%>
                                                 
                                                 
-                                                  <select class="inputTamanho2" name="cod_usuario_responsavel_<%=rs2("cod_ordem_servico")%>">
-                                                    <option value="" <%If ultimo_responsavel = "" or 1 = 1 Then%> selected="selected" <%End If%>></option>
+                                                  <select class="form-select" aria-label="Respons&aacute;vel pela OS <%=rs2("cod_ordem_servico")%>" name="cod_usuario_responsavel_<%=rs2("cod_ordem_servico")%>">
+                                                    <option value="" <%If ultimo_responsavel = "" or 1 = 1 Then%> selected="selected" <%End If%>>Selecione</option>
                                                     <%
                                             
                                             'Seleciona todos os funcion&aacute;rios ativos, exceto o usu&aacute;rio atual.
@@ -755,14 +876,10 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
                                             Set rs3=Nothing
                                         %>
                                                   </select>
-                                                </div></td>
-                                              </tr>
-                                              <%If qtdEncontrado > 1 and cont = 1 Then%>
-                                              <tr>
-                                                <td><div align="center"><a href="javascript:selecionarVendedores(<%=rs("cod_pedido")%>,<%=rs2("cod_ordem_servico")%>);">Marcar todas desta venda com o resp. acima</a></div></td>
-                                              </tr>
-                                              <%End If%>
-                                            </table></td>
+                                                <%If qtdEncontrado > 1 and cont = 1 Then%>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm triage-copy" onclick="selecionarVendedores(<%=rs("cod_pedido")%>,<%=rs2("cod_ordem_servico")%>)">Aplicar ao pedido</button>
+                                                <%End If%>
+                                            </td>
                               </tr>
                
                     
@@ -778,25 +895,30 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 		   End If
 		   %>
            
-           <input type="hidden" name="marcar_<%=rs("cod_pedido")%>" value="<%=ordens_servico%>" />         
+           <tr hidden><td colspan="7"><input type="hidden" name="marcar_<%=rs("cod_pedido")%>" value="<%=ordens_servico%>" /></td></tr>         
     <%
     rs.MoveNext()
     Wend
     %>
-          <tr>
-                  <td colspan="8"><div align="center"><a href="javascript:confirmaTriagem();"><img border="0" src="images/layout/btnGravar.jpg" /></a></div></td>
-                  </tr>
-         
-          </table>
-      	</form>
+              </tbody>
+            </table>
+            <div class="triage-actions"><button type="button" class="btn btn-primary" id="triage-review" aria-haspopup="dialog">Concluir triagem</button></div>
+        </form>
+        <dialog class="triage-dialog" id="triage-confirm" aria-labelledby="triage-confirm-title" aria-describedby="triage-confirm-message">
+          <h2 id="triage-confirm-title">Concluir triagem?</h2>
+          <p id="triage-confirm-message">A etapa inicial ser&aacute; finalizada nas ordens com respons&aacute;vel selecionado.</p>
+          <form method="dialog" class="triage-actions">
+            <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+            <button class="btn btn-primary" value="confirmar">Confirmar triagem</button>
+          </form>
+        </dialog>
+        </section>
 
 
 <%
 	Else
 	%>
-    <div align="center" class="msgGrande">
-    Nenhuma OS encontrada para triagem!<br />
-</div>
+    <div class="dashboard-panel triage-panel" role="status">Nenhuma ordem encontrada para este filtro.</div>
     <%End if
 	
 	rs.Close
@@ -807,36 +929,106 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
     
     	<%Else%>
     	
-        <div class="msgGrande" align="center">Utilize o filtro por contrato para iniciar a triagem</div>
+        
         <%End if%>
-	  </p>
-	   <br />
-	   <br />
-       <strong>Observa&ccedil;&otilde;es:<br />
-       </strong>1) Ap&oacute;s a triagem a etapa 1 ser&aacute; finalizada<br />2) Virá pré-selecionado o último responsável pelo CONTRATO e PRODUTO, caso o sistema não encontrar um último responsável não haverá pré-seleção
-<p align="center"> </p>
-	    </td>
-    </tr>
-</table>
-<%
-FecharConexao()
-%>
+      <%FecharConexao()%>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
 
- 
-  
-  </td>
-    </tr>
-</table>
+(function () {
+    var submenuLink = document.querySelector('.ppv-module a[href="ppv_ordens_servico_triagem_inicial.asp"]');
+    if (submenuLink) submenuLink.setAttribute('aria-current', 'page');
 
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
+    var browser = document.getElementById('triage-browser');
+    var title = document.getElementById('triage-browser-title');
+    var results = document.getElementById('triage-browser-results');
+    var back = document.getElementById('triage-browser-back');
+    var lastList, controller;
+    var titles = { pendentes: 'Triagem pendente', concluidos: 'Triagem completa', historico: 'Hist\u00f3rico de etapas' };
 
-  </td>
-</tr>
-</table>
+    async function loadPanel(url) {
+        var mode = url.searchParams.get('painel_triagem');
+        if (mode !== 'historico') lastList = url;
+        if (controller) controller.abort();
+        controller = new AbortController();
+        var signal = controller.signal;
+        title.textContent = titles[mode];
+        back.hidden = mode !== 'historico';
+        results.setAttribute('aria-busy', 'true');
+        title.focus();
+        results.textContent = 'Carregando\u2026';
+        try {
+            var response = await fetch(url, { signal: signal, cache: 'no-store' });
+            if (!response.ok || response.headers.get('X-Triagem-Painel') !== '1') throw new Error();
+            var html = await response.text();
+            if (signal.aborted) return;
+            results.innerHTML = html;
+            results.parentNode.scrollTop = 0;
+        } catch (error) {
+            if (!signal.aborted) results.textContent = 'N\u00e3o foi poss\u00edvel carregar os dados. Feche o painel e tente novamente.';
+        } finally {
+            if (!signal.aborted) results.setAttribute('aria-busy', 'false');
+        }
+    }
 
+    document.querySelectorAll('[data-triage-mode]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            browser.showModal();
+            loadPanel(new URL('?painel_triagem=' + button.dataset.triageMode, location.href));
+        });
+    });
+    browser.addEventListener('close', function () {
+        if (controller) controller.abort();
+    });
+    back.addEventListener('click', function () { loadPanel(lastList); });
+    results.addEventListener('click', function (event) {
+        var link = event.target.closest('a[data-triage-load]');
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        loadPanel(new URL(link.href));
+    });
+    results.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var url = new URL(location.href);
+        url.search = new URLSearchParams(new FormData(event.target)).toString();
+        loadPanel(url);
+    });
+
+    var review = document.getElementById('triage-review');
+    if (review) {
+        var dialog = document.getElementById('triage-confirm');
+        var form = document.getElementById('triage-form');
+        review.addEventListener('click', function () {
+            dialog.returnValue = '';
+            dialog.showModal();
+        });
+        dialog.addEventListener('close', function () {
+            if (dialog.returnValue === 'confirmar') form.submit();
+        });
+    }
+})();
+</script>
 </body>
 </html>

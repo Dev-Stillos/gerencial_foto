@@ -1,13 +1,109 @@
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
 <%
-Dim calendario_necessario, BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
+Dim caminho_pagina, calendario_necessario
+caminho_pagina = "ppv_compras_pedidos.asp"
 calendario_necessario = "SIM"
-BTN_VOLTAR = 1
-BTN_IMPRIMIR = 2
-BTN_FONTE = 1
-BTN_IMPRIMIR_LINK = "#"
 %>
-<!-- #include file="files/includes/miolo-superior.asp" -->
-<h2>Compras</h2>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedidos de compra | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<!-- #include file="files/includes/scripts.asp" -->
+<style>
+.purchase-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.purchase-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.purchase-page .purchase-panel { height:auto; margin-bottom:18px; padding:clamp(16px,3vw,26px); }
+.purchase-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:14px 0; }
+.purchase-filters label { display:block; font-weight:650; margin-bottom:5px; }
+.purchase-date, .purchase-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.purchase-date { flex-wrap:nowrap; }
+.purchase-date input { min-width:0; }
+.purchase-date button { padding:8px; }
+.purchase-results-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.purchase-results-heading span { color:#57566a; }
+.purchase-table { width:100%; table-layout:fixed; margin-bottom:0; }
+.purchase-table th, .purchase-table td { padding:12px 10px; vertical-align:middle; }
+.purchase-table [hidden] { display:none; }
+.purchase-table th:first-child { width:16%; }
+.purchase-table th:nth-child(9), .purchase-table th:nth-child(10) { width:19%; }
+.purchase-table td:nth-child(2) > div, .purchase-table td:nth-child(3) > div { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.purchase-row { cursor:pointer; }
+.purchase-row:hover > td { background:#faf7fb; }
+.purchase-order-link { display:inline-flex; flex-direction:column; align-items:flex-start; gap:2px; padding:6px 10px; border-color:#e8c4d8; background:#faf0f6; color:#88134f; font-weight:700; white-space:nowrap; }
+.purchase-order-link:hover { background:#f3dce9; border-color:#c889ac; color:#741044; }
+.purchase-order-link small { font-size:.85em; font-weight:650; }
+.purchase-order-dialog { box-sizing:border-box; width:min(1180px,calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:0; border:1px solid #e4dfeb; border-radius:14px; color:var(--ink); background:#fff; }
+.purchase-order-dialog[open] { display:flex; flex-direction:column; }
+.purchase-order-dialog::backdrop { background:#24273899; }
+.purchase-order-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:14px 20px; border-bottom:1px solid #e4dfeb; }
+.purchase-order-header form { margin:0; }
+.purchase-order-body { overflow:auto; padding:16px 20px; }
+.purchase-order-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.purchase-order-fields > div { padding:10px; border-radius:8px; background:#f7f5fa; overflow-wrap:anywhere; }
+.purchase-order-fields dt { color:#57566a; font-size:.85em; }
+.purchase-order-fields dd { margin:3px 0 0; }
+.purchase-order-body .purchase-actions { margin-top:14px; }
+.purchase-order-frame { display:block; width:100%; height:72vh; height:72dvh; border:0; background:#fff; }
+.purchase-order-frame[hidden] { display:none; }
+.purchase-table thead th { background:#f4f1f7; color:#42364e; }
+.purchase-table td:first-child { font-weight:700; }
+.purchase-manual { display:block; color:#65546e; font-weight:600; }
+.purchase-status { display:inline-block; padding:3px 8px; border-radius:6px; background:#f0edf8; color:#51436e; font-weight:650; }
+.purchase-status.is-delivered, .purchase-status.is-on-time { background:#e7f3ec; color:#286143; }
+.purchase-status.is-late { background:#fce9ee; color:#8e2045; }
+.purchase-row-actions { gap:4px; }
+.purchase-action { background:#fff; cursor:pointer; font-family:inherit; display:inline-block; padding:4px 6px; border:1px solid #e4dfeb; border-radius:5px; text-decoration:none; font-size:.87em; color:#88134f; }
+.purchase-action:hover { background:#f7edf3; color:#88134f; }
+.purchase-pagination { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; margin-top:18px; padding-top:16px; border-top:1px solid #e4dfeb; }
+.purchase-pagination span { color:#57566a; }
+.purchase-row-actions .purchase-action { white-space:nowrap; }
+@media(max-width:900px) {
+  .purchase-table, .purchase-table tbody { display:block; }
+  .purchase-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .purchase-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:12px; border:1px solid #e4dfeb; border-radius:10px; overflow:hidden; }
+  .purchase-row td { display:block; min-width:0; border:0; }
+  .purchase-row td:nth-child(1), .purchase-row td:nth-child(2), .purchase-row td:nth-child(3) { grid-column:1/-1; }
+  .purchase-row td:nth-child(1) { background:#f4f1f7; }
+  .purchase-row td > div[align] { text-align:left; }
+  .purchase-row td::before { content:attr(data-label); display:block; color:#66586e; font-size:.85em; font-weight:700; }
+}
+@media(max-width:640px) {
+  .purchase-filters, .purchase-order-fields { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .purchase-order-header, .purchase-order-body { padding:12px; }
+}
+@media(max-width:400px) {
+  .purchase-filters { grid-template-columns:minmax(0,1fr); }
+}
+</style>
+</head>
+<body class="purchase-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Compras</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><h1>Pedidos de compra</h1><p>Acompanhe fornecedores, recebimentos e prazos dos pedidos.</p></div>
+        <a href="adm_index.asp" class="btn btn-outline-secondary">Voltar ao painel</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+
 <!-- #include file="includes/compras_sub_menu.asp" -->
 <%
 	 
@@ -199,27 +295,13 @@ end if
 	End If	
 	sql = sql&sqlWhere&sqlOrderBy
 	%>
-  <h2><%=titulo_pagina%></h2><br />
-<div class="subMenu" style="border:#999999 dashed 1px; padding:2px; background:#FFFFCC">
-<form action="<%=caminho_pagina%>" name="FORMULARIO_FILTRO" method="get">
-<input name="" type="submit" style="display:none; visibility:hidden" />
-<table width="483" border="0" cellpadding="0" cellspacing="0"><tr>
-  <td width="212" style="padding-left:10px;"><table width="483" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td width="43" rowspan="10"><span style="font-weight: bold">Filtrar</span></td>
-    <td colspan="2" style="padding-left:10px; padding-top:5px;">N&uacute;mero do Pedido de Compras</td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px;"><input type='text' class="inputTamanho1" value="<%=filtro_NUMERO_PEDIDO_COMPRAS%>" name='NUMERO_PEDIDO_COMPRAS' /></td>
-  </tr>
-  <tr>
-    <td width="240"  style="padding-left:10px; padding-top:5px;">Respons&aacute;vel pelo pedido</td>
-    <td width="200"  style="padding-left:10px; padding-top:5px;">Status do Pedido de Compras</td>
-  </tr>
-  <tr>
-    <td style="padding-left:10px;">
-    <%If validacao_para_listar_qualquer_pedido Then%>
-    <select class="inputTamanho2" name="CADASTRO_COD_USUARIO">
+<section class="dashboard-panel purchase-panel" aria-labelledby="purchase-filter-title">
+<h2 id="purchase-filter-title">Filtrar pedidos</h2>
+<form action="ppv_compras_pedidos.asp" name="FORMULARIO_FILTRO" method="get">
+  <input type="hidden" value="1" name="filtro">
+  <div class="purchase-filters">
+    <div><label for="purchase-number">N&uacute;mero do pedido</label><input id="purchase-number" class="form-control" inputmode="numeric" name="NUMERO_PEDIDO_COMPRAS" value="<%=Server.HTMLEncode(filtro_NUMERO_PEDIDO_COMPRAS)%>"></div>
+    <div><%If validacao_para_listar_qualquer_pedido Then%><label for="purchase-cadastro_cod_usuario">Respons&aacute;vel pelo pedido</label><select class="form-select" id="purchase-cadastro_cod_usuario" name="CADASTRO_COD_USUARIO">
       <option value="" <%If Cstr(filtro_cadastro_cod_usuario) = "" Then%> selected="selected" <%End If%>>Todos</option>
       <%                                          
             Set rs3=objConexao.Execute("SELECT COD_USUARIO, NOME FROM TB_ADM_USUARIOS WHERE COD_USUARIO IN(SELECT cadastro_cod_usuario FROM TB_PEDIDOS_COMPRAS WHERE status_pedido_compra > 0 GROUP BY cadastro_cod_usuario) ORDER BY NOME ASC")
@@ -237,12 +319,8 @@ end if
             rs3.Close
             Set rs3=Nothing
         %>
-    </select>
-    <%Else%>
-    <strong style="font-size:14px;"><%=nomeUsuario(Session("cod_usuario"),true)%></strong>
-    <%End If%>
-    </td>
-    <td style="padding-left:10px;"><select name="status_pedido_compra" class="inputTamanho1">
+    </select><%Else%><strong>Respons&aacute;vel pelo pedido</strong><p><%=nomeUsuario(Session("cod_usuario"),true)%></p><%End If%></div>
+    <div><label for="purchase-status_pedido_compra">Status</label><select class="form-select" id="purchase-status_pedido_compra" name="status_pedido_compra">
       <option <%If Cstr(filtro_status_pedido_compra) = "" Then%> selected="selected" <%End If%> value="">Todos</option>
       <%
 		Dim temp
@@ -260,13 +338,8 @@ end if
 
 		Next
     	%>
-    </select></td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px; padding-top:5px;">Fornecedor</td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px;"><select class="inputTamanho2" name="COD_FORNECEDOR">
+    </select></div>
+    <div><label for="purchase-cod_fornecedor">Fornecedor</label><select class="form-select" id="purchase-cod_fornecedor" name="COD_FORNECEDOR">
       <option value="" <%If Cstr(filtro_cod_fornecedor) = "" Then%> selected="selected" <%End If%>>Todos</option>
       <%                                          
                                             Set rs3=objConexao.Execute("SELECT cod_fornecedor, NOME_FANTASIA FROM TB_FORNECEDORES WHERE TB_FORNECEDORES.ATIVADO = 1 order by TB_FORNECEDORES.NOME_FANTASIA asc")
@@ -284,43 +357,25 @@ end if
                                             rs3.Close
                                             Set rs3=Nothing
                                         %>
-    </select></td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px; padding-top:5px;">Data Cadastro</td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px;"><table width="300" border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="135"><table width='135' border='0' align="left" cellpadding='0' cellspacing='0'>
-          <tr>
-            <td width='102'><input class='campoData' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_CADASTRO_INICIO' value="<%=ArrumaData(b_DATA_CADASTRO_INICIO)%>" onblur='validarData(this)' /></td>
-            <td width='298'><div align='center'> <img onclick='pickDate(this,document.FORMULARIO_FILTRO.DATA_CADASTRO_INICIO);' class='forcaBotao' src='images/icons/icon_calendario.jpg' width='26' height='22' /></div></td>
-          </tr>
-        </table></td>
-        <td width="11"><div align="center">&agrave;</div></td>
-        <td width="154"><table width='135' border='0' align="left" cellpadding='0' cellspacing='0'>
-          <tr>
-            <td width='102'><input class='campoData' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_CADASTRO_FIM' value="<%=ArrumaData(b_DATA_CADASTRO_FIM)%>" onblur='validarData(this)' /></td>
-            <td width='298'><div align='center'> <img onclick='pickDate(this,document.FORMULARIO_FILTRO.DATA_CADASTRO_FIM);' class='forcaBotao' src='images/icons/icon_calendario.jpg' width='26' height='22' /></div></td>
-          </tr>
-        </table></td>
-      </tr>
-    </table></td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px;"><div align="left" style="padding-top:10px">
-      <input class="btnFiltrarAmarelo" type="submit" name="filtro1" value=" " />
-    </div></td>
-  </tr>
-  
-  </table>    <br /></td>
-  </tr>
-</table>
-<input type="hidden" value="1" name="filtro" />
+    </select></div>
+    <div><label for="purchase-inicio">Cadastro a partir de</label><div class="purchase-date"><input class='form-control' id='purchase-inicio' inputmode='numeric' placeholder='dd/mm/aaaa' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_CADASTRO_INICIO' value="<%=ArrumaData(b_DATA_CADASTRO_INICIO)%>" onblur='validarData(this)' /><button class="btn btn-outline-secondary" type="button" onclick="pickDate(this,document.FORMULARIO_FILTRO.DATA_CADASTRO_INICIO)" aria-label="Abrir calend&aacute;rio da data inicial"><img alt="" width="19" height="17" src="images/icons/icon_calendario.jpg"></button></div></div>
+    <div><label for="purchase-fim">Cadastro at&eacute;</label><div class="purchase-date"><input class='form-control' id='purchase-fim' inputmode='numeric' placeholder='dd/mm/aaaa' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_CADASTRO_FIM' value="<%=ArrumaData(b_DATA_CADASTRO_FIM)%>" onblur='validarData(this)' /><button class="btn btn-outline-secondary" type="button" onclick="pickDate(this,document.FORMULARIO_FILTRO.DATA_CADASTRO_FIM)" aria-label="Abrir calend&aacute;rio da data final"><img alt="" width="19" height="17" src="images/icons/icon_calendario.jpg"></button></div></div>
+  </div>
+  <div class="purchase-actions"><button class="btn btn-primary" type="submit" name="filtro1" value="1">Aplicar filtros</button><a class="btn btn-outline-secondary" href="ppv_compras_pedidos.asp">Limpar filtros</a></div>
 </form>
-</div>
-
+</section>
+<%
+Dim comprasAcaoNegada
+comprasAcaoNegada = False
+Select Case Request.QueryString("codmsg") & ""
+    Case "900", "901", "902", "903"
+        comprasAcaoNegada = True
+End Select
+If comprasAcaoNegada Then
+%>
+<span id="purchase-access-denied" hidden></span>
+<noscript><p role="status">Seu perfil n&atilde;o tem permiss&atilde;o para realizar esta a&ccedil;&atilde;o.</p></noscript>
+<%End If%>
 <%
 	
 	Set rs=server.CreateObject("ADODB.recordset")
@@ -333,6 +388,7 @@ end if
 
 	If not rs.Eof Then
 		If paginacaocao > 0 Then
+			If paginacaocao > rs.PageCount Then paginacaocao = rs.PageCount
 			rs.AbsolutePage=paginacaocao
 		Else
 			paginacaocao = 1
@@ -345,8 +401,8 @@ end if
 	codmsg	= CStr(""&Request.QueryString("codmsg"))
 	sucesso = CStr(""&Request.QueryString("sucesso"))
 		
-	If sucesso = "" and codmsg <> "" Then%>
-    	<div align="center" class="msgGrandeSucesso">
+	If sucesso = "" And codmsg <> "" And Not comprasAcaoNegada Then%>
+    	<div align="center" class="alert alert-success" role="status">
         	<%
 			If codmsg = "1" Then
 				Response.Write("Pedido de Compra inclu&iacute;do com sucesso!<br />ATEN&Ccedil;&Atilde;O IMPRIMA 3 C&oacute;PIAS, SENDO 1 PARA VOC�, OUTRA PARA O FORNECEDOR E A �LTIMA PARA SER ENTREGUE PARA O DPTO. FINANCEIRO JUNTO COM O BOLETO.")
@@ -362,51 +418,40 @@ end if
 			End If	
 			%>
 </div>
-    <%ElseIf sucesso <> "" and codmsg <> "" Then%>
-        <div align="center" class="msgGrandeErro">
+    <%ElseIf sucesso <> "" And codmsg <> "" And Not comprasAcaoNegada Then%>
+        <div align="center" class="alert alert-warning" role="status">
 			<%
 			If codmsg = "4" Then
-				Response.Write("Pedido de Compra n&atilde;o alterado para n&atilde;o haver duplicidade de informa&ccedil;&atilde;o!<BR>O conte&uacute;do do campo """&Request.QueryString("chaveUnica")&""" j&aacute; possui uma informa&ccedil;&atilde;o igual em outro Pedido de Compra.<br />")
+				Response.Write("Pedido de Compra n&atilde;o alterado para n&atilde;o haver duplicidade de informa&ccedil;&atilde;o!<BR>O conte&uacute;do do campo """&Server.HTMLEncode(Request.QueryString("chaveUnica") & "")&""" j&aacute; possui uma informa&ccedil;&atilde;o igual em outro Pedido de Compra.<br />")
 			Elseif codmsg = "5" Then
 				Response.Write("Pedido de Compra n&atilde;o exclu&iacute;do, pois h&aacute; Or&ccedil;amentos/Pedidos/NF que dependem ou relacionam com este vendedor.<BR>Se n&atilde;o desejar ter mais este Pedido de Compra inative ao inv&eacute;s de excluir.<br />")
 			
 			Elseif codmsg = "300" Then
 				Response.Write("Pedido de Compra N&atilde;O alterado status, <br />pois voc&ecirc; n&atilde;o possui acesso ou o pedido j&aacute; foi mudado para o status que voc&ecirc; est&aacute; tentando mudar.")
-			
-			Elseif codmsg = "900" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a VISUALIZA&ccedil;&atilde;O!")
-			Elseif codmsg = "901" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a INCLUS&atilde;O!")
-			Elseif codmsg = "902" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a ALTERA&ccedil;&atilde;O!")	
-			Elseif codmsg = "903" Then
-				Response.Write("Voc&ecirc; n&atilde;o possui acesso a EXCLUS&atilde;O!")
 			End If					
 			%>
 </div>
 <%End If%>
-<table width="99%" border="0" align="center">
-  <tr>
-    <td width="47%"> 
-P&aacute;gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%>
-</td>
-    <td width="53%"><div align="right">Total <strong><%=rs.RecordCount%></strong> pedidos de compra</div></td>
-  </tr>
-</table>
-<table width="99%" border="1" align="center" cellpadding="5" style="border-collapse:collapse; text-align: right;">
-<tr bgcolor="whitesmoke">
-<td width="7%"><div align="center" style="font-weight: bold">C&oacute;d. Pedido Compra</div></td>
-<td width="20%"><div align="center" style="font-weight: bold">Fornecedor</div></td>
-<td width="14%"><div align="center"><strong>Produto</strong></div></td>
-<td width="8%"><div align="center"><strong>Qtd. Pendente</strong></div></td>
-<td width="10%" align="center"><div align="center"><strong>Qtd. Entregue</strong></div></td>
-<td width="12%" align="center"><div align="center" style="font-weight: bold">Respons&aacute;vel pedido</div></td>
-<td width="5%" align="center"><div align="center"><strong>Data Emiss&atilde;o</strong></div></td>
-<td width="8%" align="center"><strong> Dias Atrasados</strong></td>
-<td width="4%" align="center"><strong>Status</strong></td>
-<td width="4%">&nbsp;</td>
-<td width="8%">&nbsp;</td>
-</tr>
+<section class="dashboard-panel purchase-panel" aria-labelledby="purchase-results-title">
+<div class="purchase-results-heading">
+  <div><h2 id="purchase-results-title">Pedidos encontrados</h2><span><%=rs.RecordCount%> pedidos</span></div>
+  <span>P&aacute;gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%></span>
+</div>
+<table class="table purchase-table" role="table" aria-labelledby="purchase-results-title">
+<thead role="rowgroup"><tr role="row">
+<th role="columnheader" scope="col">Pedido</th>
+<th role="columnheader" scope="col">Fornecedor</th>
+<th role="columnheader" scope="col">Produto</th>
+<th hidden role="columnheader" scope="col">Qtd. pendente</th>
+<th hidden role="columnheader" scope="col">Qtd. entregue</th>
+<th hidden role="columnheader" scope="col">Respons&aacute;vel</th>
+<th hidden role="columnheader" scope="col">Emiss&atilde;o</th>
+<th hidden role="columnheader" scope="col">Dias em atraso</th>
+<th role="columnheader" scope="col">Status</th>
+<th role="columnheader" scope="col">Entrega</th>
+<th hidden role="columnheader" scope="col">A&ccedil;&otilde;es</th>
+</tr></thead>
+<tbody role="rowgroup">
 <%
 Dim qtd_pendente, qtd_entregue, qtd_atrasados
 Dim usuario_pode_imprimir
@@ -422,14 +467,14 @@ If Not rs.Eof Then
 	qtd_entregue = pedidoCompraTotais(rs("cod_pedido_compra"),4,true)
 	qtd_atrasados= pedidoCompraTotais(rs("cod_pedido_compra"),7,true)
 %>
-<tr>
-  <td><div align="center"><%=rs("numero_pedido_compra")%>
+<tr class="purchase-row" role="row">
+  <td role="cell" data-label="Pedido"><div align="center"><button class="btn btn-outline-secondary btn-sm purchase-order-link" type="button" aria-haspopup="dialog"><span class="purchase-order-number">#<%=rs("numero_pedido_compra")%></span><small>Ver detalhes <span aria-hidden="true">&rarr;</span></small></button>
   <% if rs("pedido_manual") = "S" Then%>
-  	(manual)
+  	<small class="purchase-manual">Manual</small>
   <% end if %>
   </div></td>
-  <td><div align="left"><%=rs("nome_fantasia")%></div></td>
-  <td><div align="left">
+  <td role="cell" data-label="Fornecedor"><div align="left"><%=rs("nome_fantasia")%></div></td>
+  <td role="cell" data-label="Produto"><div align="left">
   <%
   Set rs2=objConexao.Execute("SELECT nome_produto FROM VW_TB_PEDIDOS_COMPRAS_PRODUTOS WHERE cod_pedido_compra = "&rs("cod_pedido_compra")&" GROUP BY nome_produto ORDER BY nome_produto ASC")
   	If not rs2.Eof Then
@@ -442,11 +487,11 @@ If Not rs.Eof Then
   Set rs2=Nothing
   %>
   </div></td>
-  <td><div align="center"><%=qtd_pendente%></div></td>
-  <td><div align="center"><%=qtd_entregue%></div></td>
-  <td><div align="left"> <%=nomeUsuario(rs("cadastro_cod_usuario"),true)%> </div></td>
-  <td><div align="center"><%=ArrumaData(rs("data_cadastro"))%></div></td>
-  <td><div align="center">
+  <td hidden role="cell" data-label="Qtd. pendente"><div align="center"><%=qtd_pendente%></div></td>
+  <td hidden role="cell" data-label="Qtd. entregue"><div align="center"><%=qtd_entregue%></div></td>
+  <td hidden role="cell" data-label="Respons&aacute;vel"><div align="left"> <%=nomeUsuario(rs("cadastro_cod_usuario"),true)%> </div></td>
+  <td hidden role="cell" data-label="Emiss&atilde;o"><div align="center"><%=ArrumaData(rs("data_cadastro"))%></div></td>
+  <td hidden role="cell" data-label="Dias em atraso"><div align="center">
   <%
   If qtd_atrasados > 0 Then
 	  Set rs2=objConexao.Execute("SELECT MIN(data_previsao_entrega) AS data_previsao_entrega FROM VW_TB_PEDIDOS_COMPRAS_PRODUTOS WHERE cod_pedido_compra = "&rs("cod_pedido_compra"))
@@ -461,46 +506,35 @@ If Not rs.Eof Then
   %>
   
   </div></td>
-  <td align="center"><div align="center"><a href="javascript:alert('<%=pedidoCompraStatus(rs("status_pedido_compra"))%>')" style="font-weight: bold"><%=rs("status_pedido_compra")%></a></div></td>
-  <td align="center">
-  <%
-  If qtd_pendente = 0 Then
-  'N&atilde;o h&aacute; itens pendentes
-  %>
-  	<img title="Pedido de Compra com todos itens entregues" src="images/icons/icon_verificado.gif" width="20" height="19" />
-  <%Elseif qtd_atrasados > 0 Then
-  'H&aacute; itens pendentes e atrasados
-  %>
-  	<img title="H&aacute; itens pendentes e atrasados" src="images/icons/icon_balao_red.gif" />
-  <%
-  Else
-  'H&aacute; itens pendentes e n�o atrasados
-  %>
-  	<img title="H&aacute; itens pendentes e n&atilde;o atrasados" src="images/icons/icon_balao_green.gif" />
-  <%End If%>  </td>
-  <td>
-    
-    <table border="0" align="center" cellpadding="3" cellspacing="0">
-      <tr>
-         <%
+  <td role="cell" data-label="Status"><span class="purchase-status"><%=pedidoCompraStatus(status_pedido_compra)%></span></td>
+  <td role="cell" data-label="Entrega">
+  <%If qtd_pendente = 0 Then%>
+    <span class="purchase-status is-delivered">Sem pend&ecirc;ncias</span>
+  <%ElseIf qtd_atrasados > 0 Then%>
+    <span class="purchase-status is-late">Em atraso</span>
+  <%Else%>
+    <span class="purchase-status is-on-time">Em dia</span>
+  <%End If%>
+  </td>
+  <td hidden role="cell" data-label="A&ccedil;&otilde;es"><div class="purchase-actions purchase-row-actions"><%
 		 'Impress&atilde;o somente se o status do pedido de compra for Enviado para o fornecedor, pois neste caso j&aacute; foi aprovado e mudado o status para Enviado para fornecedor para for&ccedil;ar o usu&aacute;rio a mudar o status para Enviado para Fornecedor e ter como controlar a data que foi enviado.
 		If status_pedido_compra > 1  Then%>
-         <td><a href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank">
-          <img src="images/icons/icon_imprimir.png" alt="Segunda Via Pedido" title="Segunda Via Pedido" border="0" /></a></td>
+         <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_imprimir.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener" data-purchase-print>
+          Pedido (2&ordf; via)</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Pedido (2&ordf; via)</button><%End If%>
           <%
 		 End If
 
 		 If status_pedido_compra > 2 and validaUsuario(2,,83,true) Then%>
-         <td><a href="ppv_compras_pedidos.asp?cod_pedido_compra_recibo=<%=rs("cod_pedido_compra")%>&acao_recibo=segunda_via_recibo" target="_blank">
-          <img src="images/icons/icon_recibo.png" alt="Segunda Via recibo" title="Segunda Via recibo" border="0" /></a></td>
+         <a class="purchase-action" href="ppv_compras_pedidos.asp?cod_pedido_compra_recibo=<%=rs("cod_pedido_compra")%>&acao_recibo=segunda_via_recibo" target="_blank" rel="noopener">
+          Recibo (2&ordf; via)</a>
           <%
 		 End If
 		  %>
           
        
-        <td>    <a href="ppv_compras_pedidos_formulario.asp?comando=visualizar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
-          <img src="images/icons/icon_visualizar.png" alt="Visualizar Registro" title="Visualizar Registro" border="0" />
-          </a></td>
+            <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=visualizar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
+          Ver
+          </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Ver</button><%End If%>
         
         
         <%
@@ -511,106 +545,171 @@ If Not rs.Eof Then
         
         <%If int(status_pedido_compra) < 3 and int(status_pedido_compra) <> 99 Then%>
 			
-                    <td>
-                        <a href="ppv_compras_pedidos_formulario.asp?comando=alterar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
-              <img src="images/icons/icon_alterar.png" alt="Alterar Registro" title="Alterar Registro" width="16" height="16" border="0" /></a> 	 	</td>
+                    
+                        <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=alterar&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
+              Editar</a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Editar</button><%End If%> 	 	
        
 			<%If  int(status_pedido_compra) <> 99 Then%>
-            <td>  <a href="ppv_compras_pedidos_formulario.asp?comando=excluir&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
-              <img src="images/icons/icon_excluir.png" alt="Excluir Registro" title="Excluir Registro" border="0" />
-              </a></td>
+              <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_formulario.asp") Then%><a class="purchase-action" href="ppv_compras_pedidos_formulario.asp?comando=excluir&cod_pedido_compra=<%=rs("cod_pedido_compra")%>">
+              Excluir
+              </a><%Else%><button class="purchase-action compras-access-trigger" type="button" aria-haspopup="dialog">Excluir</button><%End If%>
           	 <%End If%>
         <%End If%>
-        </tr>
-</table>  </td>
+        </div></td>
   </tr>
 <%
 rs.MoveNext()
 End If
 Next
 %>
-<%If rs.PageCount > 1 Then %>                                  
-     <tr bgcolor="whitesmoke">
-      <td colspan="11">
-      	   <%call paginacao(paginacaocao,rs.PageCount)%>      </td>
-    </tr>   
-<%End if%>
+</tbody>
 </table>
-<br />
-
-<strong>&nbsp;Legenda de Status:</strong><br />
-<table width="612" border="0" cellpadding="2" cellspacing="0">
-<%
-'Criador dinamico de legenda de status de pedido de compra, por enquanto h&aacute; 7 status v&aacute;lidos (sem contas o status em cadastro)
-
-For i=1 to 4%>
-	 <tr>
-		<%If i=4 Then%>
-		   
-				<td width="12" align="center">99</td>
-	   <td width="284"><%=pedidoCompraStatus(99)%></td>
-<%Else%>
-				<td width="20" align="center"><%=i%></td>
-	   <td width="280"><%=pedidoCompraStatus(i)%></td>
-		<%End if%>
-	</tr>
-
-<%
-Next
+<%If rs.PageCount > 1 Then
+    Dim comprasLinkPagina, comprasParametroPagina
+    comprasLinkPagina = "ppv_compras_pedidos.asp?"
+    For Each comprasParametroPagina In Array("filtro", "filtro1", "NUMERO_PEDIDO_COMPRAS", "CADASTRO_COD_USUARIO", "status_pedido_compra", "COD_FORNECEDOR", "DATA_CADASTRO_INICIO", "DATA_CADASTRO_FIM")
+        If Len(Request.QueryString(comprasParametroPagina) & "") > 0 Then
+            comprasLinkPagina = comprasLinkPagina & comprasParametroPagina & "=" & Server.URLEncode(Request.QueryString(comprasParametroPagina) & "") & "&"
+        End If
+    Next
+    comprasLinkPagina = Server.HTMLEncode(comprasLinkPagina & "paginacao=")
 %>
-</table>
+<nav class="purchase-pagination" aria-label="P&aacute;ginas dos pedidos">
+    <%If paginacaocao > 1 Then%>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina%>1">Primeira</a>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina & (paginacaocao - 1)%>">Anterior</a>
+    <%End If%>
+    <span>P&aacute;gina <strong><%=paginacaocao%></strong> de <%=rs.PageCount%></span>
+    <%If paginacaocao < rs.PageCount Then%>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina & (paginacaocao + 1)%>">Pr&oacute;xima</a>
+      <a class="btn btn-outline-secondary btn-sm" href="<%=comprasLinkPagina & rs.PageCount%>">&Uacute;ltima</a>
+    <%End If%>
+</nav>
+<%End If%>
+</section>
+<%Else%>
+<section class="dashboard-panel purchase-panel" role="status"><h2>Nenhum pedido encontrado</h2><p class="mb-0">Confira os filtros para buscar outros pedidos.</p></section>
+<%End If
+rs.Close
+Set rs = Nothing
+FecharConexao()
+%>
+<dialog class="purchase-order-dialog" id="purchase-order-dialog" aria-labelledby="purchase-order-title">
+    <header class="purchase-order-header">
+        <h2 id="purchase-order-title">Pedido de compra</h2>
+        <div class="purchase-actions">
+            <button class="btn btn-outline-secondary btn-sm" type="button" id="purchase-preview-back" hidden>Voltar ao pedido</button>
+            <button class="btn btn-primary btn-sm" type="button" id="purchase-preview-print" hidden disabled>Imprimir / Salvar PDF</button>
+            <form method="dialog"><button class="btn btn-outline-secondary btn-sm" autofocus>Fechar</button></form>
+        </div>
+    </header>
+    <div class="purchase-order-body" id="purchase-order-body">
+        <dl class="purchase-order-fields" id="purchase-order-fields"></dl>
+        <div class="purchase-actions" id="purchase-order-actions"></div>
+    </div>
+    <iframe class="purchase-order-frame" id="purchase-order-frame" title="Pr&eacute;via do pedido de compra" hidden></iframe>
+</dialog>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_compras_pedidos.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+(function () {
+    var dialog = document.getElementById('purchase-order-dialog');
+    var title = document.getElementById('purchase-order-title');
+    var body = document.getElementById('purchase-order-body');
+    var fields = document.getElementById('purchase-order-fields');
+    var actions = document.getElementById('purchase-order-actions');
+    var frame = document.getElementById('purchase-order-frame');
+    var back = document.getElementById('purchase-preview-back');
+    var print = document.getElementById('purchase-preview-print');
+    var orderTitle;
 
-<br />	
-<p><strong>&nbsp;Legenda de &iacute;cones R&aacute;pidos:</strong><br />
-</p>
-<table width="612" border="0" cellpadding="2" cellspacing="0">
-  <tr>
-    <td width="25"><div align="center"><img src="images/icons/icon_alterar.png" width="16" height="16" border="0" /></div></td>
-    <td width="579">Alterar Pedido de Compra</td>
-  </tr>
-  <tr>
-    <td><div align="center"> <img src="images/icons/icon_excluir.png" width="16" height="16" border="0" /></div></td>
-    <td>Excluir Pedido de Compra  </td>
-  </tr>
-  
-  <tr>
-  <td><div align="center"><img src="images/icons/icon_imprimir.png" alt="" title="" border="0" /></div></td>
-  <td>Imprimir Pedido de Compras</td>
-  </tr>
-  <tr>
-    <td><div align="center"><img src="images/icons/icon_visualizar.png" alt="Visualizar" width="16" height="16" border="0" /></div></td>
-    <td>Visualizar Pedido de Compra</td>
-  </tr>
-  
-  <tr>
-    <td><div align="center"><img title="Pedido de Compra dentro do prazo" src="images/icons/icon_balao_green.gif" /></div></td>
-    <td>Pedido de Compra com todos os itens dentro do prazo</td>
-  </tr>
-  <tr>
-    <td><div align="center"><img title="Pedido de Compra vencido" src="images/icons/icon_balao_red.gif" /></div></td>
-    <td>Pedido de Compra com item(ns) fora  do prazo para entrega</td>
-  </tr>
-<tr>
-    <td><div align="center"><img title="Pedido de Compra Finalizado e Entregue" src="images/icons/icon_verificado.gif" width="20" height="19" /></div></td>
-    <td>Pedido de Compra com todos os itens entregues</td>
-  </tr>
-</table>
+    function showDetails() {
+        title.textContent = orderTitle;
+        body.hidden = false;
+        frame.hidden = back.hidden = print.hidden = true;
+        print.disabled = true;
+        frame.removeAttribute('src');
+    }
 
-<%
-	Else
-	%>
-    <div align="center" class="msgGrande">
-    	Nenhum Pedido de Compra encontrado!</div>
-    <%End if
-	
-	rs.Close
-	Set rs=Nothing
-	
-	FecharConexao()
-	%>
-    <br />
-	<br />
-	<br />
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+    document.querySelectorAll('.purchase-order-link').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var cells = button.closest('tr').cells;
+            var orderNumber = button.querySelector('.purchase-order-number').textContent.trim();
+            orderTitle = 'Pedido ' + orderNumber;
+            fields.replaceChildren();
+            for (var i = 0; i < cells.length - 1; i++) {
+                var field = document.createElement('div');
+                var label = document.createElement('dt');
+                var value = document.createElement('dd');
+                label.textContent = cells[i].dataset.label;
+                value.textContent = i === 0
+                    ? orderNumber + (cells[i].querySelector('.purchase-manual') ? ' (manual)' : '')
+                    : cells[i].textContent.trim();
+                field.append(label, value);
+                fields.appendChild(field);
+            }
+            actions.replaceChildren(cells[cells.length - 1].firstElementChild.cloneNode(true));
+            showDetails();
+            dialog.showModal();
+        });
+    });
+
+    document.querySelectorAll('.purchase-row').forEach(function (row) {
+        row.addEventListener('click', function (event) {
+            if (!event.target.closest('a, button, input, select') && !window.getSelection().toString()) {
+                var button = row.querySelector('.purchase-order-link');
+                button.focus();
+                button.click();
+            }
+        });
+    });
+
+    actions.addEventListener('click', function (event) {
+        var link = event.target.closest('[data-purchase-print]');
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        var url = new URL(link.href);
+        url.searchParams.set('modal', '1');
+        title.textContent = orderTitle + ' | Prévia de impressão';
+        body.hidden = true;
+        frame.hidden = back.hidden = print.hidden = false;
+        print.disabled = true;
+        frame.src = url.href;
+        back.focus();
+    });
+    frame.addEventListener('load', function () {
+        print.disabled = frame.hidden || !frame.contentDocument ||
+            !frame.contentDocument.querySelector('[data-purchase-report]');
+    });
+    back.addEventListener('click', function () {
+        showDetails();
+        var link = actions.querySelector('[data-purchase-print]');
+        if (link) link.focus();
+    });
+    print.addEventListener('click', function () { frame.contentWindow.print(); });
+    dialog.addEventListener('close', showDetails);
+})();
+</script>
 </body>
 </html>
