@@ -439,10 +439,12 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 <link rel="stylesheet" href="css/dashboard.css" />
 <style>
 .ppv-page .ppv-main { max-width: 1680px; }
-.ppv-page .ppv-module { margin-bottom: 22px; }
-.ppv-page .subMenu { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; line-height: 2.6; }
-.ppv-page .subMenu a { display: inline-block; color: #53566b; text-decoration: none; padding: 0 8px; }
-.ppv-page .subMenu a[href="ppv_ordens_servico.asp"] { background: #f9eaf2; color: #9e125c; border-radius: 6px; font-weight: 700; }
+.ppv-page .ppv-module { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.ppv-page .ppv-module a, .ppv-page .ppv-menu-unavailable { display: inline-block; padding: 7px 10px; border-radius: 6px; overflow-wrap: anywhere; }
+.ppv-page .ppv-module a { color: #53566b; text-decoration: none; }
+.ppv-page .ppv-module a:hover, .ppv-page .ppv-module a[aria-current="page"] { background: #f9eaf2; color: #9e125c; }
+.ppv-page .ppv-menu-unavailable { color: #64677b; background: #f5f5f8; }
+.ppv-page .ppv-menu-unavailable small { white-space: nowrap; }
 .ppv-page .ppv-filters { height: auto; margin-bottom: 24px; }
 .ppv-page .ppv-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 18px 0; align-items: end; }
 .ppv-page .ppv-fields label { display: block; font-weight: 600; margin-bottom: 6px; color: #44485b; }
@@ -467,9 +469,10 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .ppv-page .ppv-badge { display: inline-block; border-radius: 999px; padding: 4px 9px; font-weight: 650; white-space: normal; }
 .ppv-page .ppv-status-date { margin-top: 6px; color: #53566b; }
 .ppv-page .ppv-status-date summary { cursor: pointer; }
-.ppv-page .ppv-badge.late { background: #fbe7ed; color: #9b2044; }
-.ppv-page .ppv-badge.today { background: #fff1d6; color: #785100; }
-.ppv-page .ppv-badge.on-time { background: #e4f4ec; color: #215d44; }
+.ppv-page .ppv-badge.late, .ppv-page .ppv-status.late { background: #fbe7ed; color: #9b2044; }
+.ppv-page .ppv-badge.today, .ppv-page .ppv-status.today { background: #fff1d6; color: #785100; }
+.ppv-page .ppv-status.dispatched { background: #e6effc; color: #244c80; }
+.ppv-page .ppv-badge.on-time, .ppv-page .ppv-status.on-time { background: #e4f4ec; color: #215d44; }
 .ppv-page .topbar-actions { flex-wrap: wrap; }
 .ppv-page .topbar-actions .user-name { display: inline; }
 
@@ -520,7 +523,33 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
       <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
       <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
       <nav class="ppv-module" aria-label="Produ&ccedil;&atilde;o p&oacute;s-venda">
-      <!-- #include file="includes/classe_modulo_ppv_menu.asp" -->
+        <%
+        Dim ppvBaseMenu, ppvLinksMenu, ppvRotulosMenu, ppvPermissoesMenu, ppvItemMenu
+        Dim ppvPodeEditarEtapas, ppvPodeTriagemInicial, ppvPodeDespacho, ppvPodeInserirOS
+        ppvBaseMenu = Request.ServerVariables("SCRIPT_NAME")
+        ppvBaseMenu = Left(ppvBaseMenu, InStrRev(ppvBaseMenu, "/"))
+        AbrirConexao()
+        ppvPodeEditarEtapas = validaUsuario(2,,54,true)
+        ppvPodeTriagemInicial = validaUsuario(2,,52,true)
+        ppvPodeDespacho = validaUsuario(2,,53,true)
+        ppvPodeInserirOS = validaUsuario(2,,58,true)
+        FecharConexao()
+
+        ppvLinksMenu = Array("ppv_ordens_servico.asp", "ppv_produtos_etapas.asp", _
+                            "ppv_ordens_servico_triagem_inicial.asp", "ppv_ordens_servico_triagem_despacho.asp", _
+                            "ppv_ordens_servico_triagem_entrega.asp", "ppv_ordens_servico_os_manual_origem_vendas.asp", _
+                            "ppv_ordens_servico_triagem_entrega_correios.asp")
+        ppvRotulosMenu = Array("Ordens de Servi&ccedil;o", "Produtos Etapas", "Triagem Inicial", "Triagem Despacho", _
+                              "Triagem Entrega", "Inser&ccedil;&atilde;o de OS Manual com Origem em Pedido", "Retorno Correios")
+        ppvPermissoesMenu = Array(True, ppvPodeEditarEtapas, ppvPodeTriagemInicial, ppvPodeDespacho, _
+                                  ppvPodeDespacho, ppvPodeInserirOS, ppvPodeDespacho)
+        For ppvItemMenu = 0 To UBound(ppvLinksMenu)
+            If ppvPermissoesMenu(ppvItemMenu) Then%>
+                <a href="<%=Server.HTMLEncode(ppvBaseMenu & ppvLinksMenu(ppvItemMenu))%>"<%If ppvItemMenu = 0 Then%> aria-current="page"<%End If%>><%=ppvRotulosMenu(ppvItemMenu)%></a>
+            <%Else%>
+                <span class="ppv-menu-unavailable"><%=ppvRotulosMenu(ppvItemMenu)%> <small>Sem acesso</small></span>
+            <%End If
+        Next%>
       </nav>
  <%
 	Dim sucesso, codmsg
@@ -820,17 +849,23 @@ sql = 	" SELECT "&_
                             <%End If%>
                         </div>
                     </td>
-                    <td data-label="Status"><div align="center"><span class="ppv-status"><%
-                    Select Case CStr(rs3("status_ordem_servico"))
-                        Case "1": Response.Write "Em andamento"
-                        Case "2": Response.Write "Aguardando despacho"
-                        Case "3": Response.Write "Despachada"
-                        Case "4": Response.Write "Entregue"
-                        Case "99": Response.Write "Cancelada"
-                        Case Else: Response.Write Server.HTMLEncode(rs3("status_ordem_servico") & "")
+                    <td data-label="Status"><div align="center">
+                    <%
+                    Dim ppvStatus, ppvTextoStatus, ppvCorStatus
+                    ppvStatus = CStr(rs3("status_ordem_servico"))
+                    ppvCorStatus = ""
+                    Select Case ppvStatus
+                        Case "1": ppvTextoStatus = "Em andamento"
+                        Case "2": ppvTextoStatus = "Aguardando despacho": ppvCorStatus = "today"
+                        Case "3": ppvTextoStatus = "Despachada": ppvCorStatus = "dispatched"
+                        Case "4": ppvTextoStatus = "Entregue": ppvCorStatus = "on-time"
+                        Case "99": ppvTextoStatus = "Cancelada": ppvCorStatus = "late"
+                        Case Else: ppvTextoStatus = Server.HTMLEncode(ppvStatus)
                     End Select
-                    %></span></div></td>
-														<td data-label="A&#231;&#245;es"><div align="center">
+                    %>
+                    <span class="ppv-status <%=ppvCorStatus%>"><%=ppvTextoStatus%></span>
+                    </div></td>
+                    <td data-label="A&#231;&#245;es"><div align="center">
 																
 																<table border="0" cellspacing="0" cellpadding="2">
 				  <tr>
@@ -849,8 +884,7 @@ sql = 	" SELECT "&_
 														<td data-label="Situa&#231;&#227;o do prazo">
 														<div align="center">
 															<%
-                    Dim ppvStatus, ppvDataStatus, ppvRotuloData
-                    ppvStatus = CStr(rs3("status_ordem_servico"))
+                    Dim ppvDataStatus, ppvRotuloData
                     ppvDataStatus = rs3("ppv_data_status").Value
                     ppvRotuloData = ""
 
