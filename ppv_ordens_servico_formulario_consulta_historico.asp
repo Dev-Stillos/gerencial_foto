@@ -1,5 +1,7 @@
 			
 <%
+Dim historyReportMode
+historyReportMode = (Request.QueryString("modo") = "relatorio")
 Dim calendario_necessario
 calendario_necessario = "NÃO"
 %>
@@ -33,6 +35,19 @@ body.os-history { margin:0; padding:clamp(12px,2vw,20px); background:#fff; color
 .os-history .history-empty { margin:12px 0; color:#615b6e; }
 .os-history .history-help { margin-top:12px; color:#615b6e; font-size:12px; }
 .os-history .history-help summary { cursor:pointer; font-weight:650; }
+ .history-report-heading { position:relative; border-bottom:2px solid #9e125c; padding-bottom:16px; margin-bottom:16px; }
+.history-report-heading h1 { margin:8px 0; font:700 23px/1.3 system-ui,sans-serif; color:#292738; }
+.history-report-heading p { margin:0 0 12px; color:#615b6e; }
+.history-brand { color:#9e125c; font-weight:700; font-size:12px; }
+@page { size:A4 portrait; margin:15mm; }
+@media print {
+    html, body.os-history { background:#fff; margin:0; padding:0; width:auto; color:#292738; font-size:11pt; }
+    .history-compose, .history-help, .history-entry .history-button, .report-print, .msgExcluir { display:none !important; }
+    .os-history .history-entry { background:#faf8fc; border:1px solid #e0d9e8; break-inside:avoid; page-break-inside:avoid; box-shadow:none; }
+    .os-history .history-meta { break-after:avoid; page-break-after:avoid; }
+    .os-history, .os-history * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .history-report-heading h1 { font-size:18pt; }
+}
 </style>
 <!-- #include virtual="gerencial_foto/includes/xqrtopqqetyynmkgfdconexao.asp" -->
 <!-- #include virtual="gerencial_foto/includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
@@ -194,6 +209,14 @@ setTimeout("parent.submenu.comandoVisualizar()",1)
 </script>
 <%End If%>
 
+<% If historyReportMode Then %>
+<header class="history-report-heading">
+    <div class="history-brand">Grupo Stillos &middot; Gerencial Foto</div>
+    <h1>Hist&oacute;rico da ordem de servi&ccedil;o</h1>
+    <p>OS <strong><%=Server.HTMLEncode(cod_ordem_servico & "")%></strong> &middot; Emitido em <%=Now()%></p>
+    <button type="button" class="history-button report-print" onclick="window.print()">Imprimir hist&oacute;rico</button>
+</header>
+<% End If %>
 <form action='<%=actionformulario%>?comando=<%=comando%>&cod_ordem_servico=<%=cod_ordem_servico%>' name='FORMULARIO_PADRAO' onsubmit='return validaFormMaster()' method='post'>
 <%
 AbrirConexao()
@@ -218,7 +241,7 @@ AbrirConexao()
 	Set rs=objConexao.Execute("Select TB_ORDENS_SERVICO_HISTORICO.*, TB_ORDENS_SERVICO_ETAPAS.numero_etapa From TB_ORDENS_SERVICO_ETAPAS inner join TB_ORDENS_SERVICO_HISTORICO on (TB_ORDENS_SERVICO_ETAPAS.cod_ordem_servico_etapa = TB_ORDENS_SERVICO_HISTORICO.cod_ordem_servico_etapa) Where TB_ORDENS_SERVICO_HISTORICO.cod_ordem_servico = '"&cod_ordem_servico&"' order by TB_ORDENS_SERVICO_HISTORICO.data_cadastro desc")
 	%>
 	
-<% If int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2 Then %>
+<% If Not historyReportMode And (int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2) Then %>
     <div class="history-compose">
         <label for="os-history-text">Anota&ccedil;&atilde;o da OS</label>
         <textarea id="os-history-text" rows="3" name="DESCRICAO" onkeydown="textCounter(this.form.DESCRICAO,this.form.charRestantes_DESCRICAO,3000);" onkeyup="textCounter(this.form.DESCRICAO,this.form.charRestantes_DESCRICAO,3000);"><%=Server.HTMLEncode(DESCRICAO & "")%></textarea>
@@ -253,7 +276,7 @@ AbrirConexao()
             <span><%=rs("data_cadastro")%></span>
         </div>
         <div class="history-text"><%=DESCRICAO%></div>
-        <% If int(rs("cod_usuario")) = Session("cod_usuario") and (int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2) Then %>
+        <% If Not historyReportMode And int(rs("cod_usuario")) = Session("cod_usuario") and (int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2) Then %>
             <a class="history-button history-danger" href="ppv_ordens_servico_formulario_consulta_historico.asp?comando=excluir&amp;id=<%=rs(0)%>&amp;cod_ordem_servico=<%=cod_ordem_servico%>">Excluir anota&ccedil;&atilde;o</a>
         <% End If %>
     </article>
@@ -265,10 +288,12 @@ AbrirConexao()
         <p class="history-empty">Nenhuma anota&ccedil;&atilde;o registrada nesta OS.</p>
     <% End If %>
 
+    <% If Not historyReportMode Then %>
     <details class="history-help">
         <summary>Regras do hist&oacute;rico</summary>
         <p>O registro de anota&ccedil;&otilde;es est&aacute; dispon&iacute;vel enquanto a OS est&aacute; em andamento ou aguardando despacho. A exclus&atilde;o &eacute; permitida ao autor da anota&ccedil;&atilde;o nesses mesmos status.</p>
     </details>
+    <% End If %>
 
 <%	rs.Close
 	Set rs=Nothing
