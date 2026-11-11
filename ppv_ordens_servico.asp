@@ -13,7 +13,7 @@ ppvSqlEntrega = "(SELECT MAX(entrega.data) FROM TB_PEDIDOS_ITENS_ENTREGUES entre
                 "WHERE entrega.cod_ordem_servico = VW_TB_ORDENS_SERVICO.cod_ordem_servico)"
 ppvSqlPrazoGeral = "(CASE WHEN status_ordem_servico = 4 THEN DATEDIFF(" & ppvSqlEntrega & ", prazo_geral) " & _
                    "WHEN status_ordem_servico IN (1, 2, 3) THEN DATEDIFF(CURDATE(), prazo_geral) END)"
-ppvSqlPrazoEtapa = "COALESCE(diferenca_etapa, DATEDIFF(CURDATE(), prazo_limite))"
+ppvSqlPrazoEtapa = "COALESCE(DATEDIFF(CURDATE(), prazo_limite), diferenca_etapa)"
 
 sqlOrderBy = "cod_contrato, nome_formando"
 busca_cod_ordem_servico = Cstr(""&Request.QueryString("cod_ordem_servico"))
@@ -804,7 +804,24 @@ sql = 	" SELECT "&_
 														<td data-label="Data de in&#237;cio"><div align="center"><%=ArrumaData(rs3("data_inicio"))%></div></td>
 														<td data-label="Prazo da etapa"><div align="center"><%=ArrumaData(rs3("prazo_limite"))%></div></td>
 														<td data-label="Data de cadastro"><div align="center"><%=ArrumaData(rs3("data_cadastrado"))%></div></td>
-														<td data-label="Prazo geral"><div align="center"><%=ArrumaData(rs3("prazo_geral"))%></div></td>
+														<td data-label="Prazo geral">
+                        <div align="center">
+                            <%=ArrumaData(rs3("prazo_geral"))%>
+                            <%If CStr(rs3("status_ordem_servico")) = "1" Then
+                                Dim ppvDiasGeraisEmAndamento
+                                ppvDiasGeraisEmAndamento = rs3("ppv_dias_prazo_geral").Value
+                                If Not IsNumeric(ppvDiasGeraisEmAndamento) Then%>
+                                    <div class="text-muted">Prazo geral indispon&iacute;vel</div>
+                                <%ElseIf CDbl(ppvDiasGeraisEmAndamento) > 0 Then%>
+                                    <div><span class="ppv-badge late">Atraso geral &middot; <%=ppvDiasGeraisEmAndamento%> d</span></div>
+                                <%ElseIf CDbl(ppvDiasGeraisEmAndamento) = 0 Then%>
+                                    <div><span class="ppv-badge today">Prazo geral vence hoje</span></div>
+                                <%Else%>
+                                    <div><span class="ppv-badge on-time">Prazo geral em dia</span></div>
+                                <%End If
+                            End If%>
+                        </div>
+                    </td>
                     <td data-label="Status"><div align="center"><span class="ppv-status"><%
                     Select Case CStr(rs3("status_ordem_servico"))
                         Case "1": Response.Write "Em andamento"
