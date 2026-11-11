@@ -500,6 +500,25 @@ campo.value = vr.substr( 0, tam - 14 ) + "." + vr.substr( tam - 14, 3 ) + "." + 
 .ppv-page .dashboard-nav a[href="ppv_ordens_servico.asp"] { background: #b20b61; color: #fff; font-weight: 600; }
 @media(max-width: 1250px) { .ppv-page .ppv-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media(max-width: 540px) { .ppv-page .ppv-fields { grid-template-columns: minmax(0, 1fr); } }
+.ppv-page .ppv-customer { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+@media (max-width: 1250px) {
+    .ppv-page .ppv-scroll { overflow: visible; }
+    .ppv-page .ppv-list, .ppv-page .ppv-list > tbody { display: block; min-width: 0; }
+    .ppv-page .ppv-list > thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .ppv-page .ppv-list > tbody > .ppv-group { display: block; }
+    .ppv-page .ppv-list > tbody > .ppv-group > td { display: block; padding: 12px 16px; overflow-wrap: anywhere; }
+    .ppv-page .ppv-list > tbody > .ppv-order { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; padding: 6px 14px 12px; border-bottom: 1px solid var(--line); }
+    .ppv-page .ppv-list > tbody > .ppv-order > td { display: block; width: auto; min-width: 0; padding: 8px 0; overflow-wrap: anywhere; }
+    .ppv-page .ppv-list > tbody > .ppv-order > td.ppv-order-marker { display: none; }
+    .ppv-page .ppv-order > td > div { text-align: left; }
+    .ppv-page .ppv-order > td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 4px; color: #53566b; font-weight: 650; }
+    .ppv-page .ppv-order > td:nth-child(3), .ppv-page .ppv-order > td:nth-child(6) { grid-column: 1 / -1; }
+    .ppv-page .ppv-order > td:nth-child(2) { order: -3; }
+    .ppv-page .ppv-order > td:nth-child(12), .ppv-page .ppv-order > td:nth-child(14) { order: -2; }
+    .ppv-page .ppv-order > td:nth-child(13) { order: -1; }
+    .ppv-page .ppv-order > td:nth-child(13) a { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; }
+    .ppv-page .ppv-status, .ppv-page .ppv-badge { white-space: normal; }
+}
 </style>
 </head>
 <body class="ppv-page">
@@ -733,12 +752,8 @@ If Not rs.Eof Then
 %>
     
 <tr class="ppv-group">
-							<td colspan="14"><table width="650" border="0" cellspacing="0" cellpadding="1">
-                                  <tr>
-                                    <td class="textoMedio"><strong>Pedido #<%=rs("cod_pedido")%></strong></td>
-                                  </tr>
-                                </table></td>
-						  </tr>
+    <td colspan="14"><strong>Pedido #<%=rs("cod_pedido")%></strong></td>
+</tr>
 <%
 sql = 	" SELECT "&_
 		" TB_PEDIDOS_FORMANDOS.COD_FORMANDO, "&_
@@ -763,25 +778,15 @@ sql = 	" SELECT "&_
 				If not rs3.Eof Then
 		%>
 <tr class="ppv-group">
-							<td colspan="14"><table width="650" border="0" cellspacing="0" cellpadding="1">
-                                  <tr>
-                                    <td width="21" class="textoMedio">&nbsp;</td>
-                                    <td width="625">
-                                   
-				  <table cellpadding="0" width="580" cellspacing="0">	
-           												
-                                                  
-                                                            	<tr>
-                                                                <td width="36%"><%=rs2("NOME_FORMANDO")%></td>
-                                                                <td width="15%"><%=rs2("COD_FORMANDO")%>-1</td>
-                                                                <td width="64%"><%=rs2("DESCRICAO")%></td>
-                                                                
-                                                          
-                                                            </table></td>
-                                  </tr>
-                                </table></td>
-						  </tr>
-  
+    <td colspan="14">
+        <div class="ppv-customer">
+            <strong><%=Server.HTMLEncode(rs2("NOME_FORMANDO") & "")%></strong>
+            <span><%=rs2("COD_FORMANDO")%>-1</span>
+            <span><%=Server.HTMLEncode(rs2("DESCRICAO") & "")%></span>
+        </div>
+    </td>
+</tr>
+
 <%
 	   
 	   While not rs3.Eof
@@ -796,20 +801,20 @@ sql = 	" SELECT "&_
 				rs4.Close
 				Set rs4=Nothing  
                 %>        
-				<tr>
-														<td width="4%"><div align="right"><img src="images/icons/seta_superior.gif" width="19" height="15" /></div></td>
-											<td width="8%"><div align="center"><%=moduloPPVOSMascara(rs3("cod_ordem_servico"),"",true)%></div></td>
-														<td><div align="left">
+				<tr class="ppv-order">
+														<td width="4%" class="ppv-order-marker"><div align="right"><img src="images/icons/seta_superior.gif" width="19" height="15" /></div></td>
+											<td width="8%" data-label="OS"><div align="center"><%=moduloPPVOSMascara(rs3("cod_ordem_servico"),"",true)%></div></td>
+														<td data-label="Produto"><div align="left">
 														<%=rs3("nome_produto")%>                                        
 														</div></td>
-														<td><div align="center"><%=rs3("quantidade")%></div></td>
-														<td><div align="center"><%=rs3("numero_etapa")%> / <%=qtd_etapas%></div></td>
-														<td><div align="left"><%=rs3("descricao")%></div></td>
-														<td><div align="left"><%=nomeUsuario(rs3("cod_usuario_responsavel"),true)%></div></td>
-														<td><div align="center"><%=ArrumaData(rs3("data_inicio"))%></div></td>
-														<td><div align="center"><%=ArrumaData(rs3("prazo_limite"))%></div></td>
-														<td><div align="center"><%=ArrumaData(rs3("data_cadastrado"))%></div></td>
-														<td><div align="center">
+														<td data-label="Quantidade"><div align="center"><%=rs3("quantidade")%></div></td>
+														<td data-label="Etapa / Total"><div align="center"><%=rs3("numero_etapa")%> / <%=qtd_etapas%></div></td>
+														<td data-label="Descri&#231;&#227;o"><div align="left"><%=rs3("descricao")%></div></td>
+														<td data-label="Respons&#225;vel"><div align="left"><%=nomeUsuario(rs3("cod_usuario_responsavel"),true)%></div></td>
+														<td data-label="Data de in&#237;cio"><div align="center"><%=ArrumaData(rs3("data_inicio"))%></div></td>
+														<td data-label="Prazo da etapa"><div align="center"><%=ArrumaData(rs3("prazo_limite"))%></div></td>
+														<td data-label="Data de cadastro"><div align="center"><%=ArrumaData(rs3("data_cadastrado"))%></div></td>
+														<td data-label="Prazo geral"><div align="center">
 														<%
 														temp = Cstr(""&rs3("dias_prazo_geral"))
 														temp2 = ""
@@ -832,7 +837,7 @@ sql = 	" SELECT "&_
 														-
 														<%End If%>
 														</div></td>
-														<td><div align="center"><span class="ppv-status"><%
+														<td data-label="Status"><div align="center"><span class="ppv-status"><%
                     Select Case CStr(rs3("status_ordem_servico"))
                         Case "1": Response.Write "Em andamento"
                         Case "2": Response.Write "Aguardando despacho"
@@ -842,7 +847,7 @@ sql = 	" SELECT "&_
                         Case Else: Response.Write Server.HTMLEncode(rs3("status_ordem_servico") & "")
                     End Select
                     %></span></div></td>
-														<td><div align="center">
+														<td data-label="A&#231;&#245;es"><div align="center">
 																
 																<table border="0" cellspacing="0" cellpadding="2">
 				  <tr>
@@ -858,10 +863,16 @@ sql = 	" SELECT "&_
 				</table>
 				
 																	</div></td>
-														<td>
+														<td data-label="Situa&#231;&#227;o do prazo">
 														<div align="center">
-															<%If int(rs3("status_ordem_servico")) = 1 And IsNumeric(rs3("diferenca_etapa")) Then
-                        diferenca = CDbl(rs3("diferenca_etapa"))
+															<%
+                    diferenca = rs3("diferenca_etapa").Value
+                    If CStr(rs3("status_ordem_servico")) <> "1" Then%>
+                        <span class="text-muted">Sem etapa ativa</span>
+                    <%ElseIf Not IsNumeric(diferenca) Then%>
+                        <span class="text-muted">Prazo indispon&iacute;vel</span>
+                    <%Else
+                        diferenca = CDbl(diferenca)
                         If diferenca > 0 Then%>
                             <span class="ppv-badge late">Atrasada &middot; <%=diferenca%> d</span>
                         <%ElseIf diferenca = 0 Then%>
@@ -869,9 +880,7 @@ sql = 	" SELECT "&_
                         <%Else%>
                             <span class="ppv-badge on-time">No prazo &middot; <%=Abs(diferenca)%> d</span>
                         <%End If
-                    Else%>
-                        <span class="text-muted">&mdash;</span>
-                    <%End If%>
+                    End If%>
                     </div>                                        </td>
 											</tr>
                 
