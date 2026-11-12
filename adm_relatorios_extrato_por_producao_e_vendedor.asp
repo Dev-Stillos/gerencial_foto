@@ -2,13 +2,13 @@
 <!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
 <%
 'Session.Timeout=5
-'Valida��o especial para verificar se possui sub-valida��o espec�fica
+'Valida??o especial para verificar se possui sub-valida??o espec?fica
 AbrirConexao()
 	
 	Set rs=objConexao.Execute("Select COD_PERMISSAO_SUB_VALIDACAO From TB_ADM_PERFIS_PAGINAS_HABILITADAS_SUB_VALIDACOES where COD_SUB_VALIDACAO = '31' and cod_perfil = '"&Session("cod_perfil")&"'")
 		
 		If rs.Eof Then
-		'Se Não encontrar ent�o redireciona
+		'Se Nao encontrar ent?o redireciona
 			Session.Abandon()
 			Response.Redirect("index.asp")
 		End If
@@ -19,15 +19,22 @@ AbrirConexao()
 FecharConexao()
 
 Dim COD_PRODUCAO
-COD_PRODUCAO = Request.QueryString("COD_PRODUCAO")
+COD_PRODUCAO = Trim(Request.QueryString("COD_PRODUCAO"))
+Dim producaoCodigo
+Set producaoCodigo = New RegExp
+producaoCodigo.Pattern = "^[0-9]{1,10}$"
+If Not producaoCodigo.Test(COD_PRODUCAO) Then
+    Response.Write "<!doctype html><html lang='pt-BR'><meta charset='iso-8859-1'><main data-report-preview-content><p data-report-error>Selecione uma produ&ccedil;&atilde;o v&aacute;lida.</p><a href='adm_relatorios.asp'>Voltar aos relat&oacute;rios</a></main></html>"
+    Response.End
+End If
 
 AbrirConexao()
 
-'1) Deleta TB TEMPOR�RIA antes de inicias
+'1) Deleta TB TEMPOR?RIA antes de inicias
 objConexao.Execute("DELETE FROM TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES_TEMPORARIA WHERE COD_USUARIO ="&Session("COD_USUARIO"))
 
 
-'2) Seleciona todos os formandos de uma determinada produ��o
+'2) Seleciona todos os formandos de uma determinada produ??o
 Set rs = objConexao.Execute("SELECT TB_FICHAS_IDENTIFICACAO.COD_FORMANDO,TB_FICHAS_IDENTIFICACAO.COD_CONTRATO,TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO,TB_PEDIDOS_FORMANDOS.COD_PEDIDO,TB_PEDIDOS.DATA_VENDA FROM TB_FICHAS_IDENTIFICACAO LEFT JOIN TB_PEDIDOS_FORMANDOS ON TB_FICHAS_IDENTIFICACAO.COD_FORMANDO = TB_PEDIDOS_FORMANDOS.COD_FORMANDO LEFT JOIN TB_PEDIDOS ON TB_PEDIDOS_FORMANDOS.COD_PEDIDO = TB_PEDIDOS.COD_PEDIDO  WHERE TB_FICHAS_IDENTIFICACAO.COD_PRODUCAO = '"&COD_PRODUCAO&"' GROUP BY COD_FORMANDO")
 		
 		Dim ROTINA_COD_FORMANDO, ROTINA_COD_CONTRATO, ROTINA_TIPO, ROTINA_BRINDE, ROTINA_COD_ULTIMO_VENDEDOR_FICHA, ROTINA_VENDIDO, ROTINA_COD_PEDIDO
@@ -38,11 +45,11 @@ Set rs = objConexao.Execute("SELECT TB_FICHAS_IDENTIFICACAO.COD_FORMANDO,TB_FICH
 		ROTINA_COD_CONTRATO = rs("COD_CONTRATO")
 
 		'====================================================
-' GARANTE QUE MOVIMENTAÇÕES EXISTAM (TIPO 0, 1 e 2)
+' GARANTE QUE MOVIMENTACOES EXISTAM (TIPO 0, 1 e 2)
 '====================================================
 Dim existe
 
-'--- TIPO 0 (ÁLBUM FÍSICO) ---
+'--- TIPO 0 (ALBUM FISICO) ---
 sql = "SELECT COD_MOVIMENTACAO FROM TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES " &_
       "WHERE COD_FORMANDO=" & ROTINA_COD_FORMANDO & " AND TIPO=0 LIMIT 1"
 Set rsCheck = objConexao.Execute(sql)
@@ -68,7 +75,7 @@ End If
 
 rsCheck.Close
 
-'--- TIPO 2 (ÁLBUM DIGITAL) ---
+'--- TIPO 2 (ALBUM DIGITAL) ---
 sql = "SELECT COD_MOVIMENTACAO FROM TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES " &_
       "WHERE COD_FORMANDO=" & ROTINA_COD_FORMANDO & " AND TIPO=2 LIMIT 1"
 Set rsCheck = objConexao.Execute(sql)
@@ -84,7 +91,7 @@ Set rsCheck = Nothing
 '====================================================
 
 						
-			'3) Verifica quem foi o �ltimo respons�vel pelo formando
+			'3) Verifica quem foi o ?ltimo respons?vel pelo formando
 			sql = " SELECT COD_VENDEDOR FROM TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES WHERE COD_FORMANDO ="&ROTINA_COD_FORMANDO&_
 				  " AND TIPO = 1 ORDER BY DATA_SAIDA DESC LIMIT 1"
 			Set rs2 = objConexao.Execute(sql)
@@ -94,8 +101,8 @@ Set rsCheck = Nothing
 							ROTINA_COD_ULTIMO_VENDEDOR_FICHA = rs2("COD_VENDEDOR")
 						
 						Else
-							'Se Não encontrar acusa falha
-							Response.Redirect("adm_relatorios.asp?msg=FALHA AO CARREGAR RELATÓRIO, FORMANDO: "&ROTINA_COD_FORMANDO)
+							'Se Nao encontrar acusa falha
+							Response.Redirect("adm_relatorios.asp?msg=FALHA AO CARREGAR O EXTRATO, FORMANDO: "&ROTINA_COD_FORMANDO)
 											
 						End If
 						
@@ -103,20 +110,20 @@ Set rsCheck = Nothing
 			Set rs2 = Nothing
 
 			'4) Verifica quais eram os itens do formando			
-				'Não � necess�rio a ficha, somente produtos
+				'Nao ? necess?rio a ficha, somente produtos
 			sql = " SELECT DISTINCT (TIPO) FROM TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES WHERE COD_FORMANDO = "&rs("COD_FORMANDO")&_
 				  " AND TIPO <> 1 ORDER BY TIPO"
 
 			Set rs2 = objConexao.Execute(sql)
 					
 					While not rs2.Eof
-					'Agora sabendo quais os produtos e o c�d. do �ltimo vendedor, verifica se foi vendido
+					'Agora sabendo quais os produtos e o c?d. do ?ltimo vendedor, verifica se foi vendido
 					
 					ROTINA_TIPO = formatNumber(0&rs2("TIPO"),0)
 							
 							If ROTINA_TIPO = 0 Then
-							'5) Come�a pelo �lbum se est� vendido, �lbum Não ser� considerado como brinde, pois pode ser vendido parcialmente
-									'Pega da pr�pria TB_FICHAS_IDENTIFICAO do formando j� aberta
+							'5) Come?a pelo ?lbum se est? vendido, ?lbum Nao ser? considerado como brinde, pois pode ser vendido parcialmente
+									'Pega da pr?pria TB_FICHAS_IDENTIFICAO do formando j? aberta
 									ROTINA_VENDIDO = 2
 									ROTINA_COD_PEDIDO = 0
 									Set rs3=objConexao.Execute("SELECT IFNULL(TB_PEDIDOS_FORMANDOS.COD_PEDIDO,0) AS VENDIDO FROM TB_FICHAS_IDENTIFICACAO LEFT JOIN TB_PEDIDOS_FORMANDOS ON TB_FICHAS_IDENTIFICACAO.COD_FORMANDO = TB_PEDIDOS_FORMANDOS.COD_FORMANDO LEFT JOIN TB_PEDIDOS ON TB_PEDIDOS_FORMANDOS.COD_PEDIDO = TB_PEDIDOS.COD_PEDIDO WHERE TB_PEDIDOS.FINALIZA_VENDEDOR = 1 AND  TB_FICHAS_IDENTIFICACAO.COD_FORMANDO = "&ROTINA_COD_FORMANDO)
@@ -142,16 +149,16 @@ Set rsCheck = Nothing
 							'6) Se tiver mais verifica junto a tabela 
 								
 							
-							'7)Verifica se Não era de brinde o produto agregado
+							'7)Verifica se Nao era de brinde o produto agregado
 								
-								'Não SER� VERIFICADO OS PRODUTOS AGREGADOS QUE ERAM DE COMISS�O, SEM ANTES
+								'Nao SER? VERIFICADO OS PRODUTOS AGREGADOS QUE ERAM DE COMISS?O, SEM ANTES
 								'FINALIZAR A ROTINA COLOCANDO OS TIPOS NAS TBS QUE FALTAM
 								
 								ROTINA_BRINDE  = 2						
 							'//////////
 							End If
 							
-							'Ap�s isso tudo faz o INSERT NA TB TEMPOR�RIA
+							'Ap?s isso tudo faz o INSERT NA TB TEMPOR?RIA
 							sql = " INSERT INTO TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES_TEMPORARIA (COD_FORMANDO, COD_PRODUCAO, "&_
 								  " COD_CONTRATO, TIPO, BRINDE, COD_ULTIMO_VENDEDOR_FICHA, VENDIDO, COD_USUARIO,COD_PEDIDO) VALUES ("&_
 								  ROTINA_COD_FORMANDO&", "&COD_PRODUCAO&", "&sqlTexto(ROTINA_COD_CONTRATO)&", "&ROTINA_TIPO&", "&ROTINA_BRINDE&", "&_
@@ -189,192 +196,115 @@ Set rs = Nothing
 FecharConexao()
 
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers�o 1.2</title>
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-	<script language="javascript">
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript" language="javascript">
-<!--
-<!--AJUDA F1 E CTRL PARA BUSCA R�PIDA-->
-		
-	function abrir(theURL,winName,features) 
-	{ 
-	  window.open(theURL,winName,features);
-	}
-
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}	
-		
-		
-	
-
-	function buscaIni(){
-	d = document.buscaForm
-	d.busca.focus()
-	d.busca.select();
-	}
-	function mudacorBusca(CAMPO){
-	CAMPO.style.backgroundColor = '#F5ECBA'
-	}
-	function mudacorBusca2(CAMPO){
-	CAMPO.style.backgroundColor = '#FFFFFF'
-	}
-
-	function Verificar()
-	{
-	var tecla=window.event.keyCode;
-	if (tecla==17) {
-		buscaIni();
-	}
-	}
-
-<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-function MM_jumpMenu(targ,selObj,restore){ //v3.0
-	eval(targ+".location='"+selObj.options[selObj.selectedIndex].value+"'");
-	if (restore) selObj.selectedIndex=0;
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extrato de aproveitamento de produ&ccedil;&atilde;o | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+.month-report { max-width:1150px; margin:24px auto; padding:clamp(16px,4vw,36px); background:#fff; border:1px solid #e4dfeb; border-radius:14px; }
+.month-tools,.month-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.month-header { margin:20px 0; padding-bottom:14px; border-bottom:2px solid #b20b61; }
+.month-header p { margin:0; }
+.month-logo { width:150px; padding:10px; border-radius:8px; background:#292b40; }
+.month-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr)); gap:12px; margin:12px 0 16px; }
+.month-kpis > div { padding:12px; border:1px solid #e4dfeb; border-radius:10px; }
+.month-kpis dd { margin:4px 0 0; font-weight:700; font-size:1.15em; }
+.month-scroll { overflow:auto; }
+.month-table { width:100%; min-width:520px; border-collapse:collapse; margin-top:10px; font-variant-numeric:tabular-nums; }
+.month-table td,.month-table th { padding:8px; text-align:right; border-bottom:1px solid #e4dfeb; }
+.month-table th:first-child { text-align:left; }
+.month-table thead,.month-table tfoot { background:#f1edf6; }
+.month-table tbody tr:nth-child(even) { background:#faf9fc; }
+.month-note { margin:14px 0 0; color:#53566b; }
+@media screen { .report-embedded .month-report { margin:12px auto; } }
+.report-signatures { display:flex; flex-wrap:wrap; gap:24px; margin-top:28px; break-inside:avoid; }
+.report-signatures span { flex:1 1 180px; border-top:1px solid #777; padding-top:4px; }
+.month-table .report-text { text-align:left; }
+.month-table th,.month-table td { overflow-wrap:anywhere; }
+[hidden] { display:none !important; }
+.month-report { max-width:1480px; }
+.production-section { margin:20px 0; }
+.production-section h2 { margin-bottom:10px; }
+.production-table { min-width:1020px; }
+.production-table td,.production-table th { text-align:center; }
+.production-table td table { width:100%; border-collapse:collapse; }
+.production-table td table td { padding:3px; }
+.production-products th { font-weight:500; overflow-wrap:anywhere; }
+.production-products td { width:1%; white-space:nowrap; }
+.production-table thead td { background:#f1edf6; }
+.production-table thead strong { font-weight:650; }
+.production-rate { display:grid; gap:4px; }
+.production-rate meter { width:100%; min-width:48px; height:12px; }
+.production-filter { display:grid; gap:5px; width:min(100%,420px); margin:0 0 12px; }
+.production-filter select { width:100%; min-width:0; }
+.production-orders { color:#a31962; padding:0; border:0; background:none; font:inherit; text-decoration:underline; text-align:left; }
+.production-dialog { width:min(480px,calc(100% - 24px)); padding:20px; border:1px solid #e4dfeb; border-radius:12px; }
+.production-dialog::backdrop { background:#24273899; }
+.production-dialog p { overflow-wrap:anywhere; }
+.production-notes { color:#53566b; font-size:.9em; }
+.production-cell-label { display:none; }
+.production-table > thead :is(th,td) { overflow-wrap:normal; }
+.production-table > tbody > tr > td { vertical-align:top; }
+@media screen and (max-width:1150px) {
+  .production-section .month-scroll { overflow:visible; }
+  .production-table { display:block; min-width:0; }
+  .production-table > thead { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); }
+  .production-table > tbody { display:grid; gap:12px; }
+  .production-table > tbody > tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); background:#fff; border:1px solid #e4dfeb; border-radius:10px; padding:4px 10px; }
+  .production-table > tbody > tr > td { min-width:0; text-align:left; padding:9px 6px; }
+  .production-table > tbody > tr > td > div[align] { text-align:left; }
+  .production-table .production-wide { grid-column:1 / -1; }
+  .production-cell-label { display:block; color:#53566b; font-size:.85em; font-weight:650; margin-bottom:4px; }
+  .production-table .production-rate { max-width:160px; }
+  .production-table .production-products { max-width:380px; }
+  .production-table .production-products th { text-align:left; }
 }
-//-->
-
-function cadastraVendedor(valor){
-	alert(valor);
+@page { size:A4 landscape; margin:10mm; }
+@media print {
+  body { margin:0; background:#fff; color:#111; font-size:10pt; line-height:1.3; }
+  .month-report { margin:0; padding:6mm 7mm; max-width:none; border:0; border-radius:0; }
+  .month-tools,.production-filter,.production-dialog { display:none; }
+  .month-header { margin:0 0 5mm; padding-bottom:3mm; border-bottom:1px solid #555; break-after:avoid; }
+  .month-header h1 { font-size:16pt; margin:0 0 1mm; }
+  .month-logo { width:30mm; padding:0; background:transparent; filter:brightness(0); }
+  .month-scroll { overflow:visible; }
+  .production-orders { color:inherit; text-decoration:none; }
+  .production-rate meter { display:none; }
+  .production-section { margin:4mm 0; }
+  .month-table { min-width:0; width:100%; table-layout:fixed; margin-top:0; }
+  .month-table th,.month-table td { padding:1.8mm 1.5mm; border-bottom:1px solid #ccc; }
+  .month-table thead { display:table-header-group; }
+  .month-table thead th { border-top:1px solid #777; border-bottom:1px solid #777; }
+  .month-table tfoot { display:table-row-group; }
+  .month-table tr,.month-kpis,.report-signatures { break-inside:avoid; }
+  .month-kpis { display:flex; flex-wrap:wrap; gap:2mm 6mm; margin:0 0 4mm; }
+  .month-kpis > div { padding:0; border:0; flex:1 1 auto; }
+  .month-kpis dt { font-size:9pt; }
+  .month-kpis dd { font-size:10pt; margin:1mm 0 0; }
+  .report-signatures { margin:12mm 0 0; gap:10mm; }
+  .report-signatures span { flex:1 1 0; font-size:9pt; }
 }
-</script>
-		
-	<script type="text/javascript">
-	DHTMLSuite.include("calendar");
-	</script>
-	<script type="text/javascript">
-	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
-	
-		 
-	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
-	
-	function myOtherFunction()
-	{
-		
-		
-	}
-	function pickDate(buttonObj,inputObject)
-	{
-		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
-		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
-		if(calendarObjForForm.isVisible()){
-			calendarObjForForm.hide();
-		}else{
-			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
-			calendarObjForForm.display();
-		}		
-	}	
-	/* inputArray is an associative array with the properties
-	year
-	month
-	day
-	hour
-	minute
-	calendarRef - Reference to the DHTMLSuite.calendar object.
-	*/
-	function getDateFromCalendar(inputArray)
-	{
-		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
-		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
-//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
-		calendarObjForForm.hide();	
-		
-	}	
-	function popUp(URL){
-	win=window.open(URL,"","width=550,height=350,scrollbars=yes")
-	var text = "Se a janela Não abrir desbloquei os Pop-ups!";
-	if(win == null) { alert(text); return; }
-	win.moveTo(350,150);
-}	
-	</script>
-    <style type="text/css">
-<!--
-.style1 {color: #006600}
-.style2 {color: #CC0000}
-.style3 {font-size: 10px}
--->
-    </style>
+</style>
 </head>
-
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  
-   BTN_IMPRIMIR_LINK = "href=""javascript:popUp('adm_relatorios_extrato_vendedores_IMPRIMIR.asp?COD_VENDEDOR="&COD_VENDEDOR&"&DATA_INI="&sqlData(DATA_INI)&"&DATA_FIM="&sqlData(DATA_FIM)&"&FILTRO_ALBUNS="&FILTRO_ALBUNS&"&FILTRO_AGREGADOS="&FILTRO_AGREGADOS&"&CHEQ_DEVOLVIDOS="&CHEQ_DEVOLVIDOS&"')"""
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-	
-	  <h2>Relatórios - Extrato de Produções        (mesmo sem correção)<br />
-	    
-	    
-          <br />
-      </h2>
-	  <div align="center" class="msg"><%=Request.QueryString("msg")%></div>
-	  <%
+<body<%If Request.QueryString("modal") = "1" Then%> class="report-embedded"<%End If%>>
+<main class="month-report" data-report-preview-content>
+  <%If Request.QueryString("modal") <> "1" Then%>
+  <nav class="month-tools" aria-label="A&ccedil;&otilde;es do relat&oacute;rio">
+    <a class="btn btn-outline-secondary" href="adm_relatorios.asp">Voltar aos relat&oacute;rios</a>
+    <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir / Salvar PDF</button>
+  </nav>
+<%End If%>
+  <header class="month-header">
+    <div><h1>Extrato de aproveitamento de produ&ccedil;&atilde;o</h1><p><%=Server.HTMLEncode(COD_PRODUCAO & " - " & DESCRICAO)%></p></div>
+    <img class="month-logo" src="images/logoparafundopreto.png" alt="Stillos">
+  </header>
+<%
 		AbrirConexao()		
-		Dim rs, sql, i, produtos(100,5)
+		Dim rs, sql, i, produtos()
 		i = 0
 		sql = "SELECT * FROM TB_PRODUCAO WHERE COD_PRODUCAO ="&COD_PRODUCAO
 		Dim DESCRICAO, DATA_FINALIZADA, PRODUTOS_AGREDADOS
@@ -385,17 +315,14 @@ function cadastraVendedor(valor){
 		If not rs.Eof Then
 
 		%>
-        <span class="textoMaior"><strong><%=COD_PRODUCAO%> - <%=DESCRICAO%></strong></span>
-      <table width="100%" 
-		      border="1" align="center"
-					cellpadding="5" 
-					style="border-collapse:collapse">
+        <section class="production-section"><h2>Resumo da produ&ccedil;&atilde;o</h2>
+<div class="month-scroll" tabindex="0" role="group" aria-label="Resumo da produ&ccedil;&atilde;o"><table class="month-table production-table production-summary"><thead>
 <tr bgcolor="#DDDDDD">
                 <td width="14%" height="28" rowspan="2"><div align="center"><strong>Contratos</strong></div></td>
                 <td width="15%" rowspan="2"><div align="center"><strong>Data Finalizada / Lotes</strong></div></td>
-                <td colspan="2"><div align="center"><strong>Qtd. Fotos - Produção</strong></div></td>
-                <td colspan="2"><div align="center"><strong>Qtd. Fotos - Albuns</strong></div></td>                
-                <td colspan="4"><div align="center"><strong>Álbuns</strong></div></td>
+                <td colspan="2"><div align="center"><strong>Fotos da produ&ccedil;&atilde;o</strong></div></td>
+                <td colspan="2"><div align="center"><strong>Fotos dos &aacute;lbuns</strong></div></td>                
+                <td colspan="4"><div align="center"><strong>&Aacute;lbuns</strong></div></td>
                 <td width="32%" rowspan="2"><div align="center"><strong>Venda de Produtos       </strong></div>
   
                   <%
@@ -403,14 +330,16 @@ function cadastraVendedor(valor){
 				While not rs4.Eof
 					
 						
-						PRODUTOS(i,0) = rs4("COD_PRODUTO")
-						PRODUTOS(i,1) = rs4("NOME_PRODUTO")
-						PRODUTOS(i,2) = rs4("QUANTIDADE")						
+						ReDim Preserve produtos(2,i)
+                        PRODUTOS(0,i) = rs4("COD_PRODUTO")
+						PRODUTOS(1,i) = rs4("NOME_PRODUTO")
+						PRODUTOS(2,i) = rs4("QUANTIDADE")						
 						i=i+1
 					rs4.MoveNext()
 					Wend
 					
-				  rs4.Close
+				  QTD_PRODUTOS = i
+                  rs4.Close
 				  Set rs4=Nothing
 				  %>
 &nbsp;  </td>
@@ -418,7 +347,7 @@ function cadastraVendedor(valor){
 </tr>
 <tr bgcolor="#DDDDDD">
   <td width="9%"><div align="center"><strong>Produzidas</strong></div></td>
-  <td width="9%"><div align="center"><strong>Não Vendidas</strong></div></td>
+  <td width="9%"><div align="center"><strong>N&atilde;o vendidas</strong></div></td>
   <td width="9%"><div align="center"><strong>N&atilde;o Vendidas</strong></div></td>
   <td width="6%"><div align="center"><strong>Vendidas</strong></div></td>
 <%
@@ -446,10 +375,10 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
   <td width="4%"><div align="center" class="style3">Qtd. Total </div></td>
   <td width="5%"><div align="center" class="style3">Qtd. Vendida </div></td>
   <td width="5%"><div align="left" class="MensagemFicha style3">
-    <div align="center">Qtd. Não Vendida </div>
+    <div align="center">Qtd. n&atilde;o vendida </div>
   </div></td>
-  <td width="4%"><div align="center" class="style3">Aprov. Álbuns</div></td>
-  </tr>
+  <td width="4%"><div align="center" class="style3">Aproveitamento</div></td>
+  </tr></thead><tbody>
 		<%
 		Dim ou, au
 		ou = 0
@@ -461,13 +390,13 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 		'Response.Write(DATA_FINALIZADA)
 		PRODUTOS_AGREDADOS	= formatNumber(0&rs("PRODUTOS_AGREDADOS"),0)
 		
-		'Qtd total de Álbuns
+		'Qtd total de Albuns
 		Set rs2 = objConexao.Execute("SELECT COD_PRODUCAO FROM TB_FICHAS_IDENTIFICACAO WHERE COD_PRODUCAO = "&COD_PRODUCAO,QTD_ALBUNS)
 		
 		rs2.Close
 		Set rs2 = Nothing
 		
-		'Qtd Álbuns Vendidos, nao precisa estar conferido
+		'Qtd Albuns Vendidos, nao precisa estar conferido
 		Set rs3 = objConexao.Execute("SELECT TB_FICHAS_IDENTIFICACAO.COD_FORMANDO,TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO,TB_PEDIDOS_FORMANDOS.COD_PEDIDO,TB_PEDIDOS.DATA_VENDA,IF(TB_PEDIDOS_FORMANDOS.COD_PEDIDO is NULL,0,1) AS QTD_VENDIDO FROM TB_FICHAS_IDENTIFICACAO LEFT JOIN TB_PEDIDOS_FORMANDOS ON TB_FICHAS_IDENTIFICACAO.COD_FORMANDO = TB_PEDIDOS_FORMANDOS.COD_FORMANDO LEFT JOIN TB_PEDIDOS ON TB_PEDIDOS_FORMANDOS.COD_PEDIDO = TB_PEDIDOS.COD_PEDIDO WHERE TB_FICHAS_IDENTIFICACAO.COD_PRODUCAO = '"&COD_PRODUCAO&"' and IF(TB_PEDIDOS_FORMANDOS.COD_PEDIDO is NULL,0,1) = 1 GROUP BY COD_FORMANDO",QTD_ALBUNS_VENDIDOS)
 				
 		rs3.Close
@@ -486,7 +415,7 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 		rs5.Close
 		Set rs5 = Nothing
 		
-		'M�dia de Quanto Falta
+		'M?dia de Quanto Falta
 		sql = "SELECT SUM(INICIAL) AS TOTAL_INICIAL FROM TB_FICHAS_IDENTIFICACAO WHERE COD_PRODUCAO = "&COD_PRODUCAO&" AND VENDIDO = 2 GROUP BY COD_PRODUCAO"
 		
 		Dim QTD_FOTOS_NAO_VENDIDAS
@@ -564,7 +493,8 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 			
 		Dim APROVEITAMENTO
 		
-		APROVEITAMENTO = formatNumber(100-((TOTAL_NAO_ARRECADADO_GERAL)*100/(TOTAL_ARRECADADO+TOTAL_NAO_ARRECADADO_GERAL)),1)
+		APROVEITAMENTO = 0
+		If (TOTAL_ARRECADADO + TOTAL_NAO_ARRECADADO_GERAL) <> 0 Then APROVEITAMENTO = FormatNumber(100 * TOTAL_ARRECADADO / (TOTAL_ARRECADADO + TOTAL_NAO_ARRECADADO_GERAL), 1)
 		
 		'/////////////////////////////////////////////
 		'FOTOS
@@ -610,7 +540,7 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 			Set rs5=Nothing
             
             TOTAL_FOTO_PRODUCAO = 0
-            'Total de fotos na produ��o
+            'Total de fotos na produ??o
 				Set rs5=objConexao.Execute("SELECT SUM(INICIAL) AS INICIAL FROM TB_FICHAS_IDENTIFICACAO WHERE COD_PRODUCAO = "&COD_PRODUCAO)
 				If not rs5.Eof Then
 					TOTAL_FOTO_PRODUCAO = rs5("INICIAL")
@@ -629,7 +559,7 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 		
 		%>     
 				<tr bgcolor="whitesmoke">
-		          <td style="border-bottom:#666666 solid 2px">
+		          <td><span class="production-cell-label" aria-hidden="true">Contratos</span>
                     <div align="center">
                       <%
 			Dim rsContratos, qtdContratos, CONTRATOS_ULT
@@ -680,53 +610,53 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 			'Response.Write(CONTRATOS_TRATAMENTO)
 			%>                  
                     </div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><%=ArrumaData(DATA_FINALIZADA)%></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><%=TOTAL_FOTO_PRODUCAO%></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><%=TOTAL_FOTO_PRODUCAO_PARADA%></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><%=formatNumber(0&TOTAL_GERAL_FOTOS_INICIAL-TOTAL_GERAL_FOTOS_FATURADAS,0)%></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><%=TOTAL_GERAL_FOTOS_FATURADAS%></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><%=QTD_ALBUNS%></div></td>
-                  <td  style="border-bottom:#666666 solid 2px">
+                  <td ><span class="production-cell-label" aria-hidden="true">Finaliza&ccedil;&atilde;o</span><div align="center"><%=ArrumaData(DATA_FINALIZADA)%></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">Fotos produzidas</span><div align="center"><%=TOTAL_FOTO_PRODUCAO%></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">Fotos da produ&ccedil;&atilde;o n&atilde;o vendidas</span><div align="center"><%=TOTAL_FOTO_PRODUCAO_PARADA%></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">Fotos dos &aacute;lbuns n&atilde;o vendidas</span><div align="center"><%=formatNumber(0&TOTAL_GERAL_FOTOS_INICIAL-TOTAL_GERAL_FOTOS_FATURADAS,0)%></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">Fotos dos &aacute;lbuns vendidas</span><div align="center"><%=TOTAL_GERAL_FOTOS_FATURADAS%></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">&Aacute;lbuns</span><div align="center"><%=QTD_ALBUNS%></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">&Aacute;lbuns vendidos</span>
                     <div align="center"><span class="style1"><%=QTD_ALBUNS_VENDIDOS%></span></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center"><span class="style2"><%=QTD_ALBUNS-QTD_ALBUNS_VENDIDOS%></span></div></td>
-                  <td  style="border-bottom:#666666 solid 2px"><div align="center">
+                  <td ><span class="production-cell-label" aria-hidden="true">&Aacute;lbuns n&atilde;o vendidos</span><div align="center"><span class="style2"><%=QTD_ALBUNS-QTD_ALBUNS_VENDIDOS%></span></div></td>
+                  <td ><span class="production-cell-label" aria-hidden="true">Aproveitamento</span><div align="center">
 				  <%
 				  Dim APROVEITAMENTO_ALBUNS
-				  		APROVEITAMENTO_ALBUNS = formatNumber(100-((QTD_ALBUNS-QTD_ALBUNS_VENDIDOS)*100/(QTD_ALBUNS_VENDIDOS+QTD_ALBUNS-QTD_ALBUNS_VENDIDOS)),0)
-						Response.Write(APROVEITAMENTO_ALBUNS)
-				  %>%
+				  		APROVEITAMENTO_ALBUNS = 0
+                    If QTD_ALBUNS > 0 Then APROVEITAMENTO_ALBUNS = Int(100 * QTD_ALBUNS_VENDIDOS / QTD_ALBUNS + 0.5)
+                    %><span class="production-rate"><%=FormatNumber(APROVEITAMENTO_ALBUNS, 0)%>%<meter min="0" max="100" value="<%= APROVEITAMENTO_ALBUNS %>" aria-label="Aproveitamento de &aacute;lbuns"></meter></span>
 				  </div></td>
-                  <td style="border-bottom:#666666 solid 2px">
+                  <td class="production-wide"><span class="production-cell-label" aria-hidden="true">Produtos vendidos</span>
                   
                   <%
-				  If int(QTD_PRODUTOS) > 1 Then
+				  If QTD_PRODUTOS > 0 Then
 				  %>
-                  <table style="border-collapse:collapse; font-size:10px" width="100%" 
-		      border="1" align="center"
-					cellpadding="2" 
-					>
-                  <tr>
-                  	<%For i=0 to QTD_PRODUTOS-1
-					%>
-                      <td><div align="center"><%=PRODUTOS(i,1)%></div></td>
-                    <%
-					Next
-					%>
-                    </tr>
-                    <tr>
-                  	<%For i=0 to QTD_PRODUTOS-1
-					%>
-                      <td><div align="center"><%=PRODUTOS(i,2)%></div></td>
-                    <%
-					Next
-					%>
-                    </tr>
+                  <table class="production-products" aria-label="Produtos vendidos">
+                    <%For i = 0 To QTD_PRODUTOS - 1%>
+                      <tr><th scope="row"><%=Server.HTMLEncode(PRODUTOS(1,i) & "")%></th><td><%=PRODUTOS(2,i)%></td></tr>
+                    <%Next%>
                   </table>
                   <%End If%>&nbsp;                  </td>
-				  <td style="border-bottom:#666666 solid 2px"><div align="right"><%=formatNumber(TOTAL_GERAL,2)%></div></td>
+				  <td class="production-wide"><span class="production-cell-label" aria-hidden="true">Total de vendas estimado</span><div align="right"><%=formatNumber(TOTAL_GERAL,2)%></div></td>
 				</tr>
 				
-	<%
+	</tbody></table></div></section>
+<dl class="month-kpis">
+  <div><dt>&Aacute;lbuns vendidos</dt><dd><%=QTD_ALBUNS_VENDIDOS%> de <%=QTD_ALBUNS%></dd></div>
+  <div><dt>Aproveitamento de &aacute;lbuns</dt><dd><%=FormatNumber(APROVEITAMENTO_ALBUNS, 0)%>%</dd></div>
+  <div><dt>Total de vendas estimado</dt><dd><%=FormatCurrency(TOTAL_GERAL, 2)%></dd></div>
+</dl>
+<section class="production-section">
+<h2>Desempenho por vendedor</h2>
+<label class="production-filter" hidden>Vendedor
+  <select id="production-seller" class="form-select"><option value="">Todos os vendedores</option></select>
+</label>
+<p id="production-filter-print" hidden></p>
+<div class="month-scroll" tabindex="0" role="group" aria-label="Desempenho por vendedor">
+<table class="month-table production-table" id="production-vendors">
+<thead><tr><th scope="col">Vendedor e pedidos</th><th scope="col">Lotes</th><th scope="col">&Aacute;lbuns</th><th scope="col">Vendidos</th><th scope="col">N&atilde;o vendidos</th><th scope="col">Aproveitamento</th><th scope="col">Produtos vendidos</th><th scope="col">Total estimado</th></tr></thead>
+<tbody>
+<%
 				sql79 = 	" SELECT TB_VENDEDORES.COD_VENDEDOR, TB_VENDEDORES.NOME_VENDEDOR "&_
 							" FROM TB_VENDEDORES "&_
 							" INNER JOIN TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES_TEMPORARIA ON "&_
@@ -906,17 +836,15 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 			Set rs5=Nothing			
 						
 			If PEDIDOS = "" Then
-				PEDIDOS = "Não houve pedidos deste vendedor"
+				PEDIDOS = "Nenhum pedido deste vendedor"
 			Else
 				PEDIDOS = Mid(PEDIDOS,3,Len(PEDIDOS))
 			End If			
 						
 				%>
-				<tr>
-                          <td>
-                            <div align="right">
-                            <strong><a href="javascript:alert('Pedidos:\n<%=PEDIDOS%>')"><%=Ucase(rs112("NOME_VENDEDOR"))%></a></strong></div></td>
-                          <td colspan="5">
+				<tr data-production-seller="<%=rs112("COD_VENDEDOR")%>">
+<td class="production-wide"><span class="production-cell-label" aria-hidden="true">Vendedor e pedidos</span><button type="button" class="production-orders" data-orders="<%=Server.HTMLEncode(PEDIDOS)%>"><%=Server.HTMLEncode(UCase(rs112("NOME_VENDEDOR") & ""))%></button></td>
+<td class="production-wide"><span class="production-cell-label" aria-hidden="true">Lotes</span>
                             <div align="center">
                              <%
 							Set rs8=objConexao.Execute("SELECT LOTE, DATA_SAIDA_INICIAL FROM TB_PRODUCAO_LOTES WHERE COD_PRODUCAO = "&COD_PRODUCAO&" AND COD_VENDEDOR_INICIAL = '"&rs112("COD_VENDEDOR")&"' order by DATA_SAIDA_INICIAL asc")
@@ -925,7 +853,7 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
                             <table width="100" border="0" cellspacing="0" cellpadding="2">
                           <tr>
                             <td><div align="center"><strong>Lote</strong></div></td>
-                            <td><div align="center"><strong>Saída</strong></div></td>
+                            <td><div align="center"><strong>Sa&iacute;da</strong></div></td>
                           </tr>
 
 							
@@ -957,50 +885,37 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 							Set rs8=Nothing
 							%>
                             </div></td>
-                          <td><div align="center"><%=SUB_TOTAL_QTD_ALBUNS%></div></td>
-                          <td><div align="center"><%=SUB_TOTAL_QTD_ALBUNS_VENDIDOS%></div></td>
-                          <td><div align="center"><%=SUB_TOTAL_QTD_ALBUNS-SUB_TOTAL_QTD_ALBUNS_VENDIDOS%></div></td>
-                          <td><div align="center">
+                          <td><span class="production-cell-label" aria-hidden="true">&Aacute;lbuns</span><div align="center"><%=SUB_TOTAL_QTD_ALBUNS%></div></td>
+                          <td><span class="production-cell-label" aria-hidden="true">Vendidos</span><div align="center"><%=SUB_TOTAL_QTD_ALBUNS_VENDIDOS%></div></td>
+                          <td><span class="production-cell-label" aria-hidden="true">N&atilde;o vendidos</span><div align="center"><%=SUB_TOTAL_QTD_ALBUNS-SUB_TOTAL_QTD_ALBUNS_VENDIDOS%></div></td>
+                          <td><span class="production-cell-label" aria-hidden="true">Aproveitamento</span><div align="center">
                             <%
-				  			SUB_APROVEITAMENTO_ALBUNS = formatNumber(100-((SUB_TOTAL_QTD_ALBUNS-SUB_TOTAL_QTD_ALBUNS_VENDIDOS)*100/(SUB_TOTAL_QTD_ALBUNS_VENDIDOS+(SUB_TOTAL_QTD_ALBUNS-SUB_TOTAL_QTD_ALBUNS_VENDIDOS))),0)
-							Response.Write(SUB_APROVEITAMENTO_ALBUNS)
-							%>%</div></td>
-                          <td>                  <%
-				  If int(QTD_PRODUTOS) > 1 Then
+				  			SUB_APROVEITAMENTO_ALBUNS = 0
+                    If SUB_TOTAL_QTD_ALBUNS > 0 Then SUB_APROVEITAMENTO_ALBUNS = Int(100 * SUB_TOTAL_QTD_ALBUNS_VENDIDOS / SUB_TOTAL_QTD_ALBUNS + 0.5)
+                    %><span class="production-rate"><%=FormatNumber(SUB_APROVEITAMENTO_ALBUNS, 0)%>%<meter min="0" max="100" value="<%= SUB_APROVEITAMENTO_ALBUNS %>" aria-label="Aproveitamento de &aacute;lbuns"></meter></span></div></td>
+                          <td class="production-wide"><span class="production-cell-label" aria-hidden="true">Produtos vendidos</span>                  <%
+				  If QTD_PRODUTOS > 0 Then
 				  %>
-                  <table style="border-collapse:collapse; font-size:10px" width="100%" 
-		      border="1" align="center"
-					cellpadding="2" 
-					>
-                    
-                    <tr>
-                  	<%For i=0 to QTD_PRODUTOS-1
-					%>
-                   
-                      <td>
-                     <div align="center" style="visibility:hidden; height:1px"><%=PRODUTOS(i,1)%></div>
-                      <div align="center">
-                      <%					  
-					  Set rs4=objConexao.Execute("SELECT TB_PEDIDOS_PRODUTOS.COD_PRODUTO, TB_PRODUTOS.NOME_PRODUTO, SUM( TB_PEDIDOS_PRODUTOS.QUANTIDADE ) AS QUANTIDADE FROM TB_PEDIDOS INNER JOIN TB_PEDIDOS_PRODUTOS ON ( TB_PEDIDOS.COD_PEDIDO = TB_PEDIDOS_PRODUTOS.COD_PEDIDO )INNER JOIN TB_PRODUTOS ON ( TB_PEDIDOS_PRODUTOS.COD_PRODUTO = TB_PRODUTOS.COD_PRODUTO ) INNER JOIN TB_FICHAS_IDENTIFICACAO ON ( TB_PEDIDOS_PRODUTOS.COD_FORMANDO = TB_FICHAS_IDENTIFICACAO.COD_FORMANDO ) WHERE TB_FICHAS_IDENTIFICACAO.COD_PRODUCAO ="&COD_PRODUCAO&" AND TB_PEDIDOS.FINALIZA_VENDEDOR = 1 AND TB_PEDIDOS_PRODUTOS.COD_PRODUTO = "&PRODUTOS(i,0)&" AND TB_PEDIDOS.COD_VENDEDOR = "&rs112("COD_VENDEDOR")&" GROUP BY TB_PEDIDOS_PRODUTOS.COD_PRODUTO")
+                  <table class="production-products" aria-label="Produtos vendidos pelo vendedor">
+                    <%For i = 0 To QTD_PRODUTOS - 1%>
+                    <tr><th scope="row"><%=Server.HTMLEncode(PRODUTOS(1,i) & "")%></th><td><%					  
+					  Set rs4=objConexao.Execute("SELECT TB_PEDIDOS_PRODUTOS.COD_PRODUTO, TB_PRODUTOS.NOME_PRODUTO, SUM( TB_PEDIDOS_PRODUTOS.QUANTIDADE ) AS QUANTIDADE FROM TB_PEDIDOS INNER JOIN TB_PEDIDOS_PRODUTOS ON ( TB_PEDIDOS.COD_PEDIDO = TB_PEDIDOS_PRODUTOS.COD_PEDIDO )INNER JOIN TB_PRODUTOS ON ( TB_PEDIDOS_PRODUTOS.COD_PRODUTO = TB_PRODUTOS.COD_PRODUTO ) INNER JOIN TB_FICHAS_IDENTIFICACAO ON ( TB_PEDIDOS_PRODUTOS.COD_FORMANDO = TB_FICHAS_IDENTIFICACAO.COD_FORMANDO ) WHERE TB_FICHAS_IDENTIFICACAO.COD_PRODUCAO ="&COD_PRODUCAO&" AND TB_PEDIDOS.FINALIZA_VENDEDOR = 1 AND TB_PEDIDOS_PRODUTOS.COD_PRODUTO = "&PRODUTOS(0,i)&" AND TB_PEDIDOS.COD_VENDEDOR = "&rs112("COD_VENDEDOR")&" GROUP BY TB_PEDIDOS_PRODUTOS.COD_PRODUTO")
 					  	
 						If not rs4.Eof Then
 							Response.Write(rs4("QUANTIDADE"))
 						Else
-							Response.Write("&nbsp;")
+							Response.Write("&mdash;")
 						End If
 						
 					  rs4.Close
 					  Set rs4=Nothing
 					  
 					  %>
-					  </div></td>
-                    <%
-					Next
-					%>
-                    </tr>
+					  </td></tr>
+                    <%Next%>
                   </table>
                   <%End If%>&nbsp;</td>
-				          <td><div align="right"><%=formatNumber(TOTAL,2)%></div></td>
+				          <td class="production-wide"><span class="production-cell-label" aria-hidden="true">Total estimado</span><div align="right"><%=formatNumber(TOTAL,2)%></div></td></tr>
 				          <%
 				rs112.MoveNext()
 				Wend
@@ -1009,24 +924,20 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 				rs112.Close
 				Set rs112 = Nothing
 				%> 
-				        </table>
-		
-		  <p>* - O valor de arrecadação de produção Não é 100% exato, pois há alguns pedidos que possuem mais que um formando e de diferentes produções no mesmo pedido, nestes casos o sistema Não tem como desmembrar o valor por formando e por tanto considerado o valor total. </p>
-		  <p>* - Os dados utilizados para gerar este relatório tem como base as informações registradas até as 8:00 AM da data de hoje. </p>
-		  <p>Observa&ccedil;&atilde;o: Clique no nome do vendedor para detalhar o n&uacute;mero dos pedidos.</p>
-		  <%Else%>
-		   <div align="center">
-           <br /><br /><br /><br />
-		  <p><span class="textoMedio"><strong>Não há dados para os filtros selecionados!</strong></span></p>
-          <br /><br /><br /><br />
-		</div>
+				        </tbody></table></div></section>
+<section class="production-notes" aria-label="Notas sobre os dados">
+  <p>O total de vendas &eacute; estimado. Pedidos com formandos de produ&ccedil;&otilde;es diferentes entram pelo valor integral.</p>
+  <p>O relat&oacute;rio considera os dados registrados at&eacute; as 8h de hoje e inclui vendas ainda sem corre&ccedil;&atilde;o.</p>
+</section>
+<%Else%>
+		   <p class="alert alert-info" role="status">Nenhum dado encontrado para esta produ&ccedil;&atilde;o.</p>
 		    <%End If
 			
 			rs.Close
 			Set rs = Nothing
 			
 			
-			'Limpa novamente a TB tempor�ria
+			'Limpa novamente a TB tempor?ria
 			'objConexao.Execute("DELETE FROM TB_FICHAS_IDENTIFICACAO_MOVIMENTACOES_TEMPORARIA WHERE COD_USUARIO ="&Session("COD_USUARIO"))
 			FecharConexao()
 			
@@ -1034,38 +945,46 @@ TOTAL_GERAL_FOTOS_APROVEITAMENTO = 0
 		   
 		    
 
-		<div align="center"><br />
-            <br />
-            <input class="btnTopo" type="button" onclick="abre('#')" name="Submit2" value=" " />
-            <br />
-            <br />
-            <br />
-		  
-		  </div></td>
+		
+<dialog class="production-dialog" id="production-orders-dialog" aria-labelledby="production-orders-title">
+  <h2 id="production-orders-title">Pedidos do vendedor</h2>
+  <p><strong id="production-orders-seller"></strong></p>
+  <p id="production-orders-list"></p>
+  <form method="dialog"><button class="btn btn-outline-secondary" autofocus>Fechar</button></form>
+</dialog>
+</main>
+<script>
+(function () {
+    var table = document.getElementById('production-vendors');
+    if (!table) return;
+    var select = document.getElementById('production-seller');
+    var scope = document.getElementById('production-filter-print');
+    var rows = Array.from(table.querySelectorAll('[data-production-seller]'));
+    var dialog = document.getElementById('production-orders-dialog');
+    var seller = document.getElementById('production-orders-seller');
+    var orders = document.getElementById('production-orders-list');
 
-    </tr>
-</table>
-
- 
-  
-  </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+    rows.forEach(function (row) {
+        var button = row.querySelector('.production-orders');
+        select.add(new Option(button.textContent.trim(), row.dataset.productionSeller));
+        button.addEventListener('click', function () {
+            seller.textContent = button.textContent;
+            orders.textContent = button.dataset.orders;
+            dialog.showModal();
+        });
+    });
+    function filterSellers() {
+        rows.forEach(function (row) {
+            row.hidden = Boolean(select.value && row.dataset.productionSeller !== select.value);
+        });
+        scope.hidden = !select.value;
+        scope.textContent = select.value ? 'Vendedor: ' + select.options[select.selectedIndex].text : '';
+    }
+    if (rows.length) select.closest('label').hidden = false;
+    select.addEventListener('change', filterSellers);
+    window.addEventListener('pageshow', filterSellers);
+    filterSellers();
+})();
+</script>
 </body>
 </html>
-
-
-
-
-
-

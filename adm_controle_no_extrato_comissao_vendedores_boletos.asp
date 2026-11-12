@@ -1,13 +1,4 @@
 <!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
-<!-- #include file="includes/topo.asp" -->
-<!-- #include file="includes/sub_menu.asp" --> 
- <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
 <%
 '================= FILTROS =====================
 Dim filtro_vendedor, filtro_status, filtro_cod_fechamento, sql, corStatus, rs
@@ -16,6 +7,33 @@ filtro_vendedor = Request("cod_vendedor")
 filtro_status = Request("status")
 filtro_cod_fechamento = Request("COD_FECHAMENTO_PERIODO")
 
+Response.CodePage = 65001
+Response.Charset = "utf-8"
+Dim capBoletoCodigo, capBoletoUsuario
+capBoletoUsuario = Session("COD_USUARIO") & ""
+Select Case capBoletoUsuario
+    Case "1", "16", "22", "42", "53", "57"
+    Case Else
+        If Len(capBoletoUsuario) = 0 Or (Session("COD_VENDEDOR") & "") <> "280" Then
+            Response.Status = "403 Forbidden"
+            Response.Write "Acesso restrito ao relat&oacute;rio de boletos."
+            Response.End
+        End If
+End Select
+Set capBoletoCodigo = New RegExp
+capBoletoCodigo.Pattern = "^[0-9]{1,10}$"
+If Not capBoletoCodigo.Test(filtro_cod_fechamento & "") Then
+    Response.Status = "400 Bad Request"
+    Response.Write "Informe um per&iacute;odo v&aacute;lido."
+    Response.End
+End If
+If Len(filtro_vendedor & "") > 0 Then
+    If Not capBoletoCodigo.Test(filtro_vendedor & "") Then
+        Response.Status = "400 Bad Request"
+        Response.Write "Informe um vendedor v&aacute;lido."
+        Response.End
+    End If
+End If
 AbrirConexao()
 
 ' ================== CARREGA VENDEDORES DO FECHAMENTO =====================
@@ -67,214 +85,74 @@ sql = sql & " ORDER BY V.NOME_VENDEDOR, P.COD_PEDIDO, B.PARCELA"
 Set rs = objConexao.Execute(sql)
 %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" media="screen"></link>
-
-
-
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-	<script language="javascript">
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript" language="javascript">
-	<!--AJUDA F1 E CTRL PARA BUSCA R�PIDA-->
-		
-	function abrir(theURL,winName,features) 
-	{ 
-	  window.open(theURL,winName,features);
-	}
-
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}	
-		
-		
-	
-
-	function buscaIni(){
-	d = document.buscaForm
-	d.busca.focus()
-	d.busca.select();
-	}
-	function mudacorBusca(CAMPO){
-	CAMPO.style.backgroundColor = '#F5ECBA'
-	}
-	function mudacorBusca2(CAMPO){
-	CAMPO.style.backgroundColor = '#FFFFFF'
-	}
-
- function Verificar()
- {
-  var tecla=window.event.keyCode;
-  if (tecla==17) {
-    buscaIni();
-	}
- }
- 
-
-
-	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-	</script>
-    
-    <!--CONFIRMA��O SIM/N�O-->
-<script language="javascript">
-
-function confirmaExclusaoFechamento(vendedor_recebe_em,mes){
-	if(YNconfirm('ATEN��O!!!!!!!!!!!!!!!!\nTEM CERTEZA QUE DESEJA EXCLUIR ESTE FECHAMENTO DE '+mes+'?'))
-	{
-		abre('cap_fechamentos.asp?comando=excluir&vendedor_recebe_em='+vendedor_recebe_em);
-	}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comiss&atilde;o por boleto | Stillos</title>
+<style>
+* { box-sizing:border-box; }
+body { margin:0; background:#f6f7fb; color:#242738; font:14px/1.45 system-ui,Arial,sans-serif; }
+.cap-document { max-width:1400px; margin:14px auto; padding:clamp(12px,3vw,26px); border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.cap-doc-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:12px; margin-bottom:16px; border-bottom:2px solid #b20b61; }
+.cap-doc-header h1 { margin:0; font:700 clamp(18px,3vw,27px)/1.2 system-ui,sans-serif; }
+.cap-doc-logo { flex:none; width:clamp(95px,20vw,150px); height:auto; background:#292b40; border-radius:7px; }
+.cap-doc-toolbar { display:flex; justify-content:flex-end; margin-bottom:10px; }
+.cap-doc-button { display:inline-block; padding:8px 12px; border:1px solid #d8d0e1; border-radius:7px; background:#fff; color:#88134f; font:600 13px/1.3 system-ui,sans-serif; cursor:pointer; }
+.cap-doc-primary { background:#b20b61; color:#fff; border-color:#b20b61; }
+.cap-doc-scroll { overflow-x:auto; }
+.cap-doc-scroll table { border-collapse:collapse; border:0; }
+.cap-doc-scroll th, .cap-doc-scroll td { padding:6px 5px; border-color:#e4dfeb; font-size:inherit; }
+.cap-doc-scroll th { background:#f3f0f7; color:#242738; }
+.cap-doc-scroll .folha { width:100%; margin:12px 0; border:1px solid #e4dfeb; border-radius:8px; }
+.cap-doc-scroll .folha td { padding:14px; }
+.cap-doc-scroll .folha p { margin:8px 0; }
+.cap-boleto-filter { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin:0 0 14px; padding:12px; background:#f7f5fa; border-radius:8px; }
+.cap-boleto-filter label { display:block; font-weight:600; }
+.cap-boleto-filter select, .cap-boleto-edit input[type=text] { display:block; max-width:100%; margin-top:4px; padding:7px; border:1px solid #d8d0e1; border-radius:6px; background:#fff; color:inherit; }
+.cap-boleto-table { width:100%; font-size:12px; }
+.cap-boleto-table tbody tr:nth-child(even) { background:#faf9fc; }
+.cap-boleto-status { display:inline-block; padding:3px 6px; border-radius:5px; white-space:nowrap; background:#f9e7ed; color:#86234a; }
+.cap-boleto-status.is-paid { background:#e5f2ea; color:#275e42; }
+.cap-boleto-edit { width:min(430px,calc(100% - 24px)); padding:20px; border:1px solid #e4dfeb; border-radius:12px; color:#242738; }
+.cap-boleto-edit::backdrop { background:#24273899; }
+.cap-boleto-edit h2 { margin-top:0; }
+@media screen and (max-width:720px) {
+  .cap-boleto-table, .cap-boleto-table tbody { display:block; }
+  .cap-boleto-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .cap-boleto-table tbody tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px; border:1px solid #e4dfeb; border-radius:8px; }
+  .cap-boleto-table td { display:block; text-align:left; overflow-wrap:anywhere; }
+  .cap-boleto-table td::before { content:attr(data-label); display:block; font-weight:650; }
+  .cap-boleto-table td[colspan] { grid-column:1/-1; }
 }
-
-
-
-function YNconfirm(txt){
-return typeof(suporteVBscript)=="undefined"?confirm(txt):VBconfirm(txt)==6
+@page { size:A4 landscape; margin:10mm; }
+@media print {
+  body { background:white; color:#111; font-size:9.5pt; }
+  .cap-document { max-width:none; margin:0; padding:5mm 8mm; border:0; }
+  .cap-doc-logo { width:32mm; background:transparent; filter:brightness(0); }
+  .cap-doc-header h1 { font-size:15pt; }
+  .cap-doc-toolbar, .cap-boleto-filter, .cap-boleto-edit, .cap-boleto-action { display:none !important; }
+  .cap-doc-scroll { overflow:visible; }
+  .cap-doc-scroll table { max-width:100%; }
+  .cap-doc-scroll th, .cap-doc-scroll td { padding:4px 3px; }
+  .cap-doc-scroll tr { break-inside:avoid; }
+  .cap-doc-scroll thead { display:table-header-group; }
+  .cap-doc-scroll .folha { break-after:page; }
+  .cap-doc-scroll .folha:last-of-type { break-after:auto; }
 }
-</script>
-<script language="vbscript">
-suporteVBscript=1
-function VBconfirm(mensagem)
-
- VBconfirm=msgbox(mensagem,vbyesno)
-end function
-
-</script>
-    
-		<!-- CALEND�RIO SCRIPTS
-	<script type="text/javascript">
-	DHTMLSuite.include("calendar");
-	</script>
-	<script type="text/javascript">
-	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
-	
-		 
-	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
-	
-	function myOtherFunction()
-	{
-		
-		
-	}
-	function pickDate(buttonObj,inputObject)
-	{
-		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
-		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
-		if(calendarObjForForm.isVisible()){
-			calendarObjForForm.hide();
-		}else{
-			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
-			calendarObjForForm.display();
-		}		
-	}	
-	/* inputArray is an associative array with the properties
-	year
-	month
-	day
-	hour
-	minute
-	calendarRef - Reference to the DHTMLSuite.calendar object.
-	*/
-	function getDateFromCalendar(inputArray)
-	{
-		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
-		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
-//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
-		calendarObjForForm.hide();	
-		
-	}	
-	</script>
-	-->
-<style type="text/css">
-<!--
-.menu_paginacao{
-	float: left;
-	width: 300px;
-	position: relative;
-}
-.menu_paginacao div{
-	position: relative;
-	float: left;
-	height: 5px;
-	width: 10px;
-	border: 1px solid white;
-	padding: 2px;
-}
-.menu_paginacao a{
-	font-size:12px;
-	text-decoration:none;
-	color: #990000;
-}
-
-.menu_paginacao a:link{
-	font-size:12px;
-	text-decoration:none;
-}
-
-.menu_paginacao a:visited{
-	font-size:12px;
-	text-decoration:none;
-}
-
-.menu_paginacao a:active{
-	font-size:12px;
-	text-decoration:none;
-}
-
-.menu_paginacao a:hover{
-	font-size:12px;
-	text-decoration:none;
-	font-weight: bold;
-}
--->
 </style>
 </head>
+<body>
+<main class="cap-document" data-cap-report>
+<%If Request.QueryString("modal") <> "1" Then%><div class="cap-doc-toolbar"><button class="cap-doc-button cap-doc-primary" type="button" onclick="window.print()">Imprimir / Salvar PDF</button></div><%End If%>
+<header class="cap-doc-header"><h1>Comiss&atilde;o por boleto</h1><img class="cap-doc-logo" src="images/logoparafundopreto.png" alt="Stillos"></header>
+<div class="cap-doc-scroll">
 
-
-<title>Comissão Boletos</title>
-
-<div align="center">
-    <h2>Extrato de Comissão dos Vendedores</h2>
-
-    <form method="get" action="adm_controle_no_extrato_comissao_vendedores_boletos.asp" style="margin-bottom:20px;">
-        <input type="hidden" name="COD_FECHAMENTO_PERIODO" value="<%=filtro_cod_fechamento%>">
-        <table border="0" cellpadding="5" cellspacing="0" style="background-color:#f8f8f8; border-radius:8px;">
-            <tr>
-                <td><strong>Vendedor:</strong></td>
-<td>
-    <select name="cod_vendedor" style="width:250px;">
+<form class="cap-boleto-filter" method="get" action="adm_controle_no_extrato_comissao_vendedores_boletos.asp">
+  <input type="hidden" name="COD_FECHAMENTO_PERIODO" value="<%=Server.HTMLEncode(filtro_cod_fechamento & "")%>">
+  <%If Request.QueryString("modal") = "1" Then%><input type="hidden" name="modal" value="1"><%End If%>
+  <label>Vendedor<select name="cod_vendedor">
         <option value="">Todos</option>
         <%
         If Not rsVend.EOF Then
@@ -283,9 +161,9 @@ end function
                 codV = rsVend("COD_VENDEDOR")
                 nomeV = rsVend("NOME_VENDEDOR")
                 If CStr(filtro_vendedor) = CStr(codV) Then
-                    Response.Write("<option value='" & codV & "' selected>" & nomeV & "</option>")
+                    Response.Write("<option value='" & codV & "' selected>" & Server.HTMLEncode(nomeV & "") & "</option>")
                 Else
-                    Response.Write("<option value='" & codV & "'>" & nomeV & "</option>")
+                    Response.Write("<option value='" & codV & "'>" & Server.HTMLEncode(nomeV & "") & "</option>")
                 End If
                 rsVend.MoveNext
             Loop
@@ -295,24 +173,15 @@ end function
         rsVend.Close
         Set rsVend = Nothing
         %>
-    </select>
-</td>
-
-                <td><strong>Status:</strong></td>
-                <td>
-                    <select name="status">
+    </select></label>
+  <label>Status<select name="status">
                         <option value="">Todos</option>
                         <option value="PAGO" <%If filtro_status="PAGO" Then Response.Write("selected")%>>Pago</option>
-                        <option value="NAO_PAGO" <%If filtro_status="NAO_PAGO" Then Response.Write("selected")%>>Não Pago</option>
-                    </select>
-                </td>
-                <td><input type="submit" value="Buscar" style="background-color:#E91E63;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;"></td>
-            </tr>
-        </table>
-    </form>
-
-    <table border="1" cellspacing="0" cellpadding="4" width="95%" style="border-collapse:collapse; font-size:13px;">
-        <tr style="background-color:#E91E63; color:white;">
+                        <option value="NAO_PAGO" <%If filtro_status="NAO_PAGO" Then Response.Write("selected")%>>N&atilde;o pago</option>
+                    </select></label>
+  <button class="cap-doc-button cap-doc-primary" type="submit">Aplicar filtros</button>
+</form>
+    <table class="cap-boleto-table"><thead><tr>
             <th>Cód. Pedido</th>
             <th>Formando</th>
             <th>Instituição</th>
@@ -324,9 +193,9 @@ end function
             <th>Valor Comissão (R$)</th>
             <th>Valor Pago (R$)</th>
             <th>Data Pagamento</th>
-            <th>Editar ✍️</th>
+            <th class="cap-boleto-action">A&ccedil;&atilde;o</th>
             <th>Status</th>
-        </tr>
+        </tr></thead><tbody>
 
         <%
         If Not rs.EOF Then
@@ -345,32 +214,32 @@ end function
                 End If
         %>
                 <tr>
-                    <td align="center"><%=rs("COD_PEDIDO")%></td>
-                    <td align="left"><%=rs("NOME_FORMANDO")%></td>
-                    <td align="left"><%=rs("INSTITUICAO")%></td>
-                    <td align="left"><%=rs("NOME_CURSO")%></td>
-                    <td align="center"><%=rs("NOME_VENDEDOR")%></td>
-                    <td align="center"><%=rs("PARCELA")%></td>
-                    <td align="right"><%=FormatNumber(rs("VALOR"),2)%></td>
-                    <td align="center"><%=rs("DATA_VENCIMENTO")%></td>
-                    <td align="right"><%=FormatNumber(rs("valor_comissao_vendedor"),2)%></td>
-                    <td align="right"><%=FormatNumber(valorPago,2)%></td>
-                    <td align="center"><%=arrumaData(rs("DATA_PAGAMENTO"))%></td>
-                    <td align="center">
+                    <td data-label="Pedido"><%=rs("COD_PEDIDO")%></td>
+                    <td data-label="Formando"><%=Server.HTMLEncode(rs("NOME_FORMANDO") & "")%></td>
+                    <td data-label="Institui&ccedil;&atilde;o"><%=Server.HTMLEncode(rs("INSTITUICAO") & "")%></td>
+                    <td data-label="Curso"><%=Server.HTMLEncode(rs("NOME_CURSO") & "")%></td>
+                    <td data-label="Vendedor"><%=Server.HTMLEncode(rs("NOME_VENDEDOR") & "")%></td>
+                    <td data-label="Parcela"><%=rs("PARCELA")%></td>
+                    <td data-label="Valor da parcela"><%=FormatNumber(rs("VALOR"),2)%></td>
+                    <td data-label="Vencimento"><%=rs("DATA_VENCIMENTO")%></td>
+                    <td data-label="Comiss&atilde;o"><%=FormatNumber(rs("valor_comissao_vendedor"),2)%></td>
+                    <td data-label="Valor pago"><%=FormatNumber(valorPago,2)%></td>
+                    <td data-label="Data do pagamento"><%=arrumaData(rs("DATA_PAGAMENTO"))%></td>
+                    <td data-label="A&ccedil;&atilde;o" class="cap-boleto-action">
                         <% 
 						' --- Mostra o link apenas para usuários autorizados ---
 						If Session("COD_USUARIO") = 1 Or Session("COD_USUARIO") = 42 Or Session("COD_USUARIO") = 53 Or Session("COD_VENDEDOR") = 280 Then
 						%>
                         <a href="javascript:void(0);" 
                         onclick="abrirPopup('<%=rs("COD_PEDIDO")%>', '<%=rs("PARCELA")%>', '<%=Server.HTMLEncode(Replace(CStr(valorPago), " ", ""))%>')" 
-                        style="color:#E91E63;text-decoration:none;">✍️ Editar valor pago</a>
+                        style="color:#E91E63;text-decoration:none;">Editar valor pago</a>
                         <% 
 						End If 
 						%>
 
                 </td>
-                    <td align="center">
-                        <div style="width:15px;height:15px;border-radius:50%;background-color:<%=corStatus%>"></div>
+                    <td data-label="Status">
+                        <%If valorPago > 0 Then%><span class="cap-boleto-status is-paid">Pago</span><%Else%><span class="cap-boleto-status">N&atilde;o pago</span><%End If%>
                     </td>
                 </tr>
         <%
@@ -378,19 +247,18 @@ end function
             Loop
         Else
         %>
-            <tr><td colspan="7" align="center">Nenhum registro encontrado.</td></tr>
+            <tr><td colspan="13" align="center">Nenhum registro encontrado.</td></tr>
         <%
         End If
         rs.Close
         Set rs = Nothing
         FecharConexao()
         %>
-    </table>
-    <!-- Popup -->
-<div id="popup-editar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-  background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:9999;">
-  <div style="background:white; padding:20px; border-radius:10px; width:320px; text-align:center;">
-    <h3 style="margin-top:0;">Editar Valor Pago</h3>
+    </tbody></table>
+
+</div></main>
+<dialog id="popup-editar" class="cap-boleto-edit" aria-labelledby="cap-boleto-edit-title">
+    <h2 id="cap-boleto-edit-title">Editar valor pago</h2>
 
     <form id="formEditarValor" method="post" action="update_valor_pago.asp" onsubmit="return validarForm();">
       <input type="hidden" name="COD_PEDIDO" id="COD_PEDIDO">
@@ -409,12 +277,11 @@ end function
       </div>
 
       <div style="margin-top:12px;">
-        <button type="submit" style="background:#4CAF50;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;">Salvar</button>
-        <button type="button" onclick="fecharPopup()" style="background:#F44336;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-left:8px;">Cancelar</button>
+        <button class="cap-doc-button" type="submit">Salvar</button>
+        <button class="cap-doc-button" type="button" onclick="fecharPopup()">Cancelar</button>
       </div>
     </form>
-  </div>
-</div>
+</dialog>
 
 <script>
 function abrirPopup(codPedido, parcela, valorPago) {
@@ -439,11 +306,11 @@ function abrirPopup(codPedido, parcela, valorPago) {
   document.getElementById("lblPedido").innerText = codPedido;
   document.getElementById("lblParcela").innerText = parcela;
 
-  document.getElementById("popup-editar").style.display = "flex";
+  document.getElementById("popup-editar").showModal();
 }
 
 function fecharPopup() {
-  document.getElementById("popup-editar").style.display = "none";
+  document.getElementById("popup-editar").close();
 }
 
 function validarForm() {
@@ -480,8 +347,4 @@ function formatarCampoValor(input) {
   input.value = valor;
 }
 </script>
-
-
-</div>
-
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+</body></html>

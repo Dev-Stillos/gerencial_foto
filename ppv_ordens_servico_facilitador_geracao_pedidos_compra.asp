@@ -2,7 +2,6 @@
 <!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
 <%
-Response.Buffer = False
 Dim efetuar_transacao
 efetuar_transacao = Cstr(""&Request.Form("campo1"))	
 
@@ -297,104 +296,79 @@ End If
 '////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<%Response.Buffer = False%>
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
-<!-- #include virtual="gerencial_foto/files/includes/scripts.asp" -->
-<script language="javascript">
-	function alterarQtdSolicitada(cod_produto,quantidade,campo,cod_ordem_servico){
-		//var temp;
-		//temp = new Number(document.FORMULARIO_PADRAO["qtd_solicitada_"+cod_produto].value);
-		//var checked = campo.checked;
-		var quantidade_total = 0, quantidade_total_nao_marcada = 0; qtd = 0;
-		
-		/*
-		$.each($(".quantidade_por_os_"+cod_produto), function(index,value) {
-			quantidade_total += parseInt($(value).val());
-		});
-		*/
-		
-		$.each($(".inputs_por_os_"+cod_produto), function(index,value) {
-			if($(value).is(":checked")){
-				qtd = parseInt($(value).attr("quantidade"));
-				quantidade_total += qtd;
-			}
-			
-		});		
-							
-		if(campo.checked){
-			document.getElementById("linha_"+cod_ordem_servico).style.backgroundColor = '#D6FED7';
-			//temp = temp+quantidade;
-		}else{
-			document.getElementById("linha_"+cod_ordem_servico).style.backgroundColor = '#FFFFFF';
-			//temp = temp-quantidade;
-		}
-		
-		document.getElementById("containnerSolicitar_"+cod_produto).innerHTML = quantidade_total;
-		document.FORMULARIO_PADRAO["qtd_solicitada_"+cod_produto].value = quantidade_total;
-	}
-	
-	function habilitaCampo(campo){
-		
-	}
-
-	function confirmaTriagem(){
-		if(YNconfirm('Tem certeza que deseja criar os pedidos de compra para as Ordens de Servi�o selecionadas?')){
-			document.FORMULARIO_PADRAO.submit();
-		}
-	}
-</script>  
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerar pedidos de compra por OS | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+.fac-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.fac-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.fac-page .fac-panel { height:auto; margin-bottom:16px; padding:clamp(14px,3vw,24px); }
+.fac-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:14px 0; }
+.fac-filters label, .fac-supplier-field label { display:block; font-weight:650; }
+.fac-filters .form-select, .fac-filters .form-control, .fac-supplier { margin-top:5px; }
+.fac-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.fac-product summary { cursor:pointer; color:#242738; }
+.fac-product summary strong { margin-right:6px; font-size:1.08em; }
+.fac-count { display:inline-block; margin:4px 2px; padding:4px 8px; border-radius:6px; background:#f3edf6; color:#51436e; font-weight:650; }
+.fac-supplier-field { max-width:420px; margin:14px 0; }
+.fac-table { margin:0; }
+.fac-table th, .fac-table td { padding:9px 7px; vertical-align:top; }
+.fac-table th { background:#f4f1f7; color:#42364e; }
+.fac-table tr:has(.fac-order-check:checked) > td { background:#f5fbf7; }
+.fac-person small { display:block; color:#57566a; }
+.fac-deadline-alert { display:inline-block; padding:3px 7px; border-radius:5px; background:#fce9ee; color:#8e2045; font-weight:650; }
+.fac-review-bar { position:sticky; bottom:0; z-index:2; display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:8px; padding:12px; border:1px solid #e4dfeb; border-radius:10px; background:#fff; }
+.fac-feedback { flex-basis:100%; margin:0; color:#8e2045; }
+.fac-dialog { width:min(600px,calc(100% - 24px)); max-height:calc(100dvh - 24px); padding:24px; border:1px solid #e4dfeb; border-radius:14px; color:var(--ink); }
+.fac-dialog::backdrop { background:#24273899; }
+.fac-dialog .fac-actions { justify-content:flex-end; }
+@media(max-width:1100px) {
+  .fac-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .fac-table, .fac-table tbody { display:block; }
+  .fac-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .fac-table tbody tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); border-bottom:1px solid #e4dfeb; }
+  .fac-table td { display:block; min-width:0; border:0; overflow-wrap:anywhere; }
+  .fac-table td:nth-child(3), .fac-table td:last-child { grid-column:1/-1; }
+  .fac-table td::before { content:attr(data-label); display:block; color:#57566a; font-size:.85em; font-weight:650; }
+}
+@media(max-width:480px) { .fac-filters { grid-template-columns:1fr; } }
+</style>
 </head>
-<body>
+<body class="fac-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Compras</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><h1>Gerar pedidos de compra por OS</h1><p>Selecione as ordens que aguardam compra e confira o fornecedor de cada produto.</p></div>
+        <a href="ppv_compras_pedidos.asp" class="btn btn-outline-secondary">Voltar aos pedidos</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
 
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td><!-- #include file="includes/menu.asp" --></td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr> 
-    <td valign="top" style="border:dotted 1px #999999">
-	
-	  <h2>PPV - Gera&ccedil;&atilde;o de Pedidos de Compras com Origem em Ordens de Servi&ccedil;o</h2>
-         <br />
-      <!-- include file="includes/classe_modulo_ppv_menu.asp" -->
-	  <br />
-   
-      <form action="ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp" style="margin:0px">
-      	<input name="filtro1" value="1" type="hidden" />
-	  <table style="border:#999999 dashed 1px; padding:2px; background:#FFFFCC" width="99%" border="0" align="center" cellpadding="5" cellspacing="0">
-		  <tr>
-		    <td width="100%"><table width="483" border="0" cellpadding="2" cellspacing="0">
-		      <tr>
-		        <td width="32" rowspan="6"><span style="font-weight: bold">Filtrar</span></td>
-		        <td width="210" style="padding-left:10px; padding-top:5px;">Produto</td>
-		        <td style="padding-left:10px; padding-top:5px;">C&oacute;d. Contrato</td>
-		        </tr>
-		      <tr>
-		        <td width="210" style="padding-left:10px;"><select name='COD_PRODUTO' class='inputTamanho2'>
+<!-- #include file="includes/compras_sub_menu.asp" -->
+<section class="dashboard-panel fac-panel" aria-labelledby="fac-filter-title">
+  <h2 id="fac-filter-title">Filtrar ordens</h2>
+  <form method="get" action="ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp">
+    <input type="hidden" name="filtro1" value="1">
+    <div class="fac-filters">
+      <div><label for="fac-product">Produto</label><select name="COD_PRODUTO" id="fac-product" class="form-select">
 		          <option value=''>Selecione</option>
 		          <%
 				  AbrirConexao()
@@ -417,34 +391,21 @@ Set rsE3=Nothing
 
 FecharConexao()
 %>
-		          </select></td>
-		        <td style="padding-left:10px;"><input type='text' class="inputTamanho1" style="width:90%" value="<%=filtro_COD_CONTRATO%>" name='COD_CONTRATO' /></td>
-		        </tr>
-		      <tr>
-		        <td  style="padding-left:10px; padding-top:5px;">Ordenar por</td>
-		        <td  style="padding-left:10px; padding-top:5px;">Nome do Formando</td>
-		        </tr>
-		      <tr>
-		        <td style="padding-left:10px;"><select style="width:100%" name="ordernar_por" class="inputTamanho1">
+		          </select></div>
+      <div><label for="fac-contract">C&oacute;digo do contrato</label><input class="form-control" id="fac-contract" name="COD_CONTRATO" value="<%=Server.HTMLEncode(filtro_COD_CONTRATO & "")%>"></div>
+      <div><label for="fac-name">Nome do formando</label><input class="form-control" id="fac-name" name="NOME_FORMANDO" value="<%=Server.HTMLEncode(filtro_NOME_FORMANDO & "")%>"></div>
+      <div><label for="fac-sort">Ordenar por</label><select name="ordernar_por" id="fac-sort" class="form-select">
 		          <option <%If Cstr(filtro_ordernar_por) = "2" Then%> selected="selected" <%End If%> value="2">Formando</option>
 		          <option <%If Cstr(filtro_ordernar_por) = "3" or Cstr(filtro_ordernar_por) = "" Then%> selected="selected" <%End If%> value="3">Institui&ccedil;&atilde;o de Ensino</option>
-		          </select></td>
-		        <td style="padding-left:10px;"><input type='text' class="inputTamanho1" style="width:90%" value="<%=filtro_NOME_FORMANDO%>" name='NOME_FORMANDO' /></td>
-		        </tr>
-		      <tr>
-		        <td colspan="2" style="padding-left:10px; padding-top:5px;"><div align="left" style="padding-top:10px">
-		          <input class="btnFiltrarAmarelo" type="submit" name="filtro2" value=" " />
-		          </div></td>
-		        </tr>
-		      </table></td>
-		    </tr>
-        </table>
-      </form>
-        <br />
-
-        <em><strong>Listagem dos produtos cujas ordens de servi&ccedil;o est&atilde;o com a etapa atual marcada como: &quot;Necessita Gerar Pedido de Compra&quot; e que ainda n&atilde;o foram solicitados.</strong></em><br />
-        <br />
-        <%		
+		          </select></div>
+    </div>
+    <div class="fac-actions">
+      <button class="btn btn-primary" name="filtro2" value="1" type="submit">Aplicar filtros</button>
+      <a class="btn btn-outline-secondary" href="ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp">Limpar filtros</a>
+    </div>
+  </form>
+</section>
+<%		
 		Dim temp
 		'Neste momento corrige o sqlWhere somente para o primeiro rs
 		If sqlWhere <> "" Then
@@ -461,19 +422,11 @@ FecharConexao()
 		
 		If not rs.Eof Then
 		%>
-        <div class="msgGrande">Ap&oacute;s a gera&ccedil;&atilde;o da compra a etapa que est&aacute; pendente ser&aacute; finalizada das Ordens de Servi&ccedil;os marcadas.</div>
-        <form name="FORMULARIO_PADRAO" action="ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp" method="post" style="margin:0px">
-        	<input name="campo1" value="S" type="hidden" />
-            <table width="99%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-              <tr bgcolor="whitesmoke">
-        <td><div align="center"><strong> Produto</strong></div></td>
-        <td width="18%" colspan="-1"><div align="center"><strong>Qtd. Total</strong></div></td>
-        <td width="16%" colspan="-1"><div align="center"><strong>Qtd. Solicitada Agora</strong></div></td>
-        <td width="30%" colspan="-1"><div align="center"><strong>Fornecedor/Valor Custo Un.</strong></div></td>
-        </tr>
-      <%
-    
-    'Neste momento que j� passou o group by corrige o sqlWhere para o rs2
+
+<p class="alert alert-warning">Ao gerar a compra, a etapa pendente das OS inclu&iacute;das ser&aacute; finalizada.</p>
+<form id="fac-orders" name="FORMULARIO_PADRAO" action="ppv_ordens_servico_facilitador_geracao_pedidos_compra.asp" method="post">
+  <input name="campo1" value="S" type="hidden">
+  <%    'Neste momento que j� passou o group by corrige o sqlWhere para o rs2
     If sqlWhere <> "" Then
         sqlWhere = " AND "&sqlWhere
     End If
@@ -481,12 +434,15 @@ FecharConexao()
     While not rs.Eof
     %>
  
-    <tr>
-                                <td class="textoMedio"><strong><%=Ucase(""&rs("nome_produto"))%></strong></td>
-                                <td colspan="-1" class="textoMedio"><div align="center"><strong><%=rs("qtd_necessario_comprar")%></strong></div></td>
-                                <td colspan="-1" class="textoMedio"><div style="font-weight:bold" align="center" id="containnerSolicitar_<%=rs("cod_produto")%>">0</div><input type="hidden" value="0" id="id_qtd_solicitada_<%=rs("cod_produto")%>" name="qtd_solicitada_<%=rs("cod_produto")%>" /></td>
-                                <td colspan="-1"><div align="center">
-                                  <select class="inputTamanho2" name="cod_fornecedor_<%=rs("cod_produto")%>">
+
+  <details class="dashboard-panel fac-panel fac-product">
+    <summary>
+      <strong><%=Server.HTMLEncode(rs("nome_produto") & "")%></strong>
+      <span class="fac-count"><%=rs("qtd_necessario_comprar")%> unidades pendentes</span>
+      <span class="fac-count"><output class="fac-quantity">0</output> selecionadas</span>
+    </summary>
+    <div class="fac-supplier-field"><label>Fornecedor e custo unit&aacute;rio
+    <select class="form-select fac-supplier" name="cod_fornecedor_<%=rs("cod_produto")%>">
                                     <%
                                             'Seleciona todos os funcion&aacute;rios ativos, exceto o usu&aacute;rio atual.
                                             Set rs3=objConexao.Execute("SELECT TB_FORNECEDORES.NOME_FANTASIA, TB_FORNECEDOR_PRODUTOS.* FROM  TB_FORNECEDOR_PRODUTOS INNER JOIN TB_FORNECEDORES ON  TB_FORNECEDOR_PRODUTOS.cod_fornecedor = TB_FORNECEDORES.cod_fornecedor WHERE TB_FORNECEDORES.ATIVADO = 1 and TB_FORNECEDOR_PRODUTOS.cod_produto = "&sqlTexto(rs("cod_produto"))&" order by TB_FORNECEDOR_PRODUTOS.valor_custo asc")
@@ -494,14 +450,14 @@ FecharConexao()
  											If not rs3.Eof Then
  
                                             	While not rs3.Eof%>
-		    	                                <option value="<%=rs3("cod_fornecedor")%>"><%=rs3("NOME_FANTASIA")%> - <%=formatCurrency(rs3("valor_custo"))%></option>
+		    	                                <option value="<%=rs3("cod_fornecedor")%>"><%=Server.HTMLEncode(rs3("NOME_FANTASIA") & "")%> - <%=formatCurrency(rs3("valor_custo"))%></option>
         	                            		<%
                 	                            rs3.MoveNext()
                     	                        Wend	
                                             
 											Else		    
 											%>
-											<option value="">N�o h� fornecedor cadastrado</option>
+											<option value="">Nenhum fornecedor cadastrado</option>
 											<%
 											End If
                                         
@@ -509,34 +465,22 @@ FecharConexao()
                                             Set rs3=Nothing
                                         %>
                                   </select>
-                                </div></td>
-                            </tr>           
-                <tr>
-<td colspan="4"><div align="left">
-  <table width="100%" border="0" cellspacing="0" cellpadding="2">
-    <tr>
-      <td width="29"  style="border-bottom:solid 1px #333">&nbsp;</td>
-      <td width="20"  style="border-bottom:solid 1px #333">&nbsp;</td>
-      <td width="96"  style="border-bottom:solid 1px #333"><div align="center">OS</div></td>
-      <td width="449"  style="border-bottom:solid 1px #333"><div align="center">Formando</div></td>
-      <td width="97"  style="border-bottom:solid 1px #333"><div align="center">Qtd.</div></td>
-      <td width="113"  style="border-bottom:solid 1px #333"><div align="center">Data In&iacute;cio Etapa</div></td>
-      <td width="113"  style="border-bottom:solid 1px #333"><div align="center">Prazo final</div></td>
-      <td width="149" style="border-bottom:solid 1px #333"><div align="center">Resp.
-        Etapa Atual</div></td>
-    </tr>
-                                                <%	 
+    </label></div>
+    <input type="hidden" class="fac-quantity-input" value="0" name="qtd_solicitada_<%=rs("cod_produto")%>">
+    <table class="table fac-table" role="table" aria-label="Ordens do produto">
+      <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Selecionar</th><th scope="col" role="columnheader">OS</th><th scope="col" role="columnheader">Formando</th><th scope="col" role="columnheader">Qtd.</th><th scope="col" role="columnheader">In&iacute;cio da etapa</th><th scope="col" role="columnheader">Prazo final</th><th scope="col" role="columnheader">Respons&aacute;vel</th></tr></thead>
+      <tbody role="rowgroup">
+      <%	 
 		   sql = "SELECT * FROM VW_TB_ORDENS_SERVICO WHERE cod_produto = "&rs("cod_produto")&sqlWhere&" ORDER BY "&sqlOrderBy 
            'Response.Write(sql)
            Set rs2=objConexao.Execute(sql)
            
            While not rs2.Eof
            %>
-           		<tr id="linha_<%=rs2("cod_ordem_servico")%>">
-                	<td style="border-bottom:solid 1px #999"><div align="center"><img src="images/icons/seta_superior.gif" width="19" height="15" /></div></td>
-                    <td style="border-bottom:solid 1px #999"><input type="checkbox" value="S" onclick="alterarQtdSolicitada(<%=rs("cod_produto")%>,<%=rs2("quantidade")%>,this,<%=rs2("cod_ordem_servico")%>)" class="inputRadio inputs_por_os_<%=rs("cod_produto")%>" name="cod_ordem_servico_<%=rs2("cod_ordem_servico")%>" quantidade="<%=rs2("quantidade")%>" /></td>
-                    <td style="border-bottom:solid 1px #999"><div align="center"><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></div></td>
-                    <td style="border-bottom:solid 1px #999"><%
+           		<tr role="row">
+  <td role="cell" data-label="Selecionar"><input type="checkbox" class="form-check-input fac-order-check" value="S" name="cod_ordem_servico_<%=rs2("cod_ordem_servico")%>" data-quantity="<%=rs2("quantidade")%>" aria-label="Selecionar OS <%=rs2("cod_ordem_servico")%>"></td>
+  <td role="cell" data-label="OS"><strong><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></strong></td>
+  <td role="cell" data-label="Formando"><%
 						sql = 	" SELECT "&_
 								" TB_PEDIDOS_FORMANDOS.COD_FORMANDO, "&_
 								" TB_FICHAS_IDENTIFICACAO.NOME_FORMANDO, "&_
@@ -551,107 +495,157 @@ FecharConexao()
 											
 						           Set rs3=objConexao.Execute(sql)
 								   %>
-											<table cellpadding="0" width="100%" cellspacing="0">
+											
                                     	<%
                                     	While not rs3.Eof
 										%>
-                                        	<tr>
-                                            <td width="42%"><%=rs3("NOME_FORMANDO")%></td>
-                                            <td width="58%"><%=rs3("DESCRICAO")%></td>
-                                            </tr>
+                                        	<div class="fac-person"><strong><%=Server.HTMLEncode(rs3("NOME_FORMANDO") & "")%></strong><small><%=Server.HTMLEncode(rs3("DESCRICAO") & "")%></small></div>
                 						<%
 										rs3.MoveNext()
 										Wend
 										
 										%>
-                                        </table>
+                                        
                                         <%
 									
 									rs3.Close
 									Set rs3=Nothing
 									%></td>
-                              <td style="border-bottom:solid 1px #999"><div align="center">
-							  <%=rs2("quantidade")%>
-                              <input type="hidden" class="quantidade_por_os_<%=rs("cod_produto")%>" value="<%=rs2("quantidade")%>" />
-                              
-                              </div></td>
-                              <td style="border-bottom:solid 1px #999"><div align="center"><%=ArrumaData(rs2("data_inicio"))%></div></td>
-                              <td style="border-bottom:solid 1px #999">
-
-                              <div align="center">
-                               <% if DateDiff("d",now(),rs2("prazo_geral")) < 10 then%> 
-                               <img src="images/icons/icon_balao_red.gif">
-                              <%end if%>
-                              	<%=ArrumaData(rs2("prazo_geral"))%>
-
-                              </div></td>
-                              <td style="border-bottom:solid 1px #999" align="center">
-							  	<%=nomeUsuario(rs2("cod_usuario_responsavel"),true)%>
-							  </td>
-                            </tr>
-           <%
-           rs2.MoveNext()
-           Wend
-           
-           rs2.Close
-           Set rs2=Nothing
-           %>
-                                                
-                                              </table>
-                                            </div></td>
-                            </tr>
-               
-                    
-          
-           
-                    
-    <%
-    rs.MoveNext()
-    Wend
-    %>
-          <tr>
-                  <td colspan="4"><div align="center"><a href="javascript:confirmaTriagem();"><img border="0" src="images/layout/btnGravar.jpg" /></a></div></td>
-                  </tr>
-         
-          </table>
-      	</form>
-
-<%
-	Else
-	%>
-    <div align="center" class="msgGrande">
-    Nenhuma OS encontrada com etapa atual em aberto para compra!<br />
-</div>
-    <%End if
-	
-	rs.Close
-	Set rs=Nothing
-	
-	FecharConexao()
-	%>
-	  </p>
-	   <br />
-	   <br />
-
-	    </td>
-    </tr>
-</table>
-
- 
-  
+  <td role="cell" data-label="Qtd."><%=rs2("quantidade")%></td>
+  <td role="cell" data-label="In&iacute;cio da etapa"><%=ArrumaData(rs2("data_inicio"))%></td>
+  <td role="cell" data-label="Prazo final">
+    <%If IsDate(rs2("prazo_geral")) Then%>
+    <span class="fac-deadline<%If DateDiff("d",now(),rs2("prazo_geral")) < 10 Then%> fac-deadline-alert<%End If%>"><%=ArrumaData(rs2("prazo_geral"))%></span>
+    <%Else%>&mdash;<%End If%>
   </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
+  <td role="cell" data-label="Respons&aacute;vel"><%=nomeUsuario(rs2("cod_usuario_responsavel"),true)%></td>
 </tr>
-</table>
+<%
+    rs2.MoveNext()
+    Wend
+    rs2.Close
+    Set rs2 = Nothing
+%>
 
+      </tbody>
+    </table>
+  </details>
+  <%rs.MoveNext()
+    Wend%>
+  <div class="fac-review-bar">
+    <span id="fac-selection" role="status">0 OS selecionadas</span>
+    <button class="btn btn-primary" type="submit" aria-haspopup="dialog">Revisar compra</button>
+    <p class="fac-feedback" id="fac-feedback" role="alert" hidden></p>
+  </div>
+</form>
+<dialog class="fac-dialog" id="fac-confirm" aria-labelledby="fac-confirm-title">
+  <h2 id="fac-confirm-title">Confirmar gera&ccedil;&atilde;o?</h2>
+  <p>A gera&ccedil;&atilde;o finaliza a etapa pendente das ordens inclu&iacute;das.</p>
+  <ul id="fac-review-list"></ul>
+  <form method="dialog" class="fac-actions">
+    <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+    <button class="btn btn-primary" value="gerar">Gerar pedidos</button>
+  </form>
+</dialog>
+<%Else%>
+<section class="dashboard-panel fac-panel" role="status"><h2>Nenhuma OS aguardando compra</h2><p class="mb-0">Confira os filtros para buscar outros itens.</p></section>
+<%End If
+rs.Close
+Set rs = Nothing
+FecharConexao()
+%>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_compras_pedidos.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+
+(function () {
+    var form = document.getElementById('fac-orders');
+    if (!form) return;
+    var dialog = document.getElementById('fac-confirm');
+    var feedback = document.getElementById('fac-feedback');
+    var selection = document.getElementById('fac-selection');
+    var list = document.getElementById('fac-review-list');
+    var products = form.querySelectorAll('.fac-product');
+
+    function updateProduct(product) {
+        var checked = product.querySelectorAll('.fac-order-check:checked');
+        var units = Array.from(checked).reduce(function (sum, input) {
+            return sum + (Number.parseInt(input.dataset.quantity, 10) || 0);
+        }, 0);
+        product.querySelector('.fac-quantity').value = units;
+        product.querySelector('.fac-quantity-input').value = units;
+        return checked.length;
+    }
+
+    function updateSelection() {
+        var count = form.querySelectorAll('.fac-order-check:checked').length;
+        selection.textContent = count + (count === 1 ? ' OS selecionada' : ' OS selecionadas');
+    }
+
+    products.forEach(updateProduct);
+    updateSelection();
+    form.addEventListener('change', function (event) {
+        if (event.target.matches('.fac-order-check')) {
+            updateProduct(event.target.closest('.fac-product'));
+            updateSelection();
+        }
+        feedback.hidden = true;
+    });
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        list.replaceChildren();
+        for (var product of products) {
+            if (!updateProduct(product)) continue;
+            var supplier = product.querySelector('.fac-supplier');
+            if (!supplier.value) {
+                product.open = true;
+                feedback.textContent = 'Selecione um fornecedor para cada produto com OS selecionadas.';
+                feedback.hidden = false;
+                supplier.focus();
+                return;
+            }
+            var item = document.createElement('li');
+            item.textContent = product.querySelector('summary strong').textContent.trim() + ' \u2014 ' +
+                product.querySelector('.fac-quantity-input').value + ' un. \u2014 ' +
+                supplier.options[supplier.selectedIndex].text.trim();
+            list.appendChild(item);
+        }
+        if (!list.children.length) {
+            feedback.textContent = 'Selecione pelo menos uma OS para continuar.';
+            feedback.hidden = false;
+            return;
+        }
+        feedback.hidden = true;
+        dialog.returnValue = '';
+        dialog.showModal();
+    });
+
+    dialog.addEventListener('close', function () {
+        if (dialog.returnValue === 'gerar') form.submit();
+    });
+})();
+</script>
 </body>
 </html>

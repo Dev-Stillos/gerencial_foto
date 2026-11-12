@@ -112,7 +112,7 @@ If Request.Form("Grava3") <> Empty Then
 						If not rsTurmaForm.Eof Then
 						'Caso encontre coloca o nome da faculdade correspondente.
 							TURMA = rsTurmaForm("DESCRICAO")
-							'Correção do nome
+							'CorreÃ§Ã£o do nome
 							TURMA = Replace(TURMA,COD_CONTRATO&"    -   ","")
 							TURMA = Replace(TURMA,COD_CONTRATO&"    -  ","")
 							TURMA = Replace(TURMA,COD_CONTRATO&"   -   ","")
@@ -167,7 +167,7 @@ If Request.Form("Grava3") <> Empty Then
 				Set rsTurmaForm = Nothing
 																		
 		
-		'0 por que é álbum
+		'0 por que Ã© Ã¡lbum
 		LINHA1 = chr(34)&COD_FORMANDO&"0"&chr(34)
 		LINHA2 = chr(34)&NOME_FORMANDO&chr(34)
 		LINHA3 = chr(34)& Left(TURMA,16)&" - "&COD_CONTRATO&chr(34)
@@ -224,7 +224,7 @@ If Request.Form("Grava3") <> Empty Then
 						If not rsTurmaForm.Eof Then
 						'Caso encontre coloca o nome da faculdade correspondente.
 							TURMA = rsTurmaForm("DESCRICAO")
-							'Correção do nome
+							'CorreÃ§Ã£o do nome
 							TURMA = Replace(TURMA,COD_CONTRATO&"    -   ","")
 							TURMA = Replace(TURMA,COD_CONTRATO&"    -  ","")
 							TURMA = Replace(TURMA,COD_CONTRATO&"   -   ","")
@@ -283,7 +283,7 @@ If Request.Form("Grava3") <> Empty Then
 		
 																				
 		
-									  '0 por que é álbum
+									  '0 por que Ã© Ã¡lbum
 		LINHA1 = chr(34)&COD_FORMANDO&"0"&chr(34)
 		LINHA2 = chr(34)&NOME_FORMANDO&chr(34)
 		LINHA3 = chr(34)& Left(TURMA,16)&" - "&COD_CONTRATO&chr(34)
@@ -339,7 +339,7 @@ If Request.Form("Grava3") <> Empty Then
 						If not rsTurmaForm.Eof Then
 						'Caso encontre coloca o nome da faculdade correspondente.
 							TURMA = rsTurmaForm("DESCRICAO")
-							'Correção do nome
+							'CorreÃ§Ã£o do nome
 							TURMA = Replace(TURMA,COD_CONTRATO&"    -   ","")
 							TURMA = Replace(TURMA,COD_CONTRATO&"    -  ","")
 							TURMA = Replace(TURMA,COD_CONTRATO&"   -   ","")
@@ -398,7 +398,7 @@ If Request.Form("Grava3") <> Empty Then
 		
 																				
 		
-		'1 por que é FICHA
+		'1 por que Ã© FICHA
 		LINHA1 = chr(34)&COD_FORMANDO&"1"&chr(34)
 		LINHA2 = chr(34)&NOME_FORMANDO&chr(34)
 		LINHA3 = chr(34)& Left(TURMA,16)&" - "&COD_CONTRATO&chr(34)
@@ -429,8 +429,8 @@ If Request.Form("Grava3") <> Empty Then
 	
 	'////////////////////////////
 	'ETIQUETAS AGREGADOS
-	'1) Verifica quais são os agregados
-	'2) Verifica quais estão selecionados
+	'1) Verifica quais sÃ£o os agregados
+	'2) Verifica quais estÃ£o selecionados
 	'3) Imprime cada qual de acordo
 	
 	
@@ -472,7 +472,7 @@ If Request.Form("Grava3") <> Empty Then
 							If not rsTurmaForm.Eof Then
 										'Caso encontre coloca o nome da faculdade correspondente.
 											TURMA = rsTurmaForm("DESCRICAO")
-											'Correção do nome
+											'CorreÃ§Ã£o do nome
 											TURMA = Replace(TURMA,COD_CONTRATO&"    -   ","")
 											TURMA = Replace(TURMA,COD_CONTRATO&"    -  ","")
 											TURMA = Replace(TURMA,COD_CONTRATO&"   -   ","")
@@ -587,320 +587,102 @@ End If
 
 
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 1.2</title>
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-	<script language="javascript">
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript" language="javascript">
-	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-		
-	function abrir(theURL,winName,features) 
-	{ 
-	  window.open(theURL,winName,features);
-	}
-
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}	
-		
-		
-	
-
-	function buscaIni(){
-	d = document.buscaForm
-	d.busca.focus()
-	d.busca.select();
-	}
-	function mudacorBusca(CAMPO){
-	CAMPO.style.backgroundColor = '#F5ECBA'
-	}
-	function mudacorBusca2(CAMPO){
-	CAMPO.style.backgroundColor = '#FFFFFF'
-	}
-
- function Verificar()
- {
-  var tecla=window.event.keyCode;
-  if (tecla==17) {
-    buscaIni();
-	}
- }
- 
-
-
-	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-	</script>
-		<!-- CALENDÁRIO SCRIPTS
-	<script type="text/javascript">
-	DHTMLSuite.include("calendar");
-	</script>
-	<script type="text/javascript">
-	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
-	
-		 
-	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
-	
-	function myOtherFunction()
-	{
-		
-		
-	}
-	function pickDate(buttonObj,inputObject)
-	{
-		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
-		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
-		if(calendarObjForForm.isVisible()){
-			calendarObjForForm.hide();
-		}else{
-			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
-			calendarObjForForm.display();
-		}		
-	}	
-	/* inputArray is an associative array with the properties
-	year
-	month
-	day
-	hour
-	minute
-	calendarRef - Reference to the DHTMLSuite.calendar object.
-	*/
-	function getDateFromCalendar(inputArray)
-	{
-		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
-		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
-//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
-		calendarObjForForm.hide();	
-		
-	}	
-	</script>
-	-->
-	<script language="javascript">
-function YNconfirm(txt){
-return typeof(suporteVBscript)=="undefined"?confirm(txt):VBconfirm(txt)==6
-}
-</script>
-<script language="vbscript">
-suporteVBscript=1
-function VBconfirm(mensagem)
-
- VBconfirm=msgbox(mensagem,vbyesno)
-end function
-
-</script>
-	<script language="javascript">
-	function validaForm(){
-	d = document.CAD_FORMANDOS_2
-		if(d.ALBUM.value == ""){
-		d.ALBUM.focus();
-		alert('Campo álbum não digitado!');
-		return false;
-		}
-	
-		if(d.INICIAL.value == ""){
-		d.INICIAL.focus();
-		alert('Campo inicial não digitado!');
-		return false;
-		}
-	
-		if(d.ALBUM_EM_POSSE.value == 3 && d.FICHAS_EM_POSSE.value == 27){
-		d.ALBUM_EM_POSSE.focus();
-		alert('Você informou que o álbum está com o vendedor, mas não informou qual vendedor é!');
-		return false;
-		}
-	
-	}
-	</script>
-	
-	<script language="javascript">
-		function popUp(campo,URL,campoSelect,msgErro){
-			
-			if(document.CAD_FORMANDOS_2[campo].value==1){
-				
-				if (campoSelect !== 'no'){
-					//Brinde = "Sim"
-					document.CAD_FORMANDOS_2[campoSelect].options[1].selected = "true";
-				}
-			
-				win=window.open(URL,"","width=350,height=220,scrollbars=yes")
-				var text = "Se a janela não abrir desbloquei os Pop-ups!";
-				if(win == null) { alert(text); return; }
-				win.moveTo(350,150);
-					
-			}
-			else {
-				if (msgErro==1){alert('Para visualizar os brindes é necessário alterar a opção Brinde para Sim.')}
-			}
-		
-		}
-		
-		
-		function fecharPopUp(){
-			if(win){
-				win.close();
-			}
-		}
-		
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-			
-		function focuInic(){
-		document.CAD_FORMANDOS_3.Grava3.focus();
-		}	
-	</script>
+  <meta charset="iso-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Impress&atilde;o de etiquetas | Portal Stillos</title>
+  <link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <style>
+    .labels-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
+    .labels-page .dashboard-nav a.active:hover { background:#37394f; color:#fff; }
+    .labels-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+    .labels-page .labels-panel { height:auto; max-width:960px; margin-inline:auto; padding:clamp(18px, 3vw, 32px); }
+    .labels-panel h2 { margin-bottom:14px; }
+    .labels-person { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 1fr); gap:12px 24px; margin:0 0 24px; padding:16px; border-radius:8px; background:#f7f5fa; }
+    .labels-person dt { color:#53566b; font-size:12px; margin-bottom:3px; }
+    .labels-person dd { font-weight:650; margin:0; overflow-wrap:anywhere; }
+    .labels-group { min-width:0; margin:0 0 18px; padding:0; border:0; }
+    .labels-group legend, .labels-mode label { float:none; font-size:14px; font-weight:650; margin-bottom:8px; }
+    .labels-choices { display:flex; flex-wrap:wrap; gap:8px; }
+    .labels-choice { display:flex; align-items:center; gap:9px; padding:10px 13px; border:1px solid #dddde7; border-radius:8px; cursor:pointer; overflow-wrap:anywhere; }
+    .labels-choice:has(input:checked) { border-color:#b20b61; background:#fdf1f7; }
+    .labels-choice .form-check-input { flex:none; margin:0; }
+    .labels-choice .form-check-input:checked { background-color:#b20b61; border-color:#b20b61; }
+    .labels-mode .form-select { max-width:280px; }
+    .labels-actions { display:flex; justify-content:flex-end; margin-top:24px; padding-top:16px; border-top:1px solid var(--line); }
+    @media(max-width:480px) {
+      .labels-person { grid-template-columns:1fr; }
+      .labels-choices { flex-direction:column; }
+      .labels-mode .form-select, .labels-actions .btn { max-width:none; width:100%; }
+    }
+  </style>
 </head>
-
-<body onload="focuInic()">
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "#"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-
-	  <h2>DIP - Impress&atilde;o de Etiqueta de Identifica&ccedil;&atilde;o </h2>
-	   <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
-	  	  <h3 align="center">Selecione as etiquetas que deseja imprimir  </h3>
-		  <div id="comboTexto">
-		  	<form name="CAD_FORMANDOS_3" method="post" action="dip_formandos_cadastro_album_impressao_etiquetas.asp?ia=<%=imprimir_agora%>&cod_formando=<%=COD_FORMANDO%>"> 
-          	<table width="95%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-		        	<tr>
-            <td width="24%" bgcolor="#CCCCCC"><strong>Nome Formando: </strong></td>
-            <td width="76%" bgcolor="#CCCCCC"><strong><%=NOME_FORMANDO%></strong></td>
-            </tr>
-					<tr>
-				<td width="24%" bgcolor="#CCCCCC"><strong>Curso:</strong></td>
-            <td width="76%" bgcolor="#CCCCCC"><strong><%=NOME_CURSO%></strong></td>
-            </tr>
-			
-			<tr>
-            <td colspan="2"><div align="center"><strong>Impress&atilde;o de Etiqueta </strong></div></td>
-            </tr>
-			
-          
-		 <%If HABILITA_IMPRESSAO_ALBUM = 1 Then%>
-		  <tr>
-            <td> Etiqueta de &Aacute;lbum: </td>
-            <td><table width="300" border="0" cellspacing="0" cellpadding="2">
-              <tr>
-                <td width="17%">1 Etiqueta</td>
-                <td width="8%"><div align="center">
-                  <input class="inputRadio" checked="checked" name="ETIQUETA_ALBUM" type="radio" value="1" />
-                </div></td>
-                <td width="24%"><div align="center">2 Etiquetas </div></td>
-                <td width="12%">
-                  <div align="left">
-                    <input  class="inputRadio" name="ETIQUETA_ALBUM" type="radio" value="2" />
-                    </div></td>
-                <td width="17%">Nenhuma</td>
-                <td width="22%"><input class="inputRadio" name="ETIQUETA_ALBUM" type="radio" value="0" /></td>
-              </tr>
-            </table></td>
-            </tr>
-		<%End If%>		
-			
-		  <%If HABILITA_IMPRESSAO_ALBUM_DUPLO = 1 Then%>
-          <tr>
-            <td height="38"> Etiqueta de &Aacute;lbum Duplo:</td>
-            <td><table width="300" border="0" cellspacing="0" cellpadding="2">
-              <tr>
-                <td width="17%">1 Etiqueta</td>
-                <td width="8%"><div align="center">
-                  <input checked="checked" class="inputRadio"  name="ETIQUETA_ALBUM_DUPLO" type="radio" value="1" />
-                </div></td>
-                <td width="24%"><div align="center">2 Etiquetas </div></td>
-                <td width="12%">
-                  <div align="left">
-                    <input class="inputRadio" name="ETIQUETA_ALBUM_DUPLO" type="radio" value="2" />
-                    </div></td>
-                <td width="17%">Nenhuma</td>
-                <td width="22%"><input class="inputRadio" name="ETIQUETA_ALBUM_DUPLO" type="radio" value="0" /></td>
-              </tr>
-            </table></td>
-            </tr>		
-		  <%End If%>
-          
-		  <tr>
-            <td>Ficha de Identifica&ccedil;&atilde;o:</td>
-            <td>1 Etiqueta
-              <input class="inputRadio" type="checkbox" name="ETIQUETA_FICHA" value="1" /></td>
-            </tr>
-			
-	<%
+<body class="labels-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Impress&atilde;o de etiquetas</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div>
+          <h1>Impress&atilde;o de etiquetas</h1>
+          <p>Selecione as etiquetas e escolha quando imprimir.</p>
+        </div>
+        <%If imprimir_agora = 1 Then%>
+        <a class="btn btn-outline-secondary" href="dip_busca_detalhamento_formando.asp?cod_formando=<%=Server.URLEncode(COD_FORMANDO & "")%>">Voltar &agrave; ficha</a>
+        <%Else%>
+        <a class="btn btn-outline-secondary" href="dip_formandos.asp">Voltar aos formandos</a>
+        <%End If%>
+      </div>
+      <div class="search-panel"><strong>Busca no portal</strong><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <!-- #include file="includes/dashboard_avisos.asp" -->
+      <%If Len(Request.QueryString("msg") & "") > 0 Then%>
+      <p class="alert alert-info" role="status"><%=Server.HTMLEncode(Request.QueryString("msg") & "")%></p>
+      <%End If%>
+      <section class="dashboard-panel labels-panel" aria-labelledby="etiquetas-titulo">
+        <h2 id="etiquetas-titulo">Etiquetas de identifica&ccedil;&atilde;o</h2>
+        <dl class="labels-person">
+          <div><dt>Formando</dt><dd><%=Server.HTMLEncode(NOME_FORMANDO & "")%></dd></div>
+          <div><dt>Curso</dt><dd><%=Server.HTMLEncode(NOME_CURSO & "")%></dd></div>
+        </dl>
+        <form name="CAD_FORMANDOS_3" method="post" action="dip_formandos_cadastro_album_impressao_etiquetas.asp?ia=<%=imprimir_agora%>&amp;cod_formando=<%=COD_FORMANDO%>">
+        <%If HABILITA_IMPRESSAO_ALBUM = 1 Then%>
+        <fieldset class="labels-group">
+          <legend>Etiqueta de &aacute;lbum</legend>
+          <div class="labels-choices">
+            <label class="labels-choice"><input class="form-check-input" type="radio" name="ETIQUETA_ALBUM" value="1" checked> 1 etiqueta</label>
+            <label class="labels-choice"><input class="form-check-input" type="radio" name="ETIQUETA_ALBUM" value="2"> 2 etiquetas</label>
+            <label class="labels-choice"><input class="form-check-input" type="radio" name="ETIQUETA_ALBUM" value="0"> Nenhuma</label>
+          </div>
+        </fieldset>
+        <%End If%>
+        <%If HABILITA_IMPRESSAO_ALBUM_DUPLO = 1 Then%>
+        <fieldset class="labels-group">
+          <legend>Etiqueta de &aacute;lbum duplo</legend>
+          <div class="labels-choices">
+            <label class="labels-choice"><input class="form-check-input" type="radio" name="ETIQUETA_ALBUM_DUPLO" value="1" checked> 1 etiqueta</label>
+            <label class="labels-choice"><input class="form-check-input" type="radio" name="ETIQUETA_ALBUM_DUPLO" value="2"> 2 etiquetas</label>
+            <label class="labels-choice"><input class="form-check-input" type="radio" name="ETIQUETA_ALBUM_DUPLO" value="0"> Nenhuma</label>
+          </div>
+        </fieldset>
+        <%End If%>
+        <fieldset class="labels-group">
+          <legend>Ficha de identifica&ccedil;&atilde;o e produtos</legend>
+          <div class="labels-choices">
+            <label class="labels-choice"><input class="form-check-input" type="checkbox" name="ETIQUETA_FICHA" value="1"> Ficha de identifica&ccedil;&atilde;o &middot; 1 etiqueta</label>
+<%
 AbrirConexao()
 											
 										Dim rsProd
@@ -912,62 +694,53 @@ AbrirConexao()
 																	'Response.Write(sql)
 										Set rsProd = objConexao.Execute(sql)
 					
-										While not rsProd.Eof%>	
-									  <tr>
-            <td><%=rsProd("NOME_PRODUTO")%>:</td>
-            <td>1 Etiqueta
-              <input class="inputRadio" type="checkbox" name="ETIQUETA_PRODUTO_AGREGADO_<%=rsProd("COD_PRODUTO")%>" value="1" /></td>
-            </tr>	
-									<%
+										While not rsProd.Eof%>
+            <label class="labels-choice"><input class="form-check-input" type="checkbox" name="ETIQUETA_PRODUTO_AGREGADO_<%=rsProd("COD_PRODUTO")%>" value="1"> <%=Server.HTMLEncode(rsProd("NOME_PRODUTO") & "")%> &middot; 1 etiqueta</label>
+<%
 										rsProd.MoveNext()
 										Wend
 										
 									rsProd.Close()		
 									Set rsProd = Nothing
-FecharConexao()
-									%>	
-			<tr>
-            <td>Impress&atilde;o:</td>
-            <td><select name="IMPRESSAO">
-				<option value="1" selected="selected">AGENDADA</option>
-				<option value="2">IMPRIMIR AGORA</option>
-            </select>
-            </td>
-            </tr>
-			
-          <tr>
-            <td colspan="2"><div align="center">
-              <input class="btnAvancar" type="submit" name="Grava3" value=" " />
-            </div></td>
-            </tr>
-		         </table>
-		  	</form>
-		  </div>
-		
-		  <p>&nbsp;</p>
-
-
-
-				
-		</td>
-
-    </tr>
-</table>
-
- 
-  
-  </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+FecharConexao()%>
+          </div>
+        </fieldset>
+        <div class="labels-mode">
+          <label for="labels-print-mode">Modo de impress&atilde;o</label>
+          <select class="form-select" id="labels-print-mode" name="IMPRESSAO">
+            <option value="1" selected>Agendada</option>
+            <option value="2">Imprimir agora</option>
+          </select>
+        </div>
+        <div class="labels-actions">
+          <button class="btn btn-primary" type="submit" name="Grava3" value=" ">Avan&ccedil;ar</button>
+        </div>
+        </form>
+      </section>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="dip_formandos.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
 </body>
 </html>
