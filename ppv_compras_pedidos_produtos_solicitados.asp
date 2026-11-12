@@ -1,18 +1,12 @@
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
 <%
-Dim calendario_necessario
-Calendario_necessario = "SIM"
- 
-Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-BTN_VOLTAR = 1
-BTN_IMPRIMIR = 2
-BTN_FONTE = 1
-BTN_IMPRIMIR_LINK = "#"
-
-titulo_pagina = "Compras - Listagem por Item Solicitados"
+Dim caminho_pagina, calendario_necessario
+caminho_pagina = "ppv_compras_pedidos_produtos_solicitados.asp"
+calendario_necessario = "SIM"
 %>
-<!-- #include file="files/includes/miolo-superior.asp" -->
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
-  
     <%
 	AbrirConexao()
 	Dim acesso_entrada_pedido_compra, acesso_excluir_entrada_errada, validacao_para_entrada_qualquer_pedido
@@ -141,7 +135,7 @@ titulo_pagina = "Compras - Listagem por Item Solicitados"
 
 			
 		Else
-				'Padr„o filtrado como somente pendentes		
+				'Padr√£o filtrado como somente pendentes		
 				filtro_status_produto = "P"
 				sqlWhere = " AND VW_TB_PEDIDOS_COMPRAS_PRODUTOS.status_produto = 'P' "
 		End If	
@@ -155,7 +149,7 @@ sql = sql&sqlWhere&sqlOrderBy
 '////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 If Request.Form("campo1") <> Empty and acesso_entrada_pedido_compra Then
 		
-	'Limpa a base tempor·ria para o usu·rio
+	'Limpa a base tempor√°ria para o usu√°rio
 	objConexao.Execute("DELETE FROM TB_PEDIDOS_COMPRAS_PRODUTOS_TEMPORARIA WHERE cod_usuario = "&sqlTexto(Session("cod_usuario")))
 	
 	Set rs=objConexao.Execute("SELECT VW_TB_PEDIDOS_COMPRAS_PRODUTOS.* FROM VW_TB_ORDENS_SERVICO INNER JOIN VW_TB_PEDIDOS_COMPRAS_PRODUTOS on VW_TB_ORDENS_SERVICO.COD_ORDEM_SERVICO = VW_TB_PEDIDOS_COMPRAS_PRODUTOS.COD_ORDEM_SERVICO WHERE VW_TB_PEDIDOS_COMPRAS_PRODUTOS.status_pedido_compra <> 0 AND VW_TB_PEDIDOS_COMPRAS_PRODUTOS.status_produto = 'P'")
@@ -170,7 +164,7 @@ If Request.Form("campo1") <> Empty and acesso_entrada_pedido_compra Then
 				If Cstr(""&Request.Form("cod_pedido_compra_produto_"&cod_pedido_compra_produto))  = "S" Then
 					
 					'//////
-					'Insere na base de dados tempor·ria para gerar o recibo futuramente
+					'Insere na base de dados tempor√°ria para gerar o recibo futuramente
 					objConexao.Execute("INSERT INTO TB_PEDIDOS_COMPRAS_PRODUTOS_TEMPORARIA (cod_pedido_compra_produto,cod_usuario) VALUES("&sqlTexto(cod_pedido_compra_produto)&","&sqlTexto(Session("cod_usuario"))&")")
 					'//////
 					
@@ -178,11 +172,11 @@ If Request.Form("campo1") <> Empty and acesso_entrada_pedido_compra Then
 					'1) Baixa o item na compra
 					objConexao.Execute("UPDATE TB_PEDIDOS_COMPRAS_PRODUTOS SET status_produto = 'E', quantidade_entregue = "&sqlNumero(rs("quantidade_solicitada"))&" WHERE cod_pedido_compra_produto = "&sqlNumero(cod_pedido_compra_produto)) 
 					
-					'2) Verifica se n„o h· mais itens para serem baixados do pedido
+					'2) Verifica se n√£o h√° mais itens para serem baixados do pedido
 					Set rs2=objConexao.Execute("SELECT cod_pedido_compra FROM TB_PEDIDOS_COMPRAS_PRODUTOS WHERE cod_pedido_compra = "&sqlTexto(cod_pedido_compra)&" and status_produto = 'P'")
 						
 						If rs2.Eof Then
-							'Finaliza o Pedido de Compra se n„o encontrar nenhum produto pendente
+							'Finaliza o Pedido de Compra se n√£o encontrar nenhum produto pendente
 							objConexao.Execute("UPDATE TB_PEDIDOS_COMPRAS SET STATUS_PEDIDO_COMPRA = 3 WHERE cod_pedido_compra = "&sqlTexto(cod_pedido_compra))
 														
 						End If
@@ -203,7 +197,7 @@ If Request.Form("campo1") <> Empty and acesso_entrada_pedido_compra Then
 						rs3.Close
 						Set rs3=Nothing
 						
-						'Verifica qual o n˙mero da etapa atual
+						'Verifica qual o n√∫mero da etapa atual
 						Set rs3=objConexao.Execute("Select numero_etapa From VW_TB_ORDENS_SERVICO where cod_ordem_servico = "&cod_ordem_servico)
 					
 							If not rs3.Eof Then
@@ -214,7 +208,7 @@ If Request.Form("campo1") <> Empty and acesso_entrada_pedido_compra Then
 						Set rs3=Nothing
 
 						If int(qtd_etapas) = int(numero_etapa) Then
-						'Dever· finalizar OS, pois È a ˙ltima etapa
+						'Dever√° finalizar OS, pois √© a √∫ltima etapa
 							sql = "UPDATE TB_ORDENS_SERVICO_ETAPAS SET data_termino = NOW() WHERE cod_ordem_servico = "&sqlTexto(cod_ordem_servico)&" and cod_ordem_servico_etapa = "&sqlTexto(cod_ordem_servico_etapa)
 							objConexao.Execute(sql)
 							sql = "UPDATE TB_ORDENS_SERVICO SET status_ordem_servico = 2, data_finalizado = NOW(), cod_usuario_finalizou = "&Session("cod_usuario")&" WHERE cod_ordem_servico = "&sqlTexto(cod_ordem_servico)
@@ -223,7 +217,7 @@ If Request.Form("campo1") <> Empty and acesso_entrada_pedido_compra Then
 						'Finaliza a etapa atual				
 							sql = "UPDATE TB_ORDENS_SERVICO_ETAPAS SET data_termino = NOW() WHERE cod_ordem_servico = "&sqlTexto(cod_ordem_servico)&" and cod_ordem_servico_etapa = "&sqlTexto(cod_ordem_servico_etapa)		
 							objConexao.Execute(sql)
-							'Inicia a prÛxima Etapa
+							'Inicia a pr√≥xima Etapa
 							Set rs3=objConexao.Execute("SELECT cod_ordem_servico_etapa FROM TB_ORDENS_SERVICO_ETAPAS WHERE cod_ordem_servico = "&cod_ordem_servico&" and numero_etapa IN(SELECT (numero_etapa+1) FROM VW_TB_ORDENS_SERVICO WHERE cod_ordem_servico = "&cod_ordem_servico&")")
 												
 									If not rs3.Eof Then
@@ -261,83 +255,103 @@ End If
 
 
 %>
-<script type="text/javascript">
-<%
-'a = cod_pedido_compra (base64Encode)
-'b = cod_pedido_compra_produto (base64Encode)
-%>
-
-function confirmaExclusaoEntradaErrada(b){
-	if(YNconfirm('Tem certeza que deseja cancelar a entrada deste item?\nO item ser· retornado para antes como se n„o tivesse sido entregue.')){
-		var caminho = 'ppv_compras_pedidos_ajax.asp?ts=cee&valor='+b;
-		ajax_loadContent("containerProdutoPedidoCompra_"+b,caminho,false,false,false);
-	}		
+<%FecharConexao()%>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produtos solicitados | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/modal-message.css">
+<!-- #include file="files/includes/scripts.asp" -->
+<style>
+.sol-page .dashboard-nav a.active:not([aria-current]) { background:transparent; color:#d4d5e1; }
+.sol-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+.sol-page .sol-panel { height:auto; margin-bottom:16px; padding:clamp(14px,3vw,26px); }
+.sol-muted { color:#57566a; }
+.sol-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:14px 0; }
+.sol-filters label { display:block; font-weight:650; margin-bottom:5px; }
+.sol-date, .sol-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.sol-date { flex-wrap:nowrap; }
+.sol-date input { min-width:0; }
+.sol-date button { padding:8px; }
+.sol-heading { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+.sol-table { width:100%; margin:0; }
+.sol-table th, .sol-table td { padding:10px 8px; vertical-align:top; }
+.sol-table th { background:#f4f1f7; color:#42364e; }
+.sol-table tr:has(.sol-select:checked) > td { background:#f5fbf7; }
+.sol-table small { display:block; color:#57566a; }
+.sol-link { display:block; margin-top:4px; padding:0; border:0; background:none; color:#88134f; text-decoration:underline; font:inherit; cursor:pointer; }
+.sol-item-details { margin-top:5px; }
+.sol-item-details summary { color:#88134f; cursor:pointer; }
+.sol-item-details dl { margin:8px 0 0; overflow-wrap:anywhere; }
+.sol-item-details dd { margin:0 0 6px; }
+.sol-status { display:inline-block; padding:4px 7px; border-radius:5px; background:#f0edf8; color:#51436e; font-weight:650; }
+.sol-ok { background:#e7f3ec; color:#286143; }
+.sol-today { background:#fdf2db; color:#795419; }
+.sol-late { background:#fce9ee; color:#8e2045; }
+.sol-pagination { justify-content:center; margin-top:14px; }
+.sol-review { position:sticky; bottom:0; z-index:2; display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:8px; padding:10px; margin-top:14px; border:1px solid #e4dfeb; border-radius:8px; background:#fff; }
+.sol-review p { flex-basis:100%; color:#8e2045; margin:0; }
+.sol-dialog { width:min(480px,calc(100% - 24px)); padding:24px; border:1px solid #e4dfeb; border-radius:14px; color:var(--ink); }
+.sol-dialog::backdrop { background:#24273899; }
+.sol-dialog .sol-actions { justify-content:flex-end; }
+@media(max-width:1050px) {
+  .sol-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .sol-table, .sol-table tbody { display:block; }
+  .sol-table thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .sol-table tbody tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px; border:1px solid #e4dfeb; border-radius:8px; }
+  .sol-table td { display:block; min-width:0; border:0; overflow-wrap:anywhere; }
+  .sol-table td:nth-child(3) { grid-column:1/-1; background:#f7f5fa; }
+  .sol-table td::before { content:attr(data-label); display:block; color:#57566a; font-size:.85em; font-weight:650; }
 }
-function CarregaAjax(div,ts,p0,p1,p2,p3){
-	//FunÁ„o padrao para utilizaÁ„o de ajax nesta p·gina.
-	var caminho = "ppv_compras_pedidos_ajax.asp?ts="+ts+"&valor="+p0+'&valor1='+p1+'&valor2='+p2+'&valor3='+p3;
-	//alert(caminho);
-	ajax_loadContent(div,caminho,false,false,false);	
-}
-
-function marcarLinhaPedidosCompra(selecionado,cod_pedido_compra_produto){
-	
-	if(selecionado){
-		document.getElementById("linha_"+cod_pedido_compra_produto).style.backgroundColor = '#D6FED7';
-	}else{
-		document.getElementById("linha_"+cod_pedido_compra_produto).style.backgroundColor = '#FFFFFF';
-	}
-	
-}
-
-function confirmaEntrada(){
-	if(YNconfirm('Tem certeza que deseja efetuar a entrada dos itens selecionados?')){
-		document.FORMULARIO_PADRAO.submit();
-	}		
-}
-
-</script>
-
-<h2><%=titulo_pagina%></h2><br />
- <!-- #include file="includes/compras_sub_menu.asp" -->
-<div class="subMenu" style="border:#999999 dashed 1px; padding:2px; background:#FFFFCC">
-<form action="<%=caminho_pagina%>" name="FORMULARIO_FILTRO" method="get">
-<input name="" type="submit" style="display:none; visibility:hidden" />
-<table width="483" border="0" cellpadding="0" cellspacing="0"><tr><td width="106" style="padding-left:10px;"><table width="483" border="0" cellpadding="0" cellspacing="0">
-  <tr>
-    <td width="32" rowspan="8"><span style="font-weight: bold">Filtrar</span></td>
-    <td width="105" style="padding-left:10px; padding-top:5px;">N&ordm; de Pedido</td>
-    <td width="105" style="padding-left:10px; padding-top:5px;">Contrato</td>
-    <td style="padding-left:10px; padding-top:5px;">Ordenar por</td>
-    <td width="124" style="padding-left:10px; padding-top:5px;">Status do Produto</td>
-    <td colspan="2" style="padding-left:10px; padding-top:5px;">&nbsp;</td>
-  </tr>
-  <tr>
-    <td width="105" style="padding-left:10px;"><input type='text' style="width:80px" class="inputTamanho1" value="<%=filtro_NUMERO_PEDIDO_COMPRAS%>" name='NUMERO_PEDIDO_COMPRAS' /></td>
-    <td width="105" style="padding-left:10px;"><input type='text' class="inputTamanho1" style="width:80px" value="<%=filtro_COD_CONTRATO%>" name='COD_CONTRATO' /></td>
-    <td style="padding-left:10px;"><select style="width:100%" name="ordernar_por" class="inputTamanho1">
+@media(max-width:480px) { .sol-filters { grid-template-columns:1fr; } }
+</style>
+</head>
+<body class="sol-page">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Compras</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="dashboard-heading">
+        <div><h1>Produtos solicitados</h1><p>Consulte os itens dos pedidos de compra e registre os recebimentos.</p></div>
+        <a href="adm_index.asp" class="btn btn-outline-secondary">Voltar ao painel</a>
+      </div>
+      <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+      <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+<!-- #include file="includes/compras_sub_menu.asp" -->
+<section class="dashboard-panel sol-panel" aria-labelledby="sol-filter-title">
+<h2 id="sol-filter-title">Filtrar itens</h2>
+<p class="sol-muted">Informe um fornecedor ou o n&uacute;mero do pedido de compra para listar os itens.</p>
+<form action="ppv_compras_pedidos_produtos_solicitados.asp" name="FORMULARIO_FILTRO" method="get">
+<input type="hidden" value="1" name="filtro">
+<div class="sol-filters">
+<div><label for="sol-order">N&uacute;mero do pedido</label><input class="form-control" id="sol-order" inputmode="numeric" name="NUMERO_PEDIDO_COMPRAS" value="<%=Server.HTMLEncode(filtro_NUMERO_PEDIDO_COMPRAS & "")%>"></div>
+<div><label for="sol-contract">C&oacute;digo do contrato</label><input class="form-control" id="sol-contract" name="COD_CONTRATO" value="<%=Server.HTMLEncode(filtro_COD_CONTRATO & "")%>"></div>
+<div><label for="sol-ordernar_por">Ordenar por</label><select class="form-select" id="sol-ordernar_por" name="ordernar_por">
       <option <%If Cstr(filtro_ordernar_por) = "1" Then%> selected="selected" <%End If%> value="1">Data de Entrega (Crescente)</option>
       <option <%If Cstr(filtro_ordernar_por) = "2" Then%> selected="selected" <%End If%> value="2">Formando</option>
       <option <%If Cstr(filtro_ordernar_por) = "3" Then%> selected="selected" <%End If%> value="3">Institui&ccedil;&atilde;o de Ensino</option>
-    </select></td>
-    <td width="124" style="padding-left:10px;"><select name="status_produto" style="width:100%" class="inputTamanho1">
+    </select></div><div><label for="sol-status_produto">Status do produto</label><select class="form-select" id="sol-status_produto" name="status_produto">
       <option <%If Cstr(filtro_status_produto) = "" Then%> selected="selected" <%End If%> value="">Todos</option>
       <option <%If Cstr(filtro_status_produto) = "P" Then%> selected="selected" <%End If%> value="P">Pendentes</option>
       <option <%If Cstr(filtro_status_produto) = "E" Then%> selected="selected" <%End If%> value="E">Entregues</option>
       <option <%If Cstr(filtro_status_produto) = "C" Then%> selected="selected" <%End If%> value="C">Cancelados</option>
-    </select></td>
-    <td width="41" style="padding-left:10px;">&nbsp;</td>
-    <td width="31" style="padding-left:10px;">&nbsp;</td>
-  </tr>
-  <tr>
-    <td colspan="2"  style="padding-left:10px; padding-top:5px;">Respons&aacute;vel pelo pedido</td>
-    <td colspan="2"  style="padding-left:10px; padding-top:5px;">Fornecedor</td>
-    <td  style="padding-left:10px; padding-top:5px;">&nbsp;</td>
-    <td  style="padding-left:10px; padding-top:5px;">&nbsp;</td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px;"> <%If validacao_para_entrada_qualquer_pedido Then%>
-    <select class="inputTamanho2" name="CADASTRO_COD_USUARIO">
+    </select></div>
+<%If validacao_para_entrada_qualquer_pedido Then%>
+<div><label for="sol-CADASTRO_COD_USUARIO">Respons&aacute;vel pelo pedido</label><select class="form-select" id="sol-CADASTRO_COD_USUARIO" name="CADASTRO_COD_USUARIO">
       <option value="" <%If Cstr(filtro_cadastro_cod_usuario) = "" Then%> selected="selected" <%End If%>>Todos</option>
       <%                                          
                                             Set rs3=objConexao.Execute("SELECT COD_USUARIO, NOME FROM TB_ADM_USUARIOS WHERE COD_USUARIO IN(SELECT cadastro_cod_usuario FROM TB_PEDIDOS_COMPRAS WHERE status_pedido_compra > 0 GROUP BY cadastro_cod_usuario) ORDER BY NOME ASC")
@@ -355,11 +369,11 @@ function confirmaEntrada(){
                                             rs3.Close
                                             Set rs3=Nothing
                                         %>
-    </select>
-    <%Else%>
-    <strong style="font-size:14px;"><%=nomeUsuario(Session("cod_usuario"),true)%></strong>
-    <%End If%></td>
-    <td colspan="2" style="padding-left:10px;"><select  style="width:100%" class="inputTamanho2" name="COD_FORNECEDOR">
+    </select></div>
+<%Else%>
+<div><strong>Respons&aacute;vel pelo pedido</strong><p class="mb-0"><%=nomeUsuario(Session("cod_usuario"),true)%></p></div>
+<%End If%>
+<div><label for="sol-COD_FORNECEDOR">Fornecedor</label><select class="form-select" id="sol-COD_FORNECEDOR" name="COD_FORNECEDOR">
       <option value="" <%If Cstr(filtro_cod_fornecedor) = "" Then%> selected="selected" <%End If%>>Todos</option>
       <%                                          
                                             Set rs3=objConexao.Execute("SELECT cod_fornecedor, NOME_FANTASIA FROM TB_FORNECEDORES WHERE TB_FORNECEDORES.ATIVADO = 1 order by TB_FORNECEDORES.NOME_FANTASIA asc")
@@ -377,40 +391,7 @@ function confirmaEntrada(){
                                             rs3.Close
                                             Set rs3=Nothing
                                         %>
-    </select></td>
-    <td style="padding-left:10px;">&nbsp;</td>
-    <td style="padding-left:10px;">&nbsp;</td>
-  </tr>
-  <tr>
-    <td colspan="2" style="padding-left:10px; padding-top:5px;">Data Entrega</td>
-    <td colspan="4" style="padding-left:10px; padding-top:5px;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="32%">&nbsp;</td>
-        <td width="68%">Produto</td>
-        </tr>
-    </table></td>
-    </tr>
-  <tr>
-    <td colspan="6" style="padding-left:10px;"><table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="57%"><table width="300" border="0" cellspacing="0" cellpadding="0">
-          <tr>
-            <td width="135"><table width='135' border='0' align="left" cellpadding='0' cellspacing='0'>
-              <tr>
-                <td width='102'><input class='campoData' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_PREVISAO_ENTREGA_INICIO' value="<%=ArrumaData(b_DATA_PREVISAO_ENTREGA_INICIO)%>" onblur='validarData(this)' /></td>
-                <td width='298'><div align='center'> <img onclick='pickDate(this,document.FORMULARIO_FILTRO.DATA_PREVISAO_ENTREGA_INICIO);' class='forcaBotao' src='images/icons/icon_calendario.jpg' width='26' height='22' /></div></td>
-              </tr>
-            </table></td>
-            <td width="11"><div align="center">&agrave;</div></td>
-            <td width="154"><table width='135' border='0' align="left" cellpadding='0' cellspacing='0'>
-              <tr>
-                <td width='102'><input class='campoData' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_PREVISAO_ENTREGA_FIM' value="<%=ArrumaData(b_DATA_PREVISAO_ENTREGA_FIM)%>" onblur='validarData(this)' /></td>
-                <td width='298'><div align='center'> <img onclick='pickDate(this,document.FORMULARIO_FILTRO.DATA_PREVISAO_ENTREGA_FIM);' class='forcaBotao' src='images/icons/icon_calendario.jpg' width='26' height='22' /></div></td>
-              </tr>
-            </table></td>
-          </tr>
-        </table></td>
-        <td width="43%"><select name='COD_PRODUTO' class='inputTamanho2'>
+    </select></div><div><label for="sol-COD_PRODUTO">Produto</label><select class="form-select" id="sol-COD_PRODUTO" name="COD_PRODUTO">
           <option value=''>Selecione</option>
           <%
 Set rsE3=objConexao.Execute("SELECT COD_PRODUTO, NOME_PRODUTO FROM TB_PRODUTOS WHERE ATIVO = 1 AND gera_ordem_servico_prazo_cliente > 0 ORDER BY NOME_PRODUTO")
@@ -429,26 +410,14 @@ Wend
 rsE3.Close
 Set rsE3=Nothing
 %>
-        </select></td>
-      </tr>
-    </table></td>
-  </tr>
-  <tr>
-    <td colspan="6" style="padding-left:10px;"><div align="left" style="padding-top:10px">
-      <input class="btnFiltrarAmarelo" type="submit" name="filtro1" value=" " />
-    </div></td>
-  </tr>
-  </table>  <br /></td>
-    <td width="106" style="padding-left:10px;">&nbsp;</td>
-  </tr>
-</table>
-<input type="hidden" value="1" name="filtro" />
-</form>
+        </select></div><div><label for="sol-DATA_PREVISAO_ENTREGA_INICIO">Previs&atilde;o de entrega a partir de</label><div class="sol-date"><input class='form-control' id='sol-DATA_PREVISAO_ENTREGA_INICIO' inputmode='numeric' placeholder='dd/mm/aaaa' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_PREVISAO_ENTREGA_INICIO' value="<%=ArrumaData(b_DATA_PREVISAO_ENTREGA_INICIO)%>" onblur='validarData(this)' /><button class="btn btn-outline-secondary" type="button" onclick="pickDate(this,document.FORMULARIO_FILTRO.DATA_PREVISAO_ENTREGA_INICIO)" aria-label="Abrir calend&aacute;rio"><img alt="" width="19" height="17" src="images/icons/icon_calendario.jpg"></button></div></div><div><label for="sol-DATA_PREVISAO_ENTREGA_FIM">Previs&atilde;o de entrega at&eacute;</label><div class="sol-date"><input class='form-control' id='sol-DATA_PREVISAO_ENTREGA_FIM' inputmode='numeric' placeholder='dd/mm/aaaa' maxlength='10' onkeydown='mascara(this,data);' onkeypress='mascara(this,data);' onkeyup='mascara(this,data);' type='text' name='DATA_PREVISAO_ENTREGA_FIM' value="<%=ArrumaData(b_DATA_PREVISAO_ENTREGA_FIM)%>" onblur='validarData(this)' /><button class="btn btn-outline-secondary" type="button" onclick="pickDate(this,document.FORMULARIO_FILTRO.DATA_PREVISAO_ENTREGA_FIM)" aria-label="Abrir calend&aacute;rio"><img alt="" width="19" height="17" src="images/icons/icon_calendario.jpg"></button></div></div>
 </div>
-
+<div class="sol-actions"><button class="btn btn-primary" type="submit" name="filtro1" value="1">Aplicar filtros</button><a class="btn btn-outline-secondary" href="ppv_compras_pedidos_produtos_solicitados.asp">Limpar filtros</a></div>
+</form>
+</section>
 <%
 '/////////////////////////////////////////////////////////////////////////////////
-	'Verifica se o ˙ltimo recibo est· disponÌvel
+	'Verifica se o √∫ltimo recibo est√° dispon√≠vel
 	Dim ultimo_recibo_disponivel
 	ultimo_recibo_disponivel = false
 	
@@ -461,32 +430,13 @@ Set rsE3=Nothing
 		rs2.Close
 		Set rs2=Nothing
 	
-		If ultimo_recibo_disponivel and Request.QueryString("codmsg") = Empty Then
-		'Exibe somente se n„o tiver exibido a mensagem original de impress„o.
-			Response.Write("<div class='msgGrande'>⁄ltimo recibo de entrega de fornecedor disponÌvel para impress„o: <a target='_blank' href='ppv_compras_pedidos_produtos_solicitados_recibo_entrega.asp'><strong>Clique aqui</strong></a></div>")
-		End If
-	
-	'/////////////////////////////////////////////////////////////////////////////////
-	
-	Dim sucesso, codmsg
-	codmsg	= CStr(""&Request.QueryString("codmsg"))
-	sucesso = CStr(""&Request.QueryString("sucesso"))
-		
-			
-	If sucesso = "" and codmsg <> "" Then%>
-		<div align="center" class="msgGrandeSucesso">
-		<%
-			If codmsg = "1" Then
-				Response.Write("Entrada de itens realizada com sucesso!<br />Para imprimir o recibo de entrega de fornecedor <a target='_blank' href='ppv_compras_pedidos_produtos_solicitados_recibo_entrega.asp'><strong>Clique aqui</strong></a>")			
-			End If	
-				%>           
-				
-	</div>
-		<%ElseIf sucesso <> "" and codmsg <> "" Then%>
-			<div align="center" class="msgGrandeErro">
-	</div>
-	<%End If%>
-    
+If Request.QueryString("codmsg") = "1" And Request.QueryString("sucesso") = "" Then
+%><p class="alert alert-success" role="status">Entrada de itens realizada com sucesso.</p><%
+End If
+If ultimo_recibo_disponivel Then
+%>
+<div class="dashboard-panel sol-panel sol-actions"><a class="btn btn-outline-secondary" target="_blank" rel="noopener" href="ppv_compras_pedidos_produtos_solicitados_recibo_entrega.asp">Imprimir &uacute;ltimo recibo de entrega</a></div>
+<%End If%>
     <%
 	If Request.QueryString("cod_fornecedor") <> Empty or Request.QueryString("NUMERO_PEDIDO_COMPRAS") <> Empty Then
 	%>
@@ -503,6 +453,7 @@ Set rsE3=Nothing
 	If not rs.Eof Then
 	
 		If paginacaocao > 0 Then
+			If paginacaocao > rs.PageCount Then paginacaocao = rs.PageCount
 			rs.AbsolutePage=paginacaocao
 		Else
 			paginacaocao = 1
@@ -510,34 +461,14 @@ Set rsE3=Nothing
 		End If	
 %>
 
-<table width="99%" border="0" align="center">
-  <tr>
-    <td width="47%"> 
-P·gina <strong><%=rs.AbsolutePage%></strong> de <%=rs.PageCount%>
-</td>
-    <td width="53%"><div align="right">Total <strong><%=rs.RecordCount%></strong> Itens de Pedidos de Compras</div></td>
-  </tr>
-</table>
-<form action="ppv_compras_pedidos_produtos_solicitados.asp" name="FORMULARIO_PADRAO" style="border:0px" method="post">
-<input type="hidden" name="campo1" value="S" />
-<table width="99%" border="1" align="center" cellpadding="5" style="border-collapse:collapse; text-align: right;">
-<tr bgcolor="whitesmoke">
-<td><div align="center" style="font-weight: bold">Efetuar Entrada</div></td>
-<td colspan="2"><div align="center" style="font-weight: bold">Pedido Compra</div></td>
-<td width="283"><div align="center" style="font-weight: bold">Fornecedor</div></td>
-<td width="184"><div align="center"><strong>OS/Resp.</strong></div></td>
-<td width="131"><div align="center"><strong>Formando</strong></div></td>
-<td width="96"><div align="center"><strong>Institui&ccedil;&atilde;o de Ensino</strong></div></td>
-<td width="187"><div align="center" style="font-weight: bold">
-  <div align="center">Produto</div>
-</div></td>
-<td width="45"><div align="center" style="font-weight: bold">
-  <div align="center">Qtd.</div>
-</div></td>
-<td width="88" align="center"><div align="center"><span style="font-weight: bold">Data Entrega</span></div></td>
-<td width="46" align="center"><strong>Obs</strong></td>
-              <td width="80"><div align="center"><strong>Status</strong></div></td>
-</tr>
+
+<section class="dashboard-panel sol-panel" aria-labelledby="sol-results-title">
+<div class="sol-heading"><div><h2 id="sol-results-title">Itens encontrados</h2><span class="sol-muted"><%=rs.RecordCount%> itens</span></div><span>P&aacute;gina <%=rs.AbsolutePage%> de <%=rs.PageCount%></span></div>
+<form id="sol-entry" action="ppv_compras_pedidos_produtos_solicitados.asp" name="FORMULARIO_PADRAO" method="post">
+<input type="hidden" name="campo1" value="S">
+<table class="table sol-table" role="table" aria-labelledby="sol-results-title">
+<thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Entrada</th><th scope="col" role="columnheader">Pedido</th><th scope="col" role="columnheader">Produto e fornecedor</th><th scope="col" role="columnheader">Qtd.</th><th scope="col" role="columnheader">Previs&atilde;o</th><th scope="col" role="columnheader">Status</th></tr></thead>
+<tbody role="rowgroup">
 <%
 Dim dias_atrasados, acesso_cancelamento
 acesso_cancelamento = validaUsuario(2,,65,true)
@@ -552,137 +483,171 @@ If Not rs.Eof Then
 	status_produto = Cstr(""&rs("status_produto"))
 	dias_atrasados = formatNumber(rs("dias_atrasados"))
 %>
-<tr id="linha_<%=rs("cod_pedido_compra_produto")%>">
-  <td width="72"><div align="center">
-    <%If status_produto = "P" and acesso_entrada_pedido_compra Then%>
-    <input type="checkbox" onclick="marcarLinhaPedidosCompra(this.checked,'<%=rs("cod_pedido_compra_produto")%>')" name="cod_pedido_compra_produto_<%=rs("cod_pedido_compra_produto")%>" value="S" class="inputRadio" />
-    <%Else%>
-    -
+<tr role="row">
+<td role="cell" data-label="Entrada">
+  <%If status_produto = "P" And acesso_entrada_pedido_compra Then%>
+    <input type="checkbox" name="cod_pedido_compra_produto_<%=rs("cod_pedido_compra_produto")%>" value="S" class="form-check-input sol-select" aria-label="Selecionar item do pedido <%=rs("numero_pedido_compra")%>">
+  <%Else%>&mdash;<%End If%>
+</td>
+<td role="cell" data-label="Pedido">
+  <strong>#<%=formatNumber(rs("numero_pedido_compra"),0)%></strong>
+  <%If usuario_pode_imprimir Then%>
+  <%If comprasPaginasPermitidas.Exists("ppv_compras_pedidos_imprimir.asp") Then%>
+    <a class="sol-link" href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank" rel="noopener">Imprimir</a>
+  <%Else%><button type="button" class="btn btn-outline-secondary btn-sm compras-access-trigger">Imprimir</button><%End If%>
   <%End If%>
-  </div></td>
-  <td width="31"><div align="center"><%=formatNumber(rs("numero_pedido_compra"),0)%></div></td>
-  <td width="30"><div align="center">
-  
-  	<%If usuario_pode_imprimir Then%>
-  	<a href="ppv_compras_pedidos_imprimir.asp?c=<%=rs("cod_pedido_compra")%>" target="_blank"><img src="images/icons/icon_imprimir.png" alt="" title="" border="0" /></a>
-    <%Else%>
-    -
-    <%End If%>
-    </div></td>
-  <td><div align="left"><%=rs("razao_social")%></div></td>
-  <td><div align="center"><%=moduloPPVOSMascara(rs("cod_ordem_servico"),"",true)%><%
+</td>
+<td role="cell" data-label="Produto e fornecedor"><strong><%=Server.HTMLEncode(rs("nome_produto") & "")%></strong><small><%=Server.HTMLEncode(rs("razao_social") & "")%></small>
+<details class="sol-item-details"><summary>Ver detalhes</summary>
+    <dl>
+      <dt>Ordem de servi&ccedil;o</dt><dd><%=moduloPPVOSMascara(rs("cod_ordem_servico"),"",true)%></dd>
+      <dt>Respons&aacute;vel</dt><dd><%
 	Set rs2=objConexao.Execute("SELECT cod_usuario_responsavel FROM  VW_TB_ORDENS_SERVICO WHERE cod_ordem_servico = "&sqlTexto(rs("cod_ordem_servico")))
 		
 		If not rs2.Eof Then
-			Response.Write("<br />"&ucase(nomeUsuario(rs2("cod_usuario_responsavel"),true)))
+			Response.Write(ucase(nomeUsuario(rs2("cod_usuario_responsavel"),true)))
 		End If
 		
 	rs2.Close
 	Set rs2=Nothing
-	%>   
-    </div></td>
-  <td><div align="left"><%=rs("nome_formando")%></div></td>
-  <td><div align="left"><span style="font-size:12px"><%=Ucase(rs("ENTIDADE_ENSINO"))%></span></div></td>
-  <td><div align="left"><%=rs("nome_produto")%></div></td>
-  <td><div align="center"><%=ArrumaNumero(rs("quantidade_solicitada"),"-",0)%></div></td>
-  <td> <div align="center"><%=ArrumaData(rs("data_previsao_entrega"))%></div></td>
-  <td><div align="left"><%=rs("obs")%></div></td>
-<td align="center"  style="font-size:11px">
-  <div id="containerProdutoPedidoCompra_<%=base64Encode(rs("cod_pedido_compra_produto"))%>">
-    <%If status_produto = "E" Then%>
-    <div class="contasPagarReceberStatusQ" style="text-decoration:none; cursor:auto;">Entregue</div>
-    <%If acesso_excluir_entrada_errada Then%><a href="javascript:confirmaExclusaoEntradaErrada('<%=base64Encode(rs("cod_pedido_compra_produto"))%>')">Excluir entrada</a><%End If%>
-    
-    
-    <%Elseif status_produto = "P" and dias_atrasados = 0 Then%>    
-    <div class="contasPagarReceberStatusA_nodia" style="text-decoration:none; cursor:auto;">Pendente</div>
-    <%Elseif status_produto = "P" and dias_atrasados < 1 Then%>    
-    <div class="contasPagarReceberStatusA_nao_vencido" style="text-decoration:none; cursor:auto;">Pendente</div>
-    <%Elseif status_produto = "P" and dias_atrasados > 0 Then%>
-    <div class="contasPagarReceberStatusA_vencido" style="text-decoration:none; cursor:auto;">Pendente</div>
-    <%Elseif status_produto = "C" Then%>
-    <div class="contasPagarReceberStatusA_vencido" style="text-decoration:none; background-color:#999999; cursor:auto;">Cancelado</div>
-    <%End If%>
-  </div>    </td>
-  </tr>
-
-<%
-rs.MoveNext()
+	%></dd>
+      <dt>Formando</dt><dd><%=Server.HTMLEncode(rs("nome_formando") & "")%></dd>
+      <dt>Institui&ccedil;&atilde;o de ensino</dt><dd><%=Server.HTMLEncode(rs("ENTIDADE_ENSINO") & "")%></dd>
+      <dt>Observa&ccedil;&atilde;o</dt><dd><%=Server.HTMLEncode(rs("obs") & "")%></dd>
+    </dl>
+</details>
+</td>
+<td role="cell" data-label="Quantidade"><%=ArrumaNumero(rs("quantidade_solicitada"),"-",0)%></td>
+<td role="cell" data-label="Previs&atilde;o"><%=ArrumaData(rs("data_previsao_entrega"))%></td>
+<td role="cell" data-label="Status">
+<div id="containerProdutoPedidoCompra_<%=base64Encode(rs("cod_pedido_compra_produto"))%>">
+    <%If status_produto = "E" Then%><span class="sol-status sol-ok">Entregue</span>
+      <%If acesso_excluir_entrada_errada Then%><button class="sol-link" type="button" onclick="confirmaExclusaoEntradaErrada('<%=base64Encode(rs("cod_pedido_compra_produto"))%>')">Excluir entrada</button><%End If%>
+    <%ElseIf status_produto = "P" And dias_atrasados = 0 Then%><span class="sol-status sol-today">Vence hoje</span>
+    <%ElseIf status_produto = "P" And dias_atrasados < 1 Then%><span class="sol-status sol-ok">Em dia</span>
+    <%ElseIf status_produto = "P" And dias_atrasados > 0 Then%><span class="sol-status sol-late">Em atraso</span>
+    <%ElseIf status_produto = "C" Then%><span class="sol-status">Cancelado</span><%End If%>
+</div>
+</td>
+</tr>
+<%rs.MoveNext()
 End If
-Next
-%>
+Next%>
+
+</tbody></table>
 <%If acesso_entrada_pedido_compra Then%>
-<tr bgcolor="whitesmoke">
-      <td colspan="12">
-        <div align="left">
-          <table cellpadding="5" cellspacing="0">
-            <tr>
-              <th scope="col" width="22"><img src="images/icons/icon_setas.gif" border="0" height="15" width="22"></th>
-              <th scope="col" width="366"><div align="left"><a href="javascript:confirmaEntrada()"><strong>Dar entrada nos itens selecionados acima</strong></a></div></th>
-              </tr>
-          </table>
-        </div></td>
-    </tr>
+<div class="sol-review"><span id="sol-count" role="status">0 itens selecionados</span><button class="btn btn-primary" type="submit" aria-haspopup="dialog">Revisar entrada</button><p id="sol-feedback" role="alert" hidden></p></div>
 <%End If%>
-<%If rs.PageCount > 1 Then %>                                  
-     <tr bgcolor="whitesmoke">
-      <td colspan="12">
-      	   <%call paginacao(paginacaocao,rs.PageCount)%>      </td>
-    </tr>   
-<%End if%>
-
-</table>
 </form>
+<%If rs.PageCount > 1 Then
+    Dim solUrl, solParam
+    solUrl = "ppv_compras_pedidos_produtos_solicitados.asp?"
+    For Each solParam In Array("filtro","filtro1","NUMERO_PEDIDO_COMPRAS","COD_CONTRATO","ordernar_por","status_produto","CADASTRO_COD_USUARIO","COD_FORNECEDOR","COD_PRODUTO","DATA_PREVISAO_ENTREGA_INICIO","DATA_PREVISAO_ENTREGA_FIM")
+        If Len(Request.QueryString(solParam) & "") > 0 Then solUrl = solUrl & solParam & "=" & Server.URLEncode(Request.QueryString(solParam) & "") & "&"
+    Next
+    solUrl = Server.HTMLEncode(solUrl & "paginacao=")
+%>
+<nav class="sol-actions sol-pagination" aria-label="Paginar itens">
+  <%If paginacaocao > 1 Then%><a class="btn btn-outline-secondary btn-sm" href="<%=solUrl & (paginacaocao-1)%>">Anterior</a><%End If%>
+  <span>P&aacute;gina <%=paginacaocao%> de <%=rs.PageCount%></span>
+  <%If paginacaocao < rs.PageCount Then%><a class="btn btn-outline-secondary btn-sm" href="<%=solUrl & (paginacaocao+1)%>">Pr&oacute;xima</a><%End If%>
+</nav>
+<%End If%>
+</section>
+<%Else%>
+<section class="dashboard-panel sol-panel" role="status"><h2>Nenhum item encontrado</h2><p class="mb-0">Confira os filtros para buscar outros itens.</p></section>
+<%End If
+rs.Close
+Set rs = Nothing
+End If
+FecharConexao()
+%>
+<div id="tsZXucAdca" hidden></div>
+<dialog id="sol-confirm" class="sol-dialog" aria-labelledby="sol-confirm-title" aria-describedby="sol-confirm-message">
+  <h2 id="sol-confirm-title">Confirmar opera&ccedil;&atilde;o</h2>
+  <p id="sol-confirm-message"></p>
+  <form method="dialog" class="sol-actions">
+    <button class="btn btn-outline-secondary" value="cancelar" autofocus>Cancelar</button>
+    <button class="btn btn-primary" value="confirmar">Confirmar</button>
+  </form>
+</dialog>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_compras_pedidos.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+function CarregaAjax(div,ts,p0,p1,p2,p3){
+	//Fun√ß√£o padrao para utiliza√ß√£o de ajax nesta p√°gina.
+	var caminho = "ppv_compras_pedidos_ajax.asp?ts="+ts+"&valor="+p0+'&valor1='+p1+'&valor2='+p2+'&valor3='+p3;
+	//alert(caminho);
+	ajax_loadContent(div,caminho,false,false,false);	
+}
 
-<br />
-<p><strong>&nbsp;Legenda:</strong></p>
-<table width="612" border="0" cellpadding="4" cellspacing="0">
-  
-  <tr>
-    <td width="25"><div class="contasPagarReceberStatusA_nao_vencido" style="text-decoration:none; cursor:auto;">Pendente</div></td>
-    <td width="579">Item pendente, por&eacute;m com o prazo em dia</td>
-  </tr>
-  <tr>
-    <td><div class="contasPagarReceberStatusA_nodia" style="text-decoration:none; cursor:auto;">Pendente</div></td>
-    <td>Item pendente, por&eacute;m com o prazo vencendo na data atual</td>
-  </tr>
-  <tr>
-    <td><div class="contasPagarReceberStatusA_vencido" style="text-decoration:none; cursor:auto;">Pendente</div></td>
-    <td>Item pendente, por&eacute;m com o prazo atrasado</td>
-  </tr>
-  <tr>
-    <td><div class="contasPagarReceberStatusQ" style="text-decoration:none; cursor:auto;">Entregue</div></td>
-    <td>Item entregue</td>
-  </tr>
-  <tr>
-    <td><div class="contasPagarReceberStatusA_vencido" style="text-decoration:none; background-color:#999999; cursor:auto;">Cancelado</div></td>
-    <td>item cancelado</td>
-  </tr>
-</table>
 
-<%
-	Else
-	%>
-    <div align="center" class="msgGrande">
-    	Nenhum Item de Pedido de Compras encontrado!</div>
-    <%End if
-	
-	rs.Close
-	Set rs=Nothing
-	
-	FecharConexao()
-	%>
-    <%
-	Else
-	%>
-    	<div class="msgGrande">Utilize o filtro para listar os itens, pelo menos filtre por fornecedor ou por n&uacute;mero do pedido de compras.</div>
-    <%
-	End If
-	%>
-    <div id="tsZXucAdca" class="ocultarCompleto"></div>
-    <br />
-	<br />
-	<br />
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+var solPendingAction;
+function solConfirm(title, message, callback) {
+    var dialog = document.getElementById('sol-confirm');
+    document.getElementById('sol-confirm-title').textContent = title;
+    document.getElementById('sol-confirm-message').textContent = message;
+    solPendingAction = callback;
+    dialog.returnValue = '';
+    dialog.showModal();
+}
+function confirmaExclusaoEntradaErrada(id) {
+    solConfirm('Excluir entrada?', 'O item voltar√° a ficar pendente de recebimento.', function () {
+        var url = 'ppv_compras_pedidos_ajax.asp?ts=cee&valor=' + encodeURIComponent(id);
+        ajax_loadContent('containerProdutoPedidoCompra_' + id, url, false, false, false);
+    });
+}
+(function () {
+    var dialog = document.getElementById('sol-confirm');
+    dialog.addEventListener('close', function () {
+        var action = solPendingAction;
+        solPendingAction = null;
+        if (dialog.returnValue === 'confirmar' && action) action();
+    });
+    var form = document.getElementById('sol-entry');
+    var counter = document.getElementById('sol-count');
+    if (!form || !counter) return;
+    var feedback = document.getElementById('sol-feedback');
+    function selected() {
+        return form.querySelectorAll('.sol-select:checked').length;
+    }
+    form.addEventListener('change', function () {
+        var count = selected();
+        counter.textContent = count + (count === 1 ? ' item selecionado' : ' itens selecionados');
+        feedback.hidden = true;
+    });
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var count = selected();
+        if (!count) {
+            feedback.textContent = 'Selecione pelo menos um item pendente.';
+            feedback.hidden = false;
+            return;
+        }
+        solConfirm('Confirmar entrada?', 'Itens selecionados para recebimento: ' + count + '.', function () { form.submit(); });
+    });
+})();
+</script>
 </body>
 </html>

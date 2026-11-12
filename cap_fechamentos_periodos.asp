@@ -1,173 +1,87 @@
 <!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
 <!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
-<title>Per&iacute;odo de Vendas</title>
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-	<script language="javascript">
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript" language="javascript">
-	<!--AJUDA F1 E CTRL PARA BUSCA R�PIDA-->
-		
-	function abrir(theURL,winName,features) 
-	{ 
-	  window.open(theURL,winName,features);
-	}
-
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}	
-		
-		
-	
-
-	function buscaIni(){
-	d = document.buscaForm
-	d.busca.focus()
-	d.busca.select();
-	}
-	function mudacorBusca(CAMPO){
-	CAMPO.style.backgroundColor = '#F5ECBA'
-	}
-	function mudacorBusca2(CAMPO){
-	CAMPO.style.backgroundColor = '#FFFFFF'
-	}
-
- function Verificar()
- {
-  var tecla=window.event.keyCode;
-  if (tecla==17) {
-    buscaIni();
-	}
- }
- 
-
-
-	<!--AJUDA F1 E CTRL PARA BUSCA R�PIDA-->
-	</script>
-		<!-- CALEND�RIO SCRIPTS
-	<script type="text/javascript">
-	DHTMLSuite.include("calendar");
-	</script>
-	<script type="text/javascript">
-	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
-	
-		 
-	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
-	
-	function myOtherFunction()
-	{
-		
-		
-	}
-	function pickDate(buttonObj,inputObject)
-	{
-		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
-		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
-		if(calendarObjForForm.isVisible()){
-			calendarObjForForm.hide();
-		}else{
-			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
-			calendarObjForForm.display();
-		}		
-	}	
-	/* inputArray is an associative array with the properties
-	year
-	month
-	day
-	hour
-	minute
-	calendarRef - Reference to the DHTMLSuite.calendar object.
-	*/
-	function getDateFromCalendar(inputArray)
-	{
-		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
-		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
-//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
-		calendarObjForForm.hide();	
-		
-	}	
-	</script>
-	-->
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Per&iacute;odos de vendas | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+.cap-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 16px; }
+.cap-metric { min-width:0; padding:16px; border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.cap-metric dt { color:#57566a; font-size:.87em; font-weight:650; }
+.cap-metric dd { margin:6px 0 0; font-size:clamp(19px,2vw,27px); line-height:1.15; font-weight:700; font-variant-numeric:tabular-nums; }
+.cap-metric small { display:block; margin-top:6px; color:#57566a; }
+.cap-overview-charts { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:12px; margin:0 0 18px; }
+.cap-chart { min-width:0; padding:16px; border:1px solid #e4dfeb; border-radius:12px; background:#fff; }
+.cap-chart h3 { margin:0 0 4px; color:#242738; font:700 1.05em/1.3 system-ui,sans-serif; }
+.cap-chart p { margin:0 0 12px; color:#57566a; font-size:.9em; }
+.cap-chart-bars { list-style:none; margin:0; padding:0; }
+.cap-chart-bars li + li { margin-top:8px; }
+.cap-chart-bars li > div:first-child { display:flex; justify-content:space-between; gap:8px; font-variant-numeric:tabular-nums; }
+.cap-chart-track { height:7px; overflow:hidden; margin-top:3px; border-radius:7px; background:#eee9f4; }
+.cap-chart-track span { display:block; height:100%; background:#a31962; }
+.cap-chart-donut { display:grid; place-items:center; width:124px; aspect-ratio:1; margin:14px auto 10px; border-radius:50%; background:conic-gradient(#a31962 var(--cap-share),#eee9f4 0); }
+.cap-chart-donut strong { display:grid; place-items:center; width:82px; aspect-ratio:1; border-radius:50%; background:#fff; }
+.cap-chart .cap-chart-share { margin:0; text-align:center; }
+.period-overview { margin-bottom:20px; }
+.period-overview > h2 { margin-bottom:10px; }
+.period-actions,.period-paging,.period-filter { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.period-panel { height:auto; }
+.period-panel header { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; align-items:end; margin-bottom:12px; }
+.period-scroll { overflow-x:auto; border:1px solid #e4dfeb; border-radius:9px; }
+.period-table { width:100%; min-width:760px; margin:0; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.period-table th,.period-table td { padding:9px; border-bottom:1px solid #eeeaf2; text-align:left; vertical-align:middle; }
+.period-table th { background:#f1edf6; }
+.period-table tbody tr:nth-child(even) { background:#faf9fc; }
+.period-date { white-space:nowrap; }
+.period-meta { display:block; margin-top:3px; font-size:.9em; color:#53566b; }
+.period-badge { display:inline-block; padding:3px 7px; border-radius:6px; font-weight:650; background:#faf0dd; color:#754600; }
+.period-done { background:#e5f2ea; color:#275e42; }
+.period-paging { justify-content:center; margin-top:14px; }
+.cap-chart-donut { margin-left:0; }
+@media(max-width:850px) { .cap-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:460px) { .cap-metrics { grid-template-columns:minmax(0,1fr); } }
+</style>
 </head>
+<body>
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Per&iacute;odos de vendas</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
 
-<body onKeyDown="javascript:Verificar()">
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 1
-  BTN_FONTE = 1
-  BTN_IMPRIMIR_LINK = "<a href='cap_fechamentos_periodos_imprimir.asp' target='_blank'"
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-   
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
- 
-	  <h2>CAP - Pagamento de Consultores - Per&iacute;odos de Vendas</h2>
-	  <div class="subMenu">Sub-Menu: <a href="cap_fechamentos.asp">Voltar para Fechamentos</a> | 
-       <a href="cap_fechamentos_periodos_formulario.asp">Cadastrar novo Per&iacute;odo de Vendas</a></div>
-      
-	  <%
-	   Response.Write("<br />")
-	Dim sucesso, codmsg
+      <header class="dashboard-heading">
+        <div><p class="eyebrow">FECHAMENTOS</p><h1>Per&iacute;odos de vendas</h1><p>Acompanhe as datas de lan&ccedil;amento, pagamento e processamento.</p></div>
+        <div class="period-actions">
+          <a class="btn btn-outline-secondary" href="cap_fechamentos.asp">Voltar a Fechamentos</a>
+          <a class="btn btn-primary" href="cap_fechamentos_periodos_formulario.asp">Cadastrar per&iacute;odo</a>
+        </div>
+      </header>
+      <div class="search-panel"><strong>Busca no portal</strong>
+      <!-- #include file="includes/dashboard_busca.asp" -->
+      </div>
+      <div class="session-notices">
+      <!-- #include file="includes/dashboard_avisos.asp" -->
+      </div>
+      <%Dim sucesso, codmsg
 	codmsg	= CStr(""&Request.QueryString("codmsg"))
 	sucesso = CStr(""&Request.QueryString("sucesso"))
 		
 	If sucesso = "" and codmsg <> "" Then%>
-    	<div align="center" class="msgGrandeSucesso">
+    	<div class="alert alert-success" role="status">
         	<%
 			If codmsg = "1" Then
 				Response.Write("Per&iacute;odo de Venda inclu&iacute;do com sucesso!")
@@ -181,7 +95,7 @@
         
         </div>
     <%ElseIf sucesso <> "" and codmsg <> "" Then%>
-        <div align="center" class="msgGrandeErro">
+        <div class="alert alert-danger" role="alert">
 			<%
 			If codmsg = "3" Then
 				Response.Write("Per&iacute;odo de Vendas n&atilde;o exclu&iacute;do, pois h&aacute; pedidos com este per&iacute;odo!")
@@ -203,151 +117,138 @@
 			%>
 </div>
 	<%End If%>
-    
-    
-			
-            <%
-			AbrirConexao()
-			Dim rsContratos, qtdContratos, CONTRATOS_ULT, qtdProdutos
-			
-			sql = "SELECT * FROM TB_FECHAMENTO_PAGAMENTO_PERIODOS order by data_termino desc"
-			
-			Set rs=server.CreateObject("ADODB.recordset")
-			rs.CursorLocation=3  'Cursor no cliente
-			rs.PageSize=50
-			rs.Open sql, objConexao
-		  
-		  	Dim PAGINA_ATUAL
-			PAGINA_ATUAL = formatNumber(0&Request.QueryString("pagina"),0)
-			
-			
-			If not rs.Eof Then%>
-               <table width="95%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
-<tr bgcolor="whitesmoke">
-            <td width="11%"><div align="center"><strong>C&oacute;d. Per&iacute;odo de Venda</strong></div></td>
-            <td width="12%"><div align="center"><strong>Data In&iacute;cio Vendas</strong></div></td>
-            <td width="12%"><div align="center"><strong>Data T&eacute;rmino Vendas</strong></div></td>
-            <td width="10%"><div align="center"><strong>Data limite de Lan&ccedil;amento</strong> <strong>no sistema</strong></div></td>
-            <td width="11%"><div align="center"><strong>Data que ser&aacute; ou foi o pagamento</strong></div></td>
-            <td width="17%"><div align="center"><strong>Data do Processado</strong> <strong>do Pagamento</strong></div></td>
-            <td width="10%"><div align="center"><strong>Cadastrado por</strong></div></td>
-            <td width="10%"><div align="center" style="font-weight: bold">Data da &Uacute;ltima Intera&ccedil;&atilde;o</div></td>
-            <td width="7%"><div align="center"><strong> Excluir</strong></div></td>
-</tr>
-		  <%
-		  	Dim x
-		 	For x=1 To rs.PageSize
-		    If Not rs.Eof Then
-		  %>
-           <tr>
-            <td><div align="center"><%=rs(0)%></div></td>
-            <td><div align="center"><%=ArrumaData(rs("data_inicio"))%></div></td>
-            <td>
-           	  <div align="center"><%=ArrumaData(rs("data_termino"))%>&nbsp;</div></td>
-            <td><div align="center"><%=ArrumaData(rs("data_termino_lancamento_vendas"))%></div></td>
-            <td><div align="center"><%=ArrumaData(rs("data_pagamento"))%></div></td>
-            <td><div align="center"><%=ArrumaData(rs("data_processado_pagamento"))%></div></td>
-            <td><div align="center">
-              <%	
-			Set rs2=objConexao.Execute("Select nome From TB_ADM_USUARIOS where COD_USUARIO = '"&rs("cod_usuario")&"'")
-				
-				If not rs2.Eof Then
-					Response.Write(rs2(0))
-				End If
-				
-			rs2.Close
-			Set rs2=Nothing
-			%>
-            </div></td>
-            <td><div align="center"><%=ArrumaData(rs("modificado"))%></div></td>
-            <td>
-              <div align="center">
-                    <a href="cap_fechamentos_periodos_formulario.asp?cod_fechamento_periodo=<%=rs("cod_fechamento_periodo")%>&comando=excluir">
-                          <img alt="Excluir" src="images/icons/icon_excluir.png" border="0" /></a>                </div></td>
-           </tr>
-		  <%
-				rs.MoveNext()
-				End If 
-				Next
-		  %>
-        </table>
-        
-        <br />
-<br />
-  <strong>Dica</strong>: Clique no &iacute;cone de impress&atilde;o para imprimir esta listagem de uma forma mais elegante.
-        		
-                		        <%If rs.PageCount > 1 Then %>
-					<br />
-                  
-                    
-					<table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td>
-						<div class="menu_paginacao">
-					Ir para a P&aacute;gina:
-					
-					<%
-					Dim aae
-					aae = 0
-					For x=1 To rs.PageCount 
-					aae = formatNumber(0&x,0)
-					
-						If int(PAGINA_ATUAL) <> int(aae) Then
-						'Response.Write(PAGINA_ATUAL&":"&x&"<br />")
-						%>
-							<a href="?pagina=<%=x%>&f=<%=FILTRO_F%>"><%=x%></a>
-						<%Else%>
-							<%=x%>
-						<%End If%>
-						
-					<%Next%>
-					</div>
-					</td>
-                      </tr>
-                    </table>
-				<%End if%>
-        
-        
-		      <%else%>
-              
-                     
-                     <div align="center">
-                      <div class="msgGrande">N&atilde;o h&aacute; per&iacute;odos de vendas cadastrados!<br />
-Para incluir clique no link &quot;Cadastrar novo  Per&iacute;odo de Vendas&quot; acima.</div>
+<%
+Dim periodStatus, periodWhere, periodPage, periodInput, periodPattern
+Dim periodTotal, periodProcessed, periodPending, periodNext, periodShare, periodRow
+periodStatus = Request.QueryString("situacao")
+Select Case periodStatus
+    Case "pendentes"
+        periodWhere = " WHERE p.data_processado_pagamento IS NULL"
+    Case "processados"
+        periodWhere = " WHERE p.data_processado_pagamento IS NOT NULL"
+    Case Else
+        periodStatus = ""
+        periodWhere = ""
+End Select
+periodPage = 1
+periodInput = Request.QueryString("pagina")
+Set periodPattern = New RegExp
+periodPattern.Pattern = "^[1-9][0-9]{0,8}$"
+If periodPattern.Test(periodInput) Then periodPage = CLng(periodInput)
+Set periodPattern = Nothing
 
-                     </div> 
- 
-                    
-		      <%end if
-			  
-			  
-			  	  rs.Close()
-				  Set rs = Nothing
-				  FecharConexao()
-			  %>
-		     
-		  <p align="center">
-		  <input class="btnTopo" onclick="abre('#')" type="button" name="btnTopo2" value=" " />
-		</p>
-		</td>
+AbrirConexao()
+Set rs2 = objConexao.Execute("SELECT COUNT(*) AS total, COUNT(data_processado_pagamento) AS processados, MIN(CASE WHEN data_processado_pagamento IS NULL THEN data_pagamento END) AS proximo FROM TB_FECHAMENTO_PAGAMENTO_PERIODOS")
+periodTotal = CLng(rs2("total"))
+periodProcessed = CLng(rs2("processados"))
+periodPending = periodTotal - periodProcessed
+periodNext = rs2("proximo")
+periodShare = 0
+If periodTotal > 0 Then periodShare = 100 * periodProcessed / periodTotal
+rs2.Close
+Set rs2 = Nothing
 
-    </tr>
-</table>
+Set rs = Server.CreateObject("ADODB.Recordset")
+rs.CursorLocation = 3
+rs.PageSize = 50
+rs.Open "SELECT p.*, u.nome AS nome_cadastro FROM TB_FECHAMENTO_PAGAMENTO_PERIODOS p LEFT JOIN TB_ADM_USUARIOS u ON u.cod_usuario = p.cod_usuario" & periodWhere & " ORDER BY p.data_termino DESC, p.cod_fechamento_periodo DESC", objConexao
+If Not rs.Eof Then
+    If periodPage > rs.PageCount Then periodPage = rs.PageCount
+    rs.AbsolutePage = periodPage
+End If
+%>
+      <section class="period-overview" aria-labelledby="period-overview-title">
+        <h2 id="period-overview-title">Vis&atilde;o geral</h2>
+        <dl class="cap-metrics">
+          <div class="cap-metric"><dt>Per&iacute;odos cadastrados</dt><dd><%=FormatNumber(periodTotal,0)%></dd></div>
+          <div class="cap-metric"><dt>Processados</dt><dd><%=FormatNumber(periodProcessed,0)%></dd></div>
+          <div class="cap-metric"><dt>Pendentes de processamento</dt><dd><%=FormatNumber(periodPending,0)%></dd></div>
+          <div class="cap-metric"><dt>Primeiro pagamento pendente</dt><dd><%If IsDate(periodNext) Then%><%=ArrumaData(periodNext)%><%Else%>&mdash;<%End If%></dd></div>
+        </dl>
+        <%If periodTotal > 0 Then%>
+        <section class="cap-chart" aria-labelledby="period-chart-title">
+          <h3 id="period-chart-title">Processamento dos per&iacute;odos cadastrados</h3>
+          <div class="cap-chart-donut" style="--cap-share:<%=CInt(periodShare)%>%" aria-hidden="true"><strong><%=FormatNumber(periodShare,1)%>%</strong></div>
+          <p><strong><%=FormatNumber(periodShare,1)%>% processados</strong> &middot; <%=FormatNumber(periodProcessed,0)%> de <%=FormatNumber(periodTotal,0)%> per&iacute;odos. <%=FormatNumber(periodPending,0)%> pendentes.</p>
+        </section>
+        <%End If%>
+      </section>
+      <section class="dashboard-panel period-panel" aria-labelledby="period-list-title">
+        <header>
+          <div><h2 id="period-list-title">Per&iacute;odos cadastrados</h2><p class="panel-description"><%=FormatNumber(rs.RecordCount,0)%> no filtro atual</p></div>
+          <div class="period-actions">
+            <form method="get" class="period-filter" aria-label="Filtrar per&iacute;odos">
+              <label for="period-status">Situa&ccedil;&atilde;o</label>
+              <select name="situacao" id="period-status" class="form-select w-auto">
+                <option value="">Todos</option>
+                <option value="pendentes"<%If periodStatus = "pendentes" Then%> selected<%End If%>>Pendentes</option>
+                <option value="processados"<%If periodStatus = "processados" Then%> selected<%End If%>>Processados</option>
+              </select>
+              <button class="btn btn-outline-secondary" type="submit">Filtrar</button>
+            </form>
+            <a class="btn btn-outline-secondary" href="cap_fechamentos_periodos_imprimir.asp" target="_blank" rel="noopener">Imprimir listagem completa</a>
+          </div>
+        </header>
+        <%If rs.Eof Then%>
+        <p class="empty-state">Nenhum per&iacute;odo encontrado.</p>
+        <%Else%>
+        <div class="period-scroll" role="region" aria-labelledby="period-list-title" tabindex="0">
+          <table class="period-table">
+            <thead><tr><th scope="col">C&oacute;digo</th><th scope="col">Per&iacute;odo de vendas</th><th scope="col">Limite de lan&ccedil;amento</th><th scope="col">Pagamento</th><th scope="col">Processamento</th><th scope="col">Cadastro</th><th scope="col">A&ccedil;&otilde;es</th></tr></thead>
+            <tbody>
+            <%For periodRow = 1 To rs.PageSize
+                If rs.Eof Then Exit For%>
+              <tr>
+                <td><strong><%=rs("cod_fechamento_periodo")%></strong></td>
+                <td class="period-date"><%=ArrumaData(rs("data_inicio"))%> a <%=ArrumaData(rs("data_termino"))%></td>
+                <td class="period-date"><%=ArrumaData(rs("data_termino_lancamento_vendas"))%></td>
+                <td class="period-date"><strong><%=ArrumaData(rs("data_pagamento"))%></strong></td>
+                <td><%If IsNull(rs("data_processado_pagamento")) Then%><span class="period-badge">Pendente</span><%Else%><span class="period-badge period-done">Processado</span><span class="period-meta period-date"><%=ArrumaData(rs("data_processado_pagamento"))%></span><%End If%></td>
+                <td><%=Server.HTMLEncode(rs("nome_cadastro") & "")%><span class="period-meta period-date"><%=ArrumaData(rs("modificado"))%></span></td>
+                <td><a class="btn btn-outline-danger btn-sm" href="cap_fechamentos_periodos_formulario.asp?cod_fechamento_periodo=<%=rs("cod_fechamento_periodo")%>&amp;comando=excluir" aria-label="Excluir per&iacute;odo <%=rs("cod_fechamento_periodo")%>">Excluir</a></td>
+              </tr>
+            <%rs.MoveNext
+            Next%>
+            </tbody>
+          </table>
+        </div>
+        <%If rs.PageCount > 1 Then%>
+        <nav class="period-paging" aria-label="P&aacute;ginas dos per&iacute;odos">
+          <%If periodPage > 1 Then%><a class="btn btn-outline-secondary btn-sm" href="?situacao=<%=periodStatus%>&amp;pagina=<%=periodPage-1%>">Anterior</a><%End If%>
+          <span>P&aacute;gina <%=periodPage%> de <%=rs.PageCount%></span>
+          <%If periodPage < rs.PageCount Then%><a class="btn btn-outline-secondary btn-sm" href="?situacao=<%=periodStatus%>&amp;pagina=<%=periodPage+1%>">Pr&oacute;xima</a><%End If%>
+        </nav>
+        <%End If%>
+        <%End If
+        rs.Close
+        Set rs = Nothing
+        FecharConexao()%>
+      </section>
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="cap_fechamentos.asp"]');
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
 
- 
-  
-  </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+</script>
 </body>
 </html>

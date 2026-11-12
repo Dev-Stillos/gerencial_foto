@@ -3,6 +3,9 @@
 <!-- #include file="includes/classe_fechamento.asp" -->
 <%
 Server.ScriptTimeout = 2240
+Dim fechamentoEmModal, fechamentoConfirmado, fechamentoPeriodoSolicitado
+fechamentoEmModal = (Request.QueryString("modo") = "modal")
+If fechamentoEmModal Then Response.CacheControl = "no-cache"
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -12,7 +15,9 @@ VENDEDOR_RECEBE_EM = Request.QueryString("VENDEDOR_RECEBE_EM")
 %>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<%If Not fechamentoEmModal Then%>
 <meta HTTP-EQUIV = "Refresh" CONTENT = "0; URL = adm_rotina_fechamento_extrato_pagamento_part2_tipo2.asp?VENDEDOR_RECEBE_EM=<%=VENDEDOR_RECEBE_EM%>">
+<%End If%>
 <link type="text/css" rel="stylesheet" href="css/base.css" media="all"></link>
 <title>Gerador de Pagamento</title>
 <style type="text/css">
@@ -52,6 +57,15 @@ Set rs=objConexao.Execute("SELECT COD_FECHAMENTO_PERIODO FROM TB_FECHAMENTO_PAGA
 	
 rs.Close
 Set rs=Nothing
+
+If fechamentoEmModal Then
+    fechamentoPeriodoSolicitado = Trim(Request.QueryString("COD_FECHAMENTO_PERIODO") & "")
+    If Len(fechamentoPeriodoSolicitado) = 0 Or fechamentoPeriodoSolicitado <> CStr(COD_FECHAMENTO_PERIODO & "") Then
+        FecharConexao()
+        Response.Status = "400 Bad Request"
+        Response.End
+    End If
+End If
 
 
 sql = "SELECT p.COD_PEDIDO, p.COD_VENDEDOR, p.DATA_VENDA, p.VALOR_AJUDA_CUSTO, p.FORMA_PAGAMENTO, p.TIPO_VENDA, p.COD_GRUPO_VENDEDORES, p.PAGAMENTO_EM_DINHEIRO, p.pre_venda, p.tipo_venda AS tipo_venda_pedido, p.forma_pagamento AS forma_pgto_pedido, " &_
@@ -128,7 +142,8 @@ End If
 			    <td width="5%"><div align="center"><strong>Dinheiro</strong></div></td>
 			    <td width="6%"><div align="center"><strong>Cheque</strong></div></td>
 			    <td width="4%"><div align="center"><strong>Cartão</strong></div></td>
-			    <td width="10%"><div align="center"><strong>TOTAL RECEBIDO</strong></div></td>
+			    <td><div align="center"><strong>Boleto</strong></div></td>
+<td width="10%"><div align="center"><strong>TOTAL RECEBIDO</strong></div></td>
 			    <td width="9%"><div align="center"><strong>Álbuns</strong></div></td>
 			    <td width="7%"><div align="center"><strong>DVDs</strong></div></td>
                 <td width="8%"><div align="center"><strong>Foto-Telas e Trios </strong></div></td>
@@ -182,6 +197,14 @@ End If
 					End Select
 					
 					VALOR_TOTAL_COMISSAO = Round(base_comissao * perc_comissao, 2)
+%>
+<tr>
+<td align="center"><%=COD_VENDEDOR%></td>
+<td align="center"><%=COD_PEDIDO%></td>
+<td align="center"><%=DATA_VENDA%></td>
+<td align="right"><%=TOTAL_DINHEIRO%></td>
+<td align="right"><%=TOTAL_CHEQUE%></td>
+<td align="right"><%=TOTAL_CARTAO%></td>
 			    <td><div align="right"><%=TOTAL_BOLETO%></div></td>		    
 			    <td><div align="right"><%=TOTAL_RECEBIMENTO%></div></td>
 			    <td><div align="center"><%=QTD_ALBUNS%></div></td>
@@ -221,6 +244,9 @@ End If
 				objConexao.Execute(sql)
 				
 				objConexao.Execute("UPDATE TB_PEDIDOS SET PAGAMENTO_PROCESSADO= '1' WHERE COD_PEDIDO = "&COD_PEDIDO&" LIMIT 1")
+                    If fechamentoEmModal Then
+                        Response.Write "<span hidden data-fechamento-resultado=""pedido"" data-pedido=""" & Server.HTMLEncode(CStr(COD_PEDIDO)) & """></span>"
+                    End If
 				
 				'Response.Write(sql&"<BR>")
 					
@@ -262,7 +288,15 @@ End If
 ''	Response.Write sql_insert_boletos
 ''	Response.Write sql_update_boletos
 'Response.end
-	Response.redirect("cap_fechamentos.asp?codmsg=1&vendedor_recebe_em="&vendedor_recebe_em)
+	If fechamentoEmModal Then
+        Set fechamentoConfirmado = objConexao.Execute("SELECT COD_FECHAMENTO_PERIODO FROM TB_FECHAMENTO_PAGAMENTO_PERIODOS WHERE COD_FECHAMENTO_PERIODO = " & sqlNumero(COD_FECHAMENTO_PERIODO) & " AND DATA_PROCESSADO_PAGAMENTO IS NOT NULL")
+        If Not fechamentoConfirmado.EOF Then
+            Response.Write "<span hidden data-fechamento-resultado=""concluido""></span>"
+        End If
+        fechamentoConfirmado.Close
+    Else
+        Response.redirect("cap_fechamentos.asp?codmsg=1&vendedor_recebe_em="&vendedor_recebe_em)
+    End If
 	
 End If
 

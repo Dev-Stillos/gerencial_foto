@@ -9,7 +9,93 @@ cod_pedido = Request.QueryString("cod_pedido")
 
 BTN_IMPRIMIR_LINK = "href='lca_pedidos_pendentes_uniimpressao.asp?cod_pedido="&COD_PEDIDO&"' target='_blank'"
 %>
-<!-- #include file="files/includes/miolo-superior.asp" -->
+<!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
+<!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
+<%
+Dim caminho_pagina, jquery
+caminho_pagina = Replace(Request.ServerVariables("URL"),"/gerencial_foto/","")
+jquery = True
+%>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Detalhes do pedido | Portal Stillos</title>
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/chosen.min.css" />
+<link rel="stylesheet" href="css/modal-message.css" />
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<!-- #include file="files/includes/scripts.asp" -->
+<!-- #include file="files/includes/functions_local.asp" -->
+<style>
+.order-page .order-content { display:flow-root; min-width:0; max-width:100%; color:#292738; }
+.order-page .order-dispatch { margin-top:24px; min-width:0; max-width:100%; }
+.order-page .order-dispatch .btnGeral { width:min(100%,440px); }
+.order-page .order-dispatch table { width:min(100%,800px); }
+.order-page .order-dispatch input[type="submit"] { white-space:normal; }
+.order-page #sub-menu-os { margin:0 0 8px; }
+.order-page #cancelar_os { box-sizing:border-box; max-width:100%; }
+.order-page .dashboard-footer { clear:both; }
+.order-page .order-heading { align-items:flex-start; }
+.order-page .order-heading h1 { margin-bottom:0; }
+.order-page .order-actions, .order-page .order-jump { display:flex; flex-wrap:wrap; gap:8px; }
+.order-page .order-jump { margin:0 0 20px; }
+.order-page .order-jump a { padding:6px 12px; border:1px solid #e4dfeb; border-radius:8px; background:#fff; color:#6d1749; font-weight:650; text-decoration:none; }
+.order-page .order-content table[border="1"] { border:1px solid #e4dfeb; background:#fff; }
+.order-page .order-content table[border="1"] > tbody > tr > td { padding:8px 10px; border-color:#eeeaf2; overflow-wrap:anywhere; }
+.order-page .order-content tr[bgcolor="whitesmoke"] > td { background:#f1edf6; color:#3e344e; }
+.order-page .order-content .order-summary { height:auto; margin:0; }
+.order-page .order-summary h2, .order-page .order-section-heading { color:#292738; font:700 clamp(17px,2vw,23px)/1.3 system-ui,sans-serif; margin:0 0 12px; }
+.order-page .order-section-heading { margin-top:28px; scroll-margin-top:18px; }
+.order-page .order-summary table { width:100%; border-collapse:collapse; }
+.order-page .order-summary table > tbody > tr > td:first-child:not([colspan]) { background:#f8f6fa; }
+.order-page .order-scroll { max-width:100%; overflow-x:auto; }
+.order-page .order-scroll table { min-width:1080px; }
+.order-page .order-content :is(input,select,textarea,iframe,.btnGeral,table) { max-width:100%; }
+.order-page .order-content .btnGeral { display:inline-block; padding:7px 10px; margin:3px 0; border:1px solid #ddd5e5; border-radius:7px; background:#fff; color:#7c174e; font-weight:650; white-space:normal; }
+.order-page .order-content a:focus-visible { outline:2px solid #9e125c; outline-offset:2px; }
+.order-page .dashboard-nav a.active:not([aria-current="page"]) { background:transparent; color:#d4d5e1; }
+.order-page .dashboard-nav a[aria-current="page"] { background:#b20b61; color:#fff; font-weight:600; }
+@media (max-width:650px) {
+    .order-page .order-summary > table,
+    .order-page .order-summary > table > tbody,
+    .order-page .order-summary > table > tbody > tr,
+    .order-page .order-summary > table > tbody > tr > td { display:block; width:100%; }
+    .order-page .order-content { overflow-wrap:anywhere; }
+}
+
+.order-page .order-os-panel { height:auto; margin-top:24px; min-width:0; }
+.order-page .order-os-panel .order-section-heading { margin:0; }
+.order-page .order-os-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; }
+.order-page .order-os-table-wrap { border:1px solid #e4dfeb; border-radius:10px; }
+.order-page .order-os-table-wrap .order-os-table { width:100%; min-width:790px; margin:0; border-collapse:collapse; }
+.order-os-table th,.order-os-table td { padding:10px 12px; text-align:left; border-bottom:1px solid #eeeaf2; vertical-align:middle; }
+.order-os-table thead th { background:#f1edf6; color:#3e344e; font-size:.9em; }
+.order-os-table tbody tr:nth-child(even) { background:#faf9fc; }
+.order-os-table tbody tr:last-child td { border-bottom:0; }
+.order-os-table .order-os-center { text-align:center; }
+.order-os-code,.order-os-date { white-space:nowrap; overflow-wrap:normal; font-variant-numeric:tabular-nums; }
+.order-os-meta { display:block; margin-top:3px; color:#53566b; font-size:.9em; }
+.order-os-timeline { margin:0; }
+.order-os-timeline div { display:flex; gap:6px; align-items:baseline; }
+.order-os-timeline dt { min-width:55px; font-weight:600; }
+.order-os-timeline dd { margin:0; }
+.order-os-badges { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.order-os-status { display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border-radius:6px; background:#f1edf6; font-weight:650; white-space:nowrap; }
+.order-os-status.on-time { background:#e5f2ea; color:#275e42; }
+.order-os-status.today { background:#faf0dd; color:#754600; }
+.order-os-status.late { background:#fbe7ed; color:#9b2044; }
+.order-os-status.dispatched { background:#e9effa; color:#334d80; }
+.order-page .order-os-panel .order-os-view { text-decoration:none; white-space:nowrap; }
+.order-page .order-os-cancel { width:min(100%,430px); padding:16px; margin:0 0 14px; border:1px solid #ead1db; border-radius:8px; background:#fcf3f6; }
+.order-os-cancel h3 { margin:0 0 8px; font-size:1.05em; }
+.order-os-cancel textarea { display:block; width:100%; margin-bottom:8px; }
+</style>
+</head>
+<body class="order-page">
+<div class="bloqueio_tela hidden"></div>
 <!-- #include file="includes/classe_modulo_ppv.asp" -->
 <!-- #include file="includes/classe_fechamento.asp" -->
 <%
@@ -99,15 +185,43 @@ FecharConexao()
 
 %> 
 
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-
-	  <h2>LCA - Busca / Detalhe de Pedido</h2>
-	  <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
-	  	  
-		  	<h3 align="center">Detalhes do Pedido <%If int(PEDIDO_EXTRA) = 1 Then%> Extra <%End If%>n&ordm; <%=COD_PEDIDO%></h3>
-				<table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
+<a class="skip-link" href="#conteudo">Ir para o conte&uacute;do</a>
+<div class="dashboard-layout">
+  <aside class="dashboard-sidebar" id="menuPrincipal">
+    <a class="dashboard-brand" href="adm_index.asp"><img src="images/logoparafundopreto.png" alt="Stillos" width="180" /><span>GERENCIAL FOTOS</span></a>
+    <div class="nav-caption">&Aacute;REA DE TRABALHO</div>
+    <!-- #include file="includes/dashboard_menu.asp" -->
+  </aside>
+  <div class="dashboard-workspace">
+    <header class="dashboard-topbar">
+      <button class="btn menu-toggle" id="ppvMenuToggle" type="button" aria-controls="menuPrincipal" aria-expanded="false">Menu</button>
+      <div class="topbar-title">Portal Stillos <span>/ Detalhes do pedido</span></div>
+      <div class="topbar-actions"><a class="user-name" href="adm_log_usuarios.asp"><%=Server.HTMLEncode(Session("NOME") & "")%></a><a href="manual_sistema.asp" target="_blank" rel="noopener">Manual</a><a class="btn btn-outline-secondary btn-sm" href="adm_sair.asp">Sair</a></div>
+    </header>
+    <main class="dashboard-main ppv-main" id="conteudo">
+      <div class="order-content">
+        <div class="dashboard-heading order-heading">
+          <div>
+            <p class="eyebrow">PEDIDOS</p>
+            <h1>Pedido<%If int(PEDIDO_EXTRA) = 1 Then%> extra<%End If%> #<%=Server.HTMLEncode(COD_PEDIDO & "")%></h1>
+          </div>
+          <div class="order-actions">
+            <a class="btn btn-outline-secondary" href="adm_index.asp" id="orderBack">Voltar</a>
+            <a class="btn btn-primary" href="lca_pedidos_pendentes_uniimpressao.asp?cod_pedido=<%=Server.URLEncode(COD_PEDIDO & "")%>" target="_blank" rel="noopener">Imprimir pedido</a>
+          </div>
+        </div>
+        <div class="search-panel"><div><strong>Busca no portal</strong></div><!-- #include file="includes/dashboard_busca.asp" --></div>
+        <div class="session-notices"><!-- #include file="includes/dashboard_avisos.asp" --></div>
+        <nav class="order-jump" aria-label="Se&ccedil;&otilde;es do pedido">
+          <a href="#dados_pedido">Dados do pedido</a>
+          <a href="#produtos_adquiridos">Produtos</a>
+          <a href="#formas_pagamento">Pagamentos</a>
+          <a href="#ordens_servico">Ordens de servi&ccedil;o</a>
+        </nav>
+        <div class="msg" align="center"><%=Request.QueryString("msg")%></div>
+        <section class="dashboard-panel order-summary" aria-labelledby="dados_pedido">
+          <h2 id="dados_pedido">Dados do pedido</h2>
+          <table width="100%" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">
  
   <tr>
             <td width="16%"><div align="left"><strong>Vendedor:</strong></div></td>
@@ -337,7 +451,8 @@ FecharConexao()
 				FecharConexao()
 				%>
             </table>
-			<h3 align="center">Produtos Adquiridos</h3>
+			</section>
+            <h2 class="order-section-heading" id="produtos_adquiridos">Produtos adquiridos</h2>
 				  <%
 			  '1) Seleciona os c�digos dos formandos do pedido
 			  '2) Seleciona os dados inseridos nas fichas
@@ -718,7 +833,7 @@ Set rsProdutosAparte = Nothing
 			'FecharConexao2()d
 		  	FecharConexao()
   			%>
-	  	      <h3 align="center">Formas de Pagamento</h3>
+	  	      <h2 class="order-section-heading" id="formas_pagamento">Formas de pagamento</h2>
 	  	     <table width="100%" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
                 <%if PAGAMENTO_EM_DINHEIRO > 0 then%>
 			    <tr bgcolor="whitesmoke">
@@ -1177,9 +1292,8 @@ FecharConexao()
   %>
 </table>
 <%End If%>
-<br />
-<hr />
-<h3 align="center">Ordens de Servi&ccedil;o da Venda</h3>
+<section class="dashboard-panel order-os-panel" aria-labelledby="ordens_servico">
+<header class="order-os-toolbar"><h2 class="order-section-heading" id="ordens_servico">Ordens de servi&ccedil;o da venda</h2></header>
        <%
 	   AbrirConexao()
 	   Dim pode_imprimir_2_via_despacho_procolo
@@ -1221,19 +1335,20 @@ FecharConexao()
 				$("#sub-menu-os").show();
 			}
 			</script>
-			<div style="width:99%; float:left; position:relative;" id='sub-menu-os'>
-				<a href="javascript:cancelarOs()" class="btnGeral" style="float:left; position:relative;">Cancelar Ordens de Servi&ccedil;o</a>
+			<div id="sub-menu-os">
+				<a href="javascript:cancelarOs()" class="btn btn-outline-secondary">Cancelar ordens selecionadas</a>
 			</div>
 			<form name="FORMULARIO_PADRAO">
 
-			<div id='cancelar_os' style="width:430px; background-color:#ffffcc; padding:25px; margin:0px auto 10px; display:none; position:realtive; float:left;">
-				<h1>Cancelar Ordens Servi&ccedil;o</h1>
-				<textarea name="MOTIVO_CANCELADA" maxlength='255' class="inputTamanho3" rows="5"></textarea>
+			<div id="cancelar_os" class="order-os-cancel" style="display:none;">
+				<h3>Cancelar ordens de servi&ccedil;o</h3>
+                <label for="order-os-reason">Motivo do cancelamento</label>
+				<textarea id="order-os-reason" name="MOTIVO_CANCELADA" maxlength='255' class="inputTamanho3" rows="5"></textarea>
 				<input type='hidden' name='lote_os' id='lote_os' value='' />
 				<table>
 				<tr>
-					<td><a href="javascript:OSaction('cancelarVariasOs',0,'', $('#lote_os').val() )" class="btnGeral" style="float:left; position:relative;">Confirmar</a></td>
-					<td><a href="javascript:cancelarOs()" class="btnGeral" style="float:left; position:relative;">Cancelar</a></td>
+					<td><a href="javascript:OSaction('cancelarVariasOs',0,'', $('#lote_os').val() )" class="btnGeral">Confirmar</a></td>
+					<td><a href="javascript:cancelarAcao()" class="btnGeral">Voltar</a></td>
 				</tr>
 				</table>
 			</div>
@@ -1241,32 +1356,19 @@ FecharConexao()
 
 			</form>
 			<%end if 'if validacao do usuario %>
-		<table width="99%" border="1" align="center" cellpadding="5" style="border-collapse:collapse">
-  <tr bgcolor="whitesmoke">
-  <td rowspan="2" width="3%"><div align="center"><strong> OS</strong></div></td>
-  <td rowspan="2" width="12%"><div align="center"><strong>Formando</strong></div></td>
-  <td width="10%" rowspan="2"><div align="center"><strong>Produto</strong></div></td>
-  <td width="6%" rowspan="2"><div align="center"><strong>Qtd.</strong></div></td>
-  <td colspan="5"><div align="center" style="font-weight: bold">
-    <div align="center">Etapa Atual Informa&ccedil;&otilde;es</div>
-  </div></td>
-  <td width="9%" rowspan="2"><div align="center"><strong>Data Cadastro</strong></div></td>
-  <td width="6%" rowspan="2"><div align="center"><strong>Prazo Geral</strong></div></td>
-  <td width="5%" rowspan="2"><div align="center"><strong>Status</strong></div>  </td>
-  <td width="3%" rowspan="2">&nbsp;</td>
-  <td width="3%" rowspan="2"><p align="center"> </p>
-    <p align="center"> </p></td>
-    <td width="8%" rowspan="2" ><div align="center"><strong>&nbsp;</strong></div></td>
-</tr>
-  <tr bgcolor="whitesmoke">
-    <td width="10%"><div align="center"><strong>Etapa / Total</strong></div></td>
-    <td width="10%"><div align="center"><strong>Descri&ccedil;&atilde;o</strong></div></td>
-    <td width="8%"><div align="center"><strong>Resp. Atual</strong></div></td>
-    <td width="7%"><div align="center"><strong>Data In&iacute;cio</strong></div></td>
-    <td width="8%"><div align="center"><strong>Prazo etapa</strong></div></td>
-    
-    </tr>                         
-		<%
+		<div class="order-scroll order-os-table-wrap" role="region" aria-label="Ordens de servi&ccedil;o da venda" tabindex="0">
+<table class="order-os-table">
+  <thead><tr>
+    <th scope="col">OS / Formando</th>
+    <th scope="col">Produto</th>
+    <th scope="col">Etapa atual</th>
+    <th scope="col">Datas e prazos</th>
+    <th scope="col" class="order-os-center">Status</th>
+    <th scope="col" class="order-os-center">Detalhes</th>
+    <th scope="col" class="order-os-center">Selecionar</th>
+  </tr></thead>
+  <tbody>
+  <%
 		While not rs2.Eof
 
 		Set rs3=objConexao.Execute("Select count(*) as qtd_etapas From TB_ORDENS_SERVICO_ETAPAS where cod_ordem_servico = "&rs2("cod_ordem_servico")&" group by cod_ordem_servico")
@@ -1276,60 +1378,65 @@ FecharConexao()
 		rs3.Close
 		Set rs3=Nothing
 		%>                   
-            <tr>
-                                        <td><div align="center"><strong><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></strong></div></td>
-                                        <td><%=rs2("nome_formando")%></td>
-                            <td><div align="left">
-                                <%=rs2("nome_produto")%>                                        
-                                </div></td>
-                            <td><div align="center"><%=rs2("quantidade")%> </div></td>
-                                        <td><div align="center"><%=rs2("numero_etapa")%> / <%=qtd_etapas%></div></td>
-                                        <td><div align="left"><%=rs2("descricao")%></div></td>
-                                        <td><div align="left"><%=nomeUsuario(rs2("cod_usuario_responsavel"),true)%></div></td>
-                                        <td><div align="center"><%=ArrumaData(rs2("data_inicio"))%></div></td>
-                                        <td><div align="center"><%=ArrumaData(rs2("prazo_limite"))%></div></td>
-                                        <td><div align="center"><%=ArrumaData(rs2("data_cadastrado"))%></div></td>
-                                        <td><div align="center">
-										<%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></div></td>
-                                        <td><div align="center"><%=rs2("status_ordem_servico")%></div></td>
-                                        <td><div align="center"><a href="ppv_ordens_servico_formulario.asp?comando=visualizar&cod_ordem_servico=<%=rs2("cod_ordem_servico")%>"><img src="images/icons/icon_visualizar.png" width="16" height="16" border="0" /></a></div></td>
-                                        <td>
-                                        <div align="center">
-											<%If int(rs2("status_ordem_servico")) = 4 Then
-											pode_imprimir_2_via_despacho_procolo = true
-											%>
-                                                <img src="images/icons/icon_green.gif" width="16" height="15" />
-                                                <%ElseIf int(rs2("status_ordem_servico")) = 3 Then
-											pode_imprimir_2_via_despacho_procolo = true
-											%>
-                                                <img src="images/icons/icon_entrega.png" width="16" height="16" />
-                                            <%ElseIf int(rs2("status_ordem_servico")) = 2 Then
-												pode_imprimir_2_via_despacho_procolo = false
-											%> 
-                                            	 <img src="images/icons/icon_aguardando.png" width='16px' height='16px' />
-                                            <%Elseif  int(rs2("status_ordem_servico")) = 99  Then
-												pode_imprimir_2_via_despacho_procolo = false
-											%>
-                                                <img src="images/icons/icon_red.gif" width="17" height="15" />
-                                            <%Else%>
-                                       	  <%
-												pode_imprimir_2_via_despacho_procolo = false
-												'Response.Write(rs2("diferenca_etapa"))
-												diferenca = formatNumber(rs2("diferenca_etapa"))/1
-												'Response.Write(diferenca)
-												If diferenca > 0 Then%>
-                                       	  <img src="images/icons/icon_balao_red.gif" alt="Etapa atrasada há <%=diferenca%> dia(s)." title="Etapa atrasada há <%=diferenca%> dia(s)." />
-                                       	  <%Elseif diferenca = 0 Then%>
-                                       	  <img src="images/icons/icon_balao_yellon.gif" alt="OS vencendo hoje." title="OS vencendo hoje" />
-                                                <%Else%>
-                                       	  <img src="images/icons/icon_balao_green.gif" alt="Faltam <%=(diferenca)*(-1)%> dia(s) para término do prazo da etapa." title="Faltam <%=(diferenca)*(-1)%> dia(s) para t�rmino do prazo da etapa." />                                                
-                                                <%End If%>
-                                            <%End If%>
-                                        </div>                                        
-									</td>
-									<td>
-									<% if int(rs2("status_ordem_servico")) < 4 then%>
-										<input type="checkbox" name="cod_ordem_servico_acao" value="<%=rs2("cod_ordem_servico")%>" class='inputradio'>
+    <tr>
+      <td><strong class="order-os-code"><%=moduloPPVOSMascara(rs2("cod_ordem_servico"),"",true)%></strong><span class="order-os-meta"><%=rs2("nome_formando")%></span></td>
+      <td><strong><%=rs2("nome_produto")%></strong><span class="order-os-meta">Qtd. <%=rs2("quantidade")%></span></td>
+      <td><strong><%=rs2("numero_etapa")%> / <%=qtd_etapas%></strong><span class="order-os-meta"><%=rs2("descricao")%></span><span class="order-os-meta"><%=nomeUsuario(rs2("cod_usuario_responsavel"),true)%></span></td>
+      <td><dl class="order-os-timeline">
+        <div><dt>Cadastro</dt><dd class="order-os-date"><%=ArrumaData(rs2("data_cadastrado"))%></dd></div>
+        <div><dt>In&iacute;cio</dt><dd class="order-os-date"><%=ArrumaData(rs2("data_inicio"))%></dd></div>
+        <div><dt>Etapa</dt><dd class="order-os-date"><%=ArrumaData(rs2("prazo_limite"))%></dd></div>
+        <div><dt>Geral</dt><dd class="order-os-date"><%=ArrumaData(DateAdd("d",rs2("prazo_cliente_total"),rs2("data_base_prazo_cliente_inicio")))%></dd></div>
+      </dl></td>
+      <td class="order-os-center">
+        <%
+        Dim orderOsStatus, orderOsLabel, orderOsTone, orderOsDeadline, orderOsDeadlineTone
+        orderOsStatus = CStr(rs2("status_ordem_servico") & "")
+        orderOsTone = ""
+        orderOsDeadline = ""
+        orderOsDeadlineTone = ""
+        pode_imprimir_2_via_despacho_procolo = (orderOsStatus = "3" Or orderOsStatus = "4")
+        Select Case orderOsStatus
+            Case "1"
+                orderOsLabel = "Em andamento"
+                If IsNumeric(rs2("diferenca_etapa")) Then
+                    diferenca = CDbl(rs2("diferenca_etapa"))
+                    If diferenca > 0 Then
+                        orderOsDeadline = "Etapa em atraso"
+                        orderOsDeadlineTone = "late"
+                    ElseIf diferenca = 0 Then
+                        orderOsDeadline = "Etapa vence hoje"
+                        orderOsDeadlineTone = "today"
+                    Else
+                        orderOsDeadline = "Etapa no prazo"
+                        orderOsDeadlineTone = "on-time"
+                    End If
+                End If
+            Case "2"
+                orderOsLabel = "Aguardando despacho"
+                orderOsTone = "today"
+            Case "3"
+                orderOsLabel = "Despachada"
+                orderOsTone = "dispatched"
+            Case "4"
+                orderOsLabel = "Entregue"
+                orderOsTone = "on-time"
+            Case "99"
+                orderOsLabel = "Cancelada"
+                orderOsTone = "late"
+            Case Else
+                orderOsLabel = "Situa&ccedil;&atilde;o n&atilde;o identificada"
+        End Select
+        %>
+        <div class="order-os-badges">
+          <span class="order-os-status <%=orderOsTone%>"><%=orderOsLabel%></span>
+          <%If Len(orderOsDeadline) > 0 Then%><span class="order-os-status <%=orderOsDeadlineTone%>"><%=orderOsDeadline%></span><%End If%>
+        </div>
+      </td>
+      <td class="order-os-center"><a class="btn btn-outline-secondary order-os-view" href="ppv_ordens_servico_formulario.asp?comando=visualizar&cod_ordem_servico=<%=rs2("cod_ordem_servico")%>">Ver OS</a></td>
+      <td class="order-os-center">
+      <% if int(rs2("status_ordem_servico")) < 4 then%>
+										<input type="checkbox" name="cod_ordem_servico_acao" value="<%=rs2("cod_ordem_servico")%>" class='inputradio' aria-label="Selecionar OS <%=rs2("cod_ordem_servico")%>">
 									<%end if%>
 									</td>
                             </tr>
@@ -1338,17 +1445,17 @@ FecharConexao()
 	   rs2.MoveNext()
 	   Wend
 	   %>
-        </table>
+        </tbody></table></div>
         <%If pode_imprimir_2_via_despacho_procolo Then%>
         
-      <div style="position:relative; float:left; width: 100%; padding-top:30px;">
-		<a href="ppv_ordens_servico_triagem_despacho_imprimir.asp?c=<%=cod_pedido%>" target="_blank" class="btnGeral" style="display:block;width:440px;">IMPRIMIR 2&ordm; VIA DE PROTOCOLO DESPACHO ( Todos os Itens )</a>
-      <a href="ppv_ordens_servico_triagem_despacho_imprimir_entrega.asp?c=<%=cod_pedido%>" target="_blank" class="btnGeral" style="display:none;margin-top:5px;width:440px;">IMPRIMIR 2&ordm; VIA DE PROTOCOLO DESPACHO ( Somente produtos n&atilde;o entregues )</a>
-      <span onclick="showListaItens()" class="btnGeral" style="display:block;margin-top:5px;width:440px;cursor:pointer;color:#1B5DE4;text-decoration: underline;">IMPRIMIR 2&ordm; VIA DE PROTOCOLO DESPACHO ( Selecionar Itens )</span> 
+      <div class="order-dispatch">
+		<a href="ppv_ordens_servico_triagem_despacho_imprimir.asp?c=<%=cod_pedido%>" target="_blank" class="btnGeral" style="display:block;">IMPRIMIR 2&ordm; VIA DE PROTOCOLO DESPACHO ( Todos os Itens )</a>
+      <a href="ppv_ordens_servico_triagem_despacho_imprimir_entrega.asp?c=<%=cod_pedido%>" target="_blank" class="btnGeral" style="display:none;margin-top:5px;">IMPRIMIR 2&ordm; VIA DE PROTOCOLO DESPACHO ( Somente produtos n&atilde;o entregues )</a>
+      <span onclick="showListaItens()" class="btnGeral" style="display:block;margin-top:5px;cursor:pointer;color:#1B5DE4;text-decoration: underline;">IMPRIMIR 2&ordm; VIA DE PROTOCOLO DESPACHO ( Selecionar Itens )</span> 
       <div id="ListaItens" style="display:none;">
       
     <form name="IMPRIMIRP_PROTOCOLO_CLIENTE" action="ppv_ordens_servico_triagem_despacho_imprimir_protocolo_selecionado.asp" method="post" style="margin:0px;margin-left:auto;">
-       <table width="800px" border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">     
+       <table border="1" align="center" 	cellpadding="5" style="border-collapse:collapse">     
         <tr bgcolor="whitesmoke">
 		     <td width="70%"><div align="center"><strong>Produto</strong></div></td>
 
@@ -1414,9 +1521,7 @@ FecharConexao()
           </table>
          </form>
       </div>
-      
       </div>
-        </div>
         <%End If%>
         
         		<%
@@ -1432,6 +1537,8 @@ FecharConexao()
        <%
 	   FecharConexao()
 	   %>
+      </section>
+      </div>
 <script type="text/javascript">
 
 function historicoCheque(COD_PEDIDO,COD_PEDIDO_CHEQUE){
@@ -1441,4 +1548,38 @@ displayStaticMessage(caminho,false,420)
 }
 
 </script>
-<!-- #include file="files/includes/miolo-inferior.asp" -->
+<!-- #include file="files/includes/scripts_rodape.asp" -->
+    </main>
+    <footer class="dashboard-footer">&copy; <%=Year(Date)%> Grupo Stillos <span>Sistema administrativo interno</span></footer>
+  </div>
+</div>
+<script>
+(function () {
+    var toggle = document.getElementById('ppvMenuToggle');
+    var menu = document.getElementById('menuPrincipal');
+    var previous = menu.querySelector('[aria-current="page"]');
+    var current = menu.querySelector('a[href="ppv_ordens_servico.asp"]');
+    var back = document.getElementById('orderBack');
+    back.addEventListener('click', function (event) {
+        if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
+            event.preventDefault();
+            window.history.back();
+        }
+    });
+    if (previous) previous.removeAttribute('aria-current');
+    if (current) current.setAttribute('aria-current', 'page');
+    toggle.addEventListener('click', function () {
+        var expanded = menu.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(expanded));
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+    });
+})();
+</script>
+</body>
+</html>

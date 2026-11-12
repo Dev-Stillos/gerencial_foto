@@ -461,5 +461,22 @@ End If
   </td>
 </tr>
 </table>
+
+<script>
+(function () {
+    var campo = document.querySelector('select[name="COD_CONTRATO"]');
+    if (!campo) return;
+
+    Array.from(campo.options).forEach(function (opcao) {
+        var textoCompleto = opcao.text;
+
+        if (textoCompleto.length > 80) {
+            opcao.title = textoCompleto;
+            opcao.text = textoCompleto.slice(0, 80) + '...';
+        }
+    });
+})();
+</script>
+
 </body>
 </html>

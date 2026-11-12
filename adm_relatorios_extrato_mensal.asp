@@ -1,330 +1,160 @@
 <!-- #include file="includes/xqrtopqqetyynmkgfdconexao.asp" -->
 <!-- #include file="includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
 <%
-'Validação especial para verificar se possui sub-validação específica
+Dim rs, rsFotos, rsProdutos, mes, ano, periodo, erroPeriodo, formatoPeriodo, embutido
+Dim totalFotos, valorFotos, totalVendido, valorProduto
+
 AbrirConexao()
-	
-	Set rs=objConexao.Execute("Select COD_PERMISSAO_SUB_VALIDACAO From TB_ADM_PERFIS_PAGINAS_HABILITADAS_SUB_VALIDACOES where COD_SUB_VALIDACAO = '43' and cod_perfil = '"&Session("cod_perfil")&"'")
-		
-		If rs.Eof Then
-		'Se não encontrar então redireciona
-			Session.Abandon()
-			Response.Redirect("index.asp")
-		End If
-		
-	rs.Close
-	Set rs=Nothing
-	
-FecharConexao()
-
-'/////////////////////////////////////////////////////////////////////////////////////////////
-
-Dim PERIODO_REFERENCIA
-PERIODO_REFERENCIA = "01/"&Request.QueryString("MES_INICIO")&"/"&Request.QueryString("ANO_INICIO")
-
-If (PERIODO_REFERENCIA) <> "" Then
-	PERIODO_REFERENCIA = formatDateTime(PERIODO_REFERENCIA)
+Set rs = objConexao.Execute("Select COD_PERMISSAO_SUB_VALIDACAO From TB_ADM_PERFIS_PAGINAS_HABILITADAS_SUB_VALIDACOES where COD_SUB_VALIDACAO = '43' and cod_perfil = '" & Session("cod_perfil") & "'")
+If rs.EOF Then
+    rs.Close
+    FecharConexao()
+    Session.Abandon()
+    Response.Redirect("index.asp")
 End If
+rs.Close
+Set rs = Nothing
 
+mes = Trim(Request.QueryString("MES_INICIO"))
+ano = Trim(Request.QueryString("ANO_INICIO"))
+embutido = Request.QueryString("modal") = "1"
+
+Set formatoPeriodo = New RegExp
+formatoPeriodo.Pattern = "^(0?[1-9]|1[0-2])/[1-9][0-9]{3}$"
+erroPeriodo = Not formatoPeriodo.Test(mes & "/" & ano)
+Set formatoPeriodo = Nothing
+
+If erroPeriodo Then
+    FecharConexao()
+Else
+    periodo = DateSerial(CInt(ano), CInt(mes), 1)
+    totalFotos = 0
+    valorFotos = 0
+    Set rsFotos = objConexao.Execute("SELECT SUM(FATURADO) AS FATURADO, SUM(FATURADO*VALOR_UN) AS TOTAL_FATURADO_ARRECADADO FROM VW_PEDIDOS_COMPLETO WHERE month(DATA_VENDA) = "&Month(periodo)&" AND year(DATA_VENDA) = "&Year(periodo)&" and FINALIZA_CORRECAO = 1")
+    If Not rsFotos.EOF Then
+        totalFotos = FormatNumber(0 & rsFotos("FATURADO"), 0)
+        valorFotos = FormatNumber(0 & rsFotos("TOTAL_FATURADO_ARRECADADO"), 0)
+    End If
+    rsFotos.Close
+    Set rsFotos = Nothing
+
+    totalVendido = 0 + valorFotos
+    Set rsProdutos = objConexao.Execute("SELECT TB_PEDIDOS_PRODUTOS.COD_PRODUTO, TB_PRODUTOS.NOME_PRODUTO, SUM(TB_PEDIDOS_PRODUTOS.QUANTIDADE) AS QUANTIDADE, SUM(TB_PEDIDOS_PRODUTOS.VALOR_UN*TB_PEDIDOS_PRODUTOS.QUANTIDADE) AS VALOR_TOTAL FROM TB_PEDIDOS  INNER JOIN TB_PEDIDOS_PRODUTOS ON TB_PEDIDOS.COD_PEDIDO = TB_PEDIDOS_PRODUTOS.COD_PEDIDO INNER JOIN TB_PRODUTOS ON TB_PEDIDOS_PRODUTOS.COD_PRODUTO = TB_PRODUTOS.COD_PRODUTO WHERE month(TB_PEDIDOS.DATA_VENDA) = "&Month(periodo)&" AND  year(TB_PEDIDOS.DATA_VENDA) = "&Year(periodo)&" and TB_PEDIDOS.FINALIZA_CORRECAO = 1 GROUP BY TB_PEDIDOS_PRODUTOS.COD_PRODUTO ")
+End If
 %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="css/base.css" media="all"></link>
-<title>StillosWEB - Sistema corporativo - Versão 1.2</title>
-	<script type="text/javascript" src="js/scrips_calendario/dhtmlSuite-common.js"></script>
-	<script language="javascript">
-		function mOvr(src, cor)
-			{
-			if (!src.contains(event.fromElement))
-					{
-						src.style.cursor = 'hand';
-						src.bgColor = cor;
-					}
-			}
-		
-		function mOut(src, cor)
-			{
-				if (!src.contains(event.toElement))
-					{
-						src.style.cursor = 'default';
-						src.bgColor = cor;
-			
-					}
-			}
-	</script>
-	
-	<script type="text/javascript" language="javascript">
-<!--
-<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-		
-	function abrir(theURL,winName,features) 
-	{ 
-	  window.open(theURL,winName,features);
-	}
-
-		
-	function abre(url)
-	{    
-				//if(event.srcElement.tagName=='TD')
-				//	{
-				//		src.children.tags('A')[0].click(); 
-				//	}
-	location.href = url;
-
-	}	
-		
-		
-	
-
-	function buscaIni(){
-	d = document.buscaForm
-	d.busca.focus()
-	d.busca.select();
-	}
-	function mudacorBusca(CAMPO){
-	CAMPO.style.backgroundColor = '#F5ECBA'
-	}
-	function mudacorBusca2(CAMPO){
-	CAMPO.style.backgroundColor = '#FFFFFF'
-	}
-
- function Verificar()
- {
-  var tecla=window.event.keyCode;
-  if (tecla==17) {
-    buscaIni();
-	}
- }
- 
-	<!--AJUDA F1 E CTRL PARA BUSCA RÁPIDA-->
-
-function MM_jumpMenu(targ,selObj,restore){ //v3.0
-  eval(targ+".location='"+selObj.options[selObj.selectedIndex].value+"'");
-  if (restore) selObj.selectedIndex=0;
+<meta charset="iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relat&oacute;rio Mensal de Produtos Vendidos | Portal Stillos</title>
+<link rel="stylesheet" href="css/vendor/bootstrap.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<style>
+body { background:#f4f4f8; color:#242738; }
+.sales-report { max-width:1150px; margin:24px auto; padding:clamp(16px,4vw,36px); background:#fff; border:1px solid #e4dfeb; border-radius:14px; }
+.sales-tools,.sales-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.sales-header { margin:16px 0 22px; padding-bottom:14px; border-bottom:2px solid #b20b61; }
+.sales-header h1 { margin:0 0 6px; font-size:clamp(1.45rem,4vw,2rem); }
+.sales-header p { margin:0; color:#53566b; text-transform:capitalize; }
+.sales-logo { width:150px; padding:10px; border-radius:8px; background:#292b40; }
+.sales-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); gap:12px; margin:0 0 24px; }
+.sales-kpis > div { padding:14px; border:1px solid #e4dfeb; border-radius:10px; }
+.sales-kpis dd { margin:4px 0 0; font-weight:700; font-size:1.25rem; }
+.sales-scroll { overflow:auto; }
+.sales-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.sales-table :is(th,td) { padding:10px; border-bottom:1px solid #e4dfeb; overflow-wrap:anywhere; }
+.sales-table .sales-number { text-align:right; white-space:nowrap; }
+.sales-table thead,.sales-table tfoot { background:#f1edf6; }
+.sales-table tbody tr:nth-child(even) { background:#faf9fc; }
+.sales-notes { margin-top:20px; color:#53566b; }
+.sales-notes h2,.sales-report section h2 { font-size:1.1rem; margin:0 0 8px; }
+.sales-notes ul { margin:0; padding-left:20px; }
+.sales-notes li + li { margin-top:4px; }
+.report-embedded .sales-report { margin:12px auto; }
+@page { size:A4 portrait; margin:12mm; }
+@media print {
+    body { background:#fff; color:#000; font-size:10pt; }
+    .sales-report,.report-embedded .sales-report { margin:0; padding:0; max-width:none; border:0; }
+    .sales-tools { display:none; }
+    .sales-header { margin-top:0; }
+    .sales-scroll { overflow:visible; }
+    .sales-table thead { display:table-header-group; }
+    .sales-table tfoot { display:table-row-group; }
+    .sales-table :is(th,td) { padding:5px; }
+    .sales-table tr,.sales-kpis,.sales-notes { break-inside:avoid; }
+    .sales-logo { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
 }
-//-->
-
-function cadastraVendedor(valor){
-	alert(valor);
-}
-</script>
-		
-	<script type="text/javascript">
-	DHTMLSuite.include("calendar");
-	</script>
-	<script type="text/javascript">
-	var calendarObjForForm = new DHTMLSuite.calendar({minuteDropDownInterval:10,numberOfRowsInHourDropDown:5,callbackFunctionOnDayClick:'getDateFromCalendar',isDragable:true,displayTimeBar:false});
-	
-		 
-	calendarObjForForm.setCallbackFunctionOnClose('myOtherFunction');
-	
-	function myOtherFunction()
-	{
-		
-		
-	}
-	function pickDate(buttonObj,inputObject)
-	{
-		calendarObjForForm.setCalendarPositionByHTMLElement(inputObject,0,inputObject.offsetHeight+2);	// Position the calendar right below the form input
-		//calendarObjForForm.setInitialDateFromInput(inputObject,'yyyy-mm-dd hh:ii');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.setInitialDateFromInput(inputObject,'dd/mm/yyyy');	// Specify that the calendar should set it's initial date from the value of the input field.
-		
-		calendarObjForForm.addHtmlElementReference('myDate',inputObject);	// Adding a reference to this element so that I can pick it up in the getDateFromCalendar below(myInput is a unique key)
-		if(calendarObjForForm.isVisible()){
-			calendarObjForForm.hide();
-		}else{
-			calendarObjForForm.resetViewDisplayedMonth();	// This line resets the view back to the inital display, i.e. it displays the inital month and not the month it displayed the last time it was open.
-			calendarObjForForm.display();
-		}		
-	}	
-	/* inputArray is an associative array with the properties
-	year
-	month
-	day
-	hour
-	minute
-	calendarRef - Reference to the DHTMLSuite.calendar object.
-	*/
-	function getDateFromCalendar(inputArray)
-	{
-		var references = calendarObjForForm.getHtmlElementReferences(); // Get back reference to form field.
-		references.myDate.value = inputArray.day + '/' + inputArray.month + '/' + inputArray.year
-//		references.myDate.value = inputArray.year + '-' + inputArray.month + '-' + inputArray.day + ' ' + inputArray.hour + ':' + inputArray.minute;
-		calendarObjForForm.hide();	
-		
-	}	
-	function popUp(URL){
-	win=window.open(URL,"","width=550,height=350,scrollbars=yes")
-	var text = "Se a janela não abrir desbloquei os Pop-ups!";
-	if(win == null) { alert(text); return; }
-	win.moveTo(350,150);
-}	
-	</script>
+</style>
 </head>
-
-<body>
-
-<table cellpadding="9px" cellspacing="0" width="100%">
-<tr>
-<td>
-<table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
-  <tr>
-    <td>
-		<!-- #include file="includes/topo.asp" -->
-<table width="100%" style="border-bottom:#999999 solid dotted 1px" background="images/layout/fundo_menu_azul.jpg"border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td>
-	<!-- #include file="includes/menu.asp" -->
-	  </td>
-  </tr>
-</table>
-<table width="100%" border="0" cellspacing="0" cellpadding="10">
-  <tr>
-  <td>
-   <%
-  Dim BTN_VOLTAR, BTN_IMPRIMIR, BTN_FONTE, BTN_IMPRIMIR_LINK
-  BTN_VOLTAR = 1
-  BTN_IMPRIMIR = 2
-  BTN_FONTE = 1
-  %>
-  <!-- #include file="includes/sub_menu.asp" -->
-  
-  <table width="100%" border="0" cellspacing="0" cellpadding="5">
-  <tr>
-    <td valign="top" style="border:dotted 1px #999999">
-	
-	  <h2>Relatórios - Extrato Mensal de Produtos<br />
-	    
-	    
-          <br />
-      </h2>
-	  <div align="center" class="msg"><%=Request.QueryString("msg")%></div>
-	  <%
-		AbrirConexao()		
-		Dim rs, sql, i, produtos(100,5), QTD_PRODUTOS, TOTAL_VENDIDO
-		TOTAL_VENDIDO = 0
-		%>
-        <span class="textoMaior"><strong><%=Ucase(MonthName(Month(PERIODO_REFERENCIA)))%> - <%=year(PERIODO_REFERENCIA)%></strong></span>
-        <table width="100%" 
-		      border="1" align="center"
-					cellpadding="5" 
-					style="border-collapse:collapse">
-          <tr bgcolor="whitesmoke">
-            <td width="20%" height="28"><div align="center"><strong>Fotos vendidas</strong>*</div></td>
-            <td width="68%"><div align="center"><strong>Venda de Produtos </strong></div>                </td>
-            <td width="12%"><div align="center"><strong>Valor Total Produtos**</strong></div></td>
-          </tr>
-          <%	
-		'/////////////////////////////////////////////
-		'FOTOS
-		Dim TOTAL_GERAL_FOTOS_FATURADAS, TOTAL_FATURADO_ARRECADADO
-		TOTAL_GERAL_FOTOS_FATURADAS = 0
-		TOTAL_FATURADO_ARRECADADO = 0
-
-			Set rs5=objConexao.Execute("SELECT SUM(FATURADO) AS FATURADO, SUM(FATURADO*VALOR_UN) AS TOTAL_FATURADO_ARRECADADO FROM VW_PEDIDOS_COMPLETO WHERE month(DATA_VENDA) = "&Month(PERIODO_REFERENCIA)&" AND year(DATA_VENDA) = "&Year(PERIODO_REFERENCIA)&" and FINALIZA_CORRECAO = 1")
-				
-				If not rs5.Eof Then
-					
-					TOTAL_GERAL_FOTOS_FATURADAS = formatNumber(0&rs5("FATURADO"),0)
-					TOTAL_FATURADO_ARRECADADO = formatNumber(0&rs5("TOTAL_FATURADO_ARRECADADO"),0)
-					
-					TOTAL_VENDIDO = (TOTAL_VENDIDO+TOTAL_FATURADO_ARRECADADO)/1
-					
-				End If
-				
-			rs5.Close
-			Set rs5=Nothing
-		
-		'/////////////////////////////////////////////
-		
-		%>
-          <tr>
-            <td><p>Total Fotos: <strong><%=TOTAL_GERAL_FOTOS_FATURADAS%></strong></p>
-                <p>Valor Total Fotos: <strong><%=formatCurrency(TOTAL_FATURADO_ARRECADADO)%></strong></p></td>
-            <td ><%
-				  Set rs4=objConexao.Execute("SELECT TB_PEDIDOS_PRODUTOS.COD_PRODUTO, TB_PRODUTOS.NOME_PRODUTO, SUM(TB_PEDIDOS_PRODUTOS.QUANTIDADE) AS QUANTIDADE, SUM(TB_PEDIDOS_PRODUTOS.VALOR_UN*TB_PEDIDOS_PRODUTOS.QUANTIDADE) AS VALOR_TOTAL FROM TB_PEDIDOS  INNER JOIN TB_PEDIDOS_PRODUTOS ON TB_PEDIDOS.COD_PEDIDO = TB_PEDIDOS_PRODUTOS.COD_PEDIDO INNER JOIN TB_PRODUTOS ON TB_PEDIDOS_PRODUTOS.COD_PRODUTO = TB_PRODUTOS.COD_PRODUTO WHERE month(TB_PEDIDOS.DATA_VENDA) = "&Month(PERIODO_REFERENCIA)&" AND  year(TB_PEDIDOS.DATA_VENDA) = "&Year(PERIODO_REFERENCIA)&" and TB_PEDIDOS.FINALIZA_CORRECAO = 1 GROUP BY TB_PEDIDOS_PRODUTOS.COD_PRODUTO ",QTD_PRODUTOS)
-				  
-				 If not rs4.Eof Then
-				 %>
-                <table style="border-collapse:collapse; font-size:11px" width="100%" 
-		      border="1" align="center"
-					cellpadding="2" 
-					>
-                  <tr>
-                    <td width="47%"><div align="center"><strong>Descri&ccedil;&atilde;o</strong></div></td>
-                    <td width="28%"><div align="center"><strong>Quantidade</strong></div></td>
-                    <td width="25%"><div align="center"><strong>Sub-Total</strong>**</div></td>
-                  </tr>
-                  <%
-				 dIM VALOR_TOTAL 
-				While not rs4.Eof
-				
-						VALOR_TOTAL = formatNumber(0&rs4("VALOR_TOTAL"))
-						TOTAL_VENDIDO = TOTAL_VENDIDO + VALOR_TOTAL
-				%>
-                  <tr bgcolor="">
-                    <td><div align="left"><%=rs4("NOME_PRODUTO")%></div></td>
-                    <td><div align="center"><%=rs4("QUANTIDADE")%></div></td>
-                    <td><div align="right"><%=formatCurrency(VALOR_TOTAL)%></div></td>
-                  </tr>
-                  <%	
-						i=i+1
-					rs4.MoveNext()
-					Wend
-					
-				  rs4.Close
-				  Set rs4=Nothing
-				  %>
-                </table>
-              <%End If%>
-              &nbsp; </td>
-            <td><div align="right" class="textoMedio"><%=formatCurrency(TOTAL_VENDIDO)%></div></td>
-          </tr>
-        </table>
-        <p>
-        <strong>Observações:</strong><br /><br />
-        1) Somente vendas já corrigidas pelo dpto. fotográfico aparecem nesta relação<br /><br />
-        * Fotos j&aacute; produzidas e que foram vendidas, as outras fotos na coluna venda de produtos s&atilde;o fotos vendidas &agrave; parte.<br /><br />
-          ** Valores baseados no valor declarado do produto no momento da venda, porém o valor faturado geralmente é arredondado por tanto gerando uma diferença entre Valor Total dos Produtos e Total Arrecadado.          </p>
-		    <%
-			FecharConexao()
-			%>
-		   
-		    
-
-		<div align="center"><br />
-            <br />
-            <input class="btnTopo" type="button" onclick="abre('#')" name="Submit2" value=" " />
-            <br />
-            <br />
-            <br />
-		  </div></td>
-    </tr>
-</table>
-
- 
-  
-  </td>
-    </tr>
-</table>
-
-  
-  </td>
-  </tr>
-</table>
-<!-- #include file="includes/rodape.asp" -->
-
-  </td>
-</tr>
-</table>
+<body<%If embutido Then%> class="report-embedded"<%End If%>>
+<main class="sales-report" data-report-preview-content>
+<%If Not embutido Then%>
+    <nav class="sales-tools" aria-label="A&ccedil;&otilde;es do relat&oacute;rio">
+        <a href="adm_relatorios.asp" class="btn btn-outline-secondary">Voltar aos relat&oacute;rios</a>
+        <%If Not erroPeriodo Then%>
+        <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir / Salvar PDF</button>
+        <%End If%>
+    </nav>
+<%End If%>
+    <header class="sales-header">
+        <div>
+            <h1>Relat&oacute;rio Mensal de Produtos Vendidos</h1>
+            <%If Not erroPeriodo Then%><p><%=MonthName(Month(periodo))%> de <%=Year(periodo)%></p><%End If%>
+        </div>
+        <img class="sales-logo" src="images/logoparafundopreto.png" alt="Stillos">
+    </header>
+<%If erroPeriodo Then%>
+    <p class="alert alert-warning" data-report-error>Selecione um m&ecirc;s e um ano v&aacute;lidos para abrir o relat&oacute;rio.</p>
+<%Else%>
+    <dl class="sales-kpis">
+        <div><dt>Fotos vendidas</dt><dd><%=totalFotos%></dd></div>
+        <div><dt>Valor das fotos vendidas</dt><dd><%=FormatCurrency(valorFotos)%></dd></div>
+    </dl>
+    <section aria-labelledby="sales-products-title">
+        <h2 id="sales-products-title">Venda de produtos</h2>
+        <div class="sales-scroll">
+            <table class="sales-table" aria-labelledby="sales-products-title">
+                <thead>
+                    <tr><th scope="col">Produto</th><th scope="col" class="sales-number">Quantidade</th><th scope="col" class="sales-number">Subtotal</th></tr>
+                </thead>
+                <tbody>
+<%If rsProdutos.EOF Then%>
+                    <tr><td colspan="3">Nenhum produto vendido no per&iacute;odo.</td></tr>
+<%Else
+    Do While Not rsProdutos.EOF
+        valorProduto = FormatNumber(0 & rsProdutos("VALOR_TOTAL"))
+        totalVendido = totalVendido + valorProduto
+%>
+                    <tr>
+                        <th scope="row"><%=Server.HTMLEncode(rsProdutos("NOME_PRODUTO") & "")%></th>
+                        <td class="sales-number"><%=rsProdutos("QUANTIDADE")%></td>
+                        <td class="sales-number"><%=FormatCurrency(valorProduto)%></td>
+                    </tr>
+<%
+        rsProdutos.MoveNext
+    Loop
+End If
+rsProdutos.Close
+Set rsProdutos = Nothing
+FecharConexao()
+%>
+                </tbody>
+                <tfoot>
+                    <tr><th scope="row" colspan="2">Total vendido (fotos e produtos)</th><td class="sales-number"><strong><%=FormatCurrency(totalVendido)%></strong></td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+    <aside class="sales-notes" aria-labelledby="sales-notes-title">
+        <h2 id="sales-notes-title">Crit&eacute;rios do relat&oacute;rio</h2>
+        <ul>
+            <li>Entram somente vendas corrigidas pelo departamento fotogr&aacute;fico.</li>
+            <li>Fotos produzidas e vendidas aparecem no resumo. Fotos vendidas &agrave; parte aparecem na tabela de produtos.</li>
+            <li>Os valores declarados na venda podem diferir do total arrecadado devido ao arredondamento no faturamento.</li>
+        </ul>
+    </aside>
+<%End If%>
+</main>
 </body>
 </html>
-
-
-
-
-
-

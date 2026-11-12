@@ -1,5 +1,7 @@
 			
 <%
+Dim historyReportMode
+historyReportMode = (Request.QueryString("modo") = "relatorio")
 Dim calendario_necessario
 calendario_necessario = "NÃO"
 %>
@@ -7,16 +9,53 @@ calendario_necessario = "NÃO"
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<link type="text/css" rel="stylesheet" href="http://stillos.com.br/gerencial_foto/css/base.css" media="screen"></link>
-<link rel="stylesheet" media="all" type="text/css" href="http://stillos.com.br/gerencial_foto/css/modal-message.css">
-<title>StillosWEB - Sistema corporativo - Vers&atilde;o 2.0</title>
+<link type="text/css" rel="stylesheet" href="css/base.css" media="screen"></link>
+<link rel="stylesheet" media="all" type="text/css" href="css/modal-message.css">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hist&oacute;rico da ordem de servi&ccedil;o | Portal Stillos</title>
+<style>
+body.os-history { margin:0; padding:clamp(12px,2vw,20px); background:#fff; color:#292738; font:14px/1.5 system-ui,sans-serif; }
+.os-history *, .os-history *::before, .os-history *::after { box-sizing:border-box; }
+.os-history .history-compose, .os-history .history-entry { padding:14px; border:1px solid #e9e5ee; border-radius:10px; background:#faf8fc; }
+.os-history .history-compose label { display:block; margin-bottom:7px; font-weight:700; }
+.os-history .history-compose textarea { display:block; width:100%; min-height:84px; resize:vertical; padding:10px; border:1px solid #d9d2e1; border-radius:8px; background:#fff; color:inherit; font:inherit; }
+.os-history .history-compose textarea:focus { outline:2px solid #9e125c; outline-offset:1px; }
+.os-history .history-actions { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.os-history .history-counter { color:#615b6e; font-size:12px; }
+.os-history .history-counter input { width:4ch; border:0; padding:0; background:transparent; text-align:right; color:inherit; font:inherit; }
+.os-history .history-button { display:inline-block; padding:7px 12px; border:1px solid #9e125c; border-radius:8px; background:#9e125c; color:#fff; text-decoration:none; font:650 13px/1.4 system-ui,sans-serif; cursor:pointer; }
+.os-history .history-button:hover { background:#80104b; color:#fff; }
+.os-history .history-secondary { border-color:#ddd5e5; background:#fff; color:#51445d; }
+.os-history .history-danger { border-color:#edccd6; background:#fff2f5; color:#8d2543; }
+.os-history .history-entry { margin-top:10px; }
+.os-history .history-meta { display:flex; flex-wrap:wrap; gap:4px 12px; margin-bottom:8px; color:#615b6e; font-size:12px; }
+.os-history .history-meta strong { color:#3e344e; }
+.os-history .history-text { overflow-wrap:anywhere; }
+.os-history .history-entry .history-button { margin-top:8px; }
+.os-history .history-empty { margin:12px 0; color:#615b6e; }
+.os-history .history-help { margin-top:12px; color:#615b6e; font-size:12px; }
+.os-history .history-help summary { cursor:pointer; font-weight:650; }
+ .history-report-heading { position:relative; border-bottom:2px solid #9e125c; padding-bottom:16px; margin-bottom:16px; }
+.history-report-heading h1 { margin:8px 0; font:700 23px/1.3 system-ui,sans-serif; color:#292738; }
+.history-report-heading p { margin:0 0 12px; color:#615b6e; }
+.history-brand { color:#9e125c; font-weight:700; font-size:12px; }
+@page { size:A4 portrait; margin:15mm; }
+@media print {
+    html, body.os-history { background:#fff; margin:0; padding:0; width:auto; color:#292738; font-size:11pt; }
+    .history-compose, .history-help, .history-entry .history-button, .report-print, .msgExcluir { display:none !important; }
+    .os-history .history-entry { background:#faf8fc; border:1px solid #e0d9e8; break-inside:avoid; page-break-inside:avoid; box-shadow:none; }
+    .os-history .history-meta { break-after:avoid; page-break-after:avoid; }
+    .os-history, .os-history * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .history-report-heading h1 { font-size:18pt; }
+}
+</style>
 <!-- #include virtual="gerencial_foto/includes/xqrtopqqetyynmkgfdconexao.asp" -->
 <!-- #include virtual="gerencial_foto/includes/osdifuqwslasdaplplasvalida_usuario.asp" -->
 <!-- #include virtual="gerencial_foto/files/includes/scripts.asp" -->
 <!-- #include virtual="gerencial_foto/files/includes/functions_local.asp" -->
 
 </head>
-<body style="padding:10px; background-color:#FFF">
+<body class="os-history">
 <%
 
 '----------------------------------------------------------------------------------------
@@ -170,6 +209,14 @@ setTimeout("parent.submenu.comandoVisualizar()",1)
 </script>
 <%End If%>
 
+<% If historyReportMode Then %>
+<header class="history-report-heading">
+    <div class="history-brand">Grupo Stillos &middot; Gerencial Foto</div>
+    <h1>Hist&oacute;rico da ordem de servi&ccedil;o</h1>
+    <p>OS <strong><%=Server.HTMLEncode(cod_ordem_servico & "")%></strong> &middot; Emitido em <%=Now()%></p>
+    <button type="button" class="history-button report-print" onclick="window.print()">Imprimir hist&oacute;rico</button>
+</header>
+<% End If %>
 <form action='<%=actionformulario%>?comando=<%=comando%>&cod_ordem_servico=<%=cod_ordem_servico%>' name='FORMULARIO_PADRAO' onsubmit='return validaFormMaster()' method='post'>
 <%
 AbrirConexao()
@@ -194,46 +241,27 @@ AbrirConexao()
 	Set rs=objConexao.Execute("Select TB_ORDENS_SERVICO_HISTORICO.*, TB_ORDENS_SERVICO_ETAPAS.numero_etapa From TB_ORDENS_SERVICO_ETAPAS inner join TB_ORDENS_SERVICO_HISTORICO on (TB_ORDENS_SERVICO_ETAPAS.cod_ordem_servico_etapa = TB_ORDENS_SERVICO_HISTORICO.cod_ordem_servico_etapa) Where TB_ORDENS_SERVICO_HISTORICO.cod_ordem_servico = '"&cod_ordem_servico&"' order by TB_ORDENS_SERVICO_HISTORICO.data_cadastro desc")
 	%>
 	
-    <table width="96%" border="1" align="center" cellpadding="3" style="border-collapse:collapse">
-<%
-			If int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2 Then
-			'Pode alterar ou excluir somente se o status da OS for em andamento ou iniciada, caso contr�rio NÃO ser� permitido.
-			%>
-            <tr> 
-              <td width="82%"><div align='center'>
-<table border='0' align="center" cellpadding='0' cellspacing='0' style='width:480px;'>
-<tr>
-<td width='57'><textarea rows='3' name='DESCRICAO' style='width:480px;' class='inputTamanho3' onkeydown='textCounter(this.form.DESCRICAO,this.form.charRestantes_DESCRICAO,3000);' onkeyup='textCounter(this.form.DESCRICAO,this.form.charRestantes_DESCRICAO,3000);'><%=DESCRICAO%></textarea></td>
-</tr>
-<tr>
-<td><table width='50' border='0' align='right' cellpadding='0' cellspacing='0'>
-<tr>
-<td><div align='center'>
-<input class='inputContaCaracteres' tabindex='10000' type='text' name='charRestantes_DESCRICAO' value="<%=3000- Len(DESCRICAO)%>" />
-</div></td>
-</tr>
-</table></td>
-</tr>
-</table>
-</div></td>
-              <td width="18%"><div align="center">
-              
-                        
-              	<%
-				If comando = "excluir" Then
-				%>
-                <a href="javascript:parent.history.go(-1)"><img src="images/layout/btnVoltar.jpg" /></a>
-              	&nbsp;
-                <a href="javascript:salvar();"><img src="images/layout/btnExcluir.jpg" /></a>
-                <%Else%>
-                <a href="javascript:salvar();"><img src="images/layout/btnGravar.jpg" /></a>
-                <%End If%>
-             </div></td>
-			</tr>
-<%
-			End If
-			
-			While not rs.Eof
+<% If Not historyReportMode And (int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2) Then %>
+    <div class="history-compose">
+        <label for="os-history-text">Anota&ccedil;&atilde;o da OS</label>
+        <textarea id="os-history-text" rows="3" name="DESCRICAO" onkeydown="textCounter(this.form.DESCRICAO,this.form.charRestantes_DESCRICAO,3000);" onkeyup="textCounter(this.form.DESCRICAO,this.form.charRestantes_DESCRICAO,3000);"><%=Server.HTMLEncode(DESCRICAO & "")%></textarea>
+        <div class="history-actions">
+            <label class="history-counter">
+                <input type="text" name="charRestantes_DESCRICAO" readonly="readonly" value="<%=3000 - Len(DESCRICAO)%>" /> caracteres restantes
+            </label>
+            <div>
+            <% If comando = "excluir" Then %>
+                <a class="history-button history-secondary" href="javascript:parent.history.go(-1)">Voltar</a>
+                <button type="submit" class="history-button history-danger">Confirmar exclus&atilde;o</button>
+            <% Else %>
+                <button type="submit" class="history-button">Gravar</button>
+            <% End If %>
+            </div>
+        </div>
+    </div>
+<% End If
+
+            While not rs.Eof
 			
 			DESCRICAO = rs("DESCRICAO")
 			DESCRICAO = Replace(DESCRICAO,Chr(13),"<br />")
@@ -241,57 +269,32 @@ AbrirConexao()
 			
 			%>
 				
-			<tr>
-              <td colspan="2"><div align="left">
-              
-              <div style="padding:5px; background-color:#E5E5E5">
-             <%=rs("numero_etapa")%>&ordf;) Etapa - <%=nomeUsuario(rs("cod_usuario"),true)%> - <%=rs("data_cadastro")%>:<br />
-              </div>
-<table width="100%" border="0" cellspacing="0" cellpadding="4">
-  <tr>
-    <td width="95%"><%=DESCRICAO%></td>
-    <td width="5%"><div align="center">
+    <article class="history-entry">
+        <div class="history-meta">
+            <strong><%=rs("numero_etapa")%>&ordf; etapa</strong>
+            <span><%=nomeUsuario(rs("cod_usuario"),true)%></span>
+            <span><%=rs("data_cadastro")%></span>
+        </div>
+        <div class="history-text"><%=DESCRICAO%></div>
+        <% If Not historyReportMode And int(rs("cod_usuario")) = Session("cod_usuario") and (int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2) Then %>
+            <a class="history-button history-danger" href="ppv_ordens_servico_formulario_consulta_historico.asp?comando=excluir&amp;id=<%=rs(0)%>&amp;cod_ordem_servico=<%=cod_ordem_servico%>">Excluir anota&ccedil;&atilde;o</a>
+        <% End If %>
+    </article>
     <%
-	If int(rs("cod_usuario")) = Session("cod_usuario") and (int(status_ordem_servico) = 1 or int(status_ordem_servico) = 2) Then
-	'S� permite exclus�o pelo pr�prio usu�rio que cadastrou o Histórico e se a OS estiver com Status Iniciada ou Em Andamento
-	%>
-    <a href="javascript:void(0);" onclick="abre('ppv_ordens_servico_formulario_consulta_historico.asp?comando=excluir&id=<%=rs(0)%>&cod_ordem_servico=<%=cod_ordem_servico%>')">
-    <img src="images/icons/icon_excluir.png" width="16" height="16" border="0" />    </a>
-    <%
-	End If
-	%>
-    
-    
-    </div></td>
-  </tr>
-</table>
-
-
-</div></td>
-      </tr>	
-				
-			<%
-			rs.MoveNext()
+            rs.MoveNext()
 			Wend
 			%>
-            </table>
-            
-     
-     <%If qtd_historicos = 0 and int(status_ordem_servico) = 3 Then%>
-     <div class="msgGrande">NÃO Histórico nesta OS cadastrado!</div>
-     <%End If%>
-     
-        
-<br />
-            <span style="font-style: italic">Observações:</span><br />
-            <br />
-            <span style="font-weight: bold">Inserir hist&oacute;rico:</span> Se a OS n&atilde;o estiver finalizada ou cancelada poder&aacute; ser inserido um hist&oacute;rico.<br />
-            <br />
-            <span style="font-weight: bold">Excluir hist&oacute;rico:</span> Somente por quem incluiu o hist&oacute;rico e se a OS n&atilde;o estiver finalizada ou cancelada.<br />
-            <br />
-<br />
+    <% If qtd_historicos = 0 Then %>
+        <p class="history-empty">Nenhuma anota&ccedil;&atilde;o registrada nesta OS.</p>
+    <% End If %>
 
-            
+    <% If Not historyReportMode Then %>
+    <details class="history-help">
+        <summary>Regras do hist&oacute;rico</summary>
+        <p>O registro de anota&ccedil;&otilde;es est&aacute; dispon&iacute;vel enquanto a OS est&aacute; em andamento ou aguardando despacho. A exclus&atilde;o &eacute; permitida ao autor da anota&ccedil;&atilde;o nesses mesmos status.</p>
+    </details>
+    <% End If %>
+
 <%	rs.Close
 	Set rs=Nothing
 	
@@ -314,13 +317,7 @@ return true
 <%End If%>
 </script>
  
-<script type="text/javascript">
-function salvar(){
-	if(validaFormMaster()){
-		document.FORMULARIO_PADRAO.submit();
-	}
-}
-</script>
+
 <!-- #include virtual="gerencial_foto/files/includes/scripts_rodape.asp" -->
 </body>
 </html>
