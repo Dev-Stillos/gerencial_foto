@@ -698,11 +698,12 @@ Set rs=Nothing
     <td height="31" colspan="15" align="center">
         <% If int(VERIFICA_ERRO) = 2 and int(temp) > 0 Then %>
 
-            <button type="button" id="btnProcessar" class="process-button" data-periodo="<%=Server.HTMLEncode(cod_fechamento_periodo & "")%>" data-pagamento="<%=Server.HTMLEncode(vendedor_recebe_em & "")%>">
+            <button type="button" id="btnProcessar" class="process-button" data-periodo="<%=Server.HTMLEncode(cod_fechamento_periodo & "")%>" data-pagamento="<%=Server.HTMLEncode(vendedor_recebe_em & "")%>" data-pendentes="<%=CLng(temp)%>">
                 Processar Pagamento
             </button>
 
             <div id="statusProcessamento" role="status"></div>
+            <div id="estimativaProcessamento"></div>
 
         <% Else %>
             <div class="check-decision is-blocked">
@@ -729,6 +730,31 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!button) return;
     const status = document.getElementById('statusProcessamento');
     const pedidos = new Set();
+    const estimativa = document.getElementById('estimativaProcessamento');
+    const totalPendente = Number(button.dataset.pendentes);
+    const temposRecentes = [];
+    let prazoEstimado = null;
+
+    function atualizarEstimativa() {
+        const restantes = totalPendente - pedidos.size;
+        if (restantes <= 0) {
+            estimativa.textContent = 'Finalizando o fechamento. Aguarde a confirmação do servidor.';
+            return;
+        }
+        if (prazoEstimado === null) {
+            estimativa.textContent = 'Calculando tempo restante…';
+            return;
+        }
+        const segundos = Math.ceil((prazoEstimado - performance.now()) / 1000);
+        if (segundos <= 0) {
+            estimativa.textContent = 'Recalculando a estimativa. Aguardando a próxima confirmação…';
+            return;
+        }
+        const minutos = Math.floor(segundos / 60);
+        const resto = segundos % 60;
+        estimativa.textContent = 'Tempo restante estimado: ' +
+            (minutos ? minutos + ' min ' : '') + resto + ' s';
+    }
     const url = new URL('adm_rotina_fechamento_extrato_pagamento_part2_tipo2.asp', document.baseURI);
     url.searchParams.set('COD_FECHAMENTO_PERIODO', button.dataset.periodo);
     url.searchParams.set('VENDEDOR_RECEBE_EM', button.dataset.pagamento);
@@ -738,8 +764,11 @@ document.addEventListener('DOMContentLoaded', function () {
         button.disabled = true;
         status.setAttribute('aria-busy', 'true');
         status.textContent = 'Processando… Mantenha este modal aberto.';
+        atualizarEstimativa();
+        const relogio = setInterval(atualizarEstimativa, 1000);
         try {
             while (true) {
+                const inicioPedido = performance.now();
                 const response = await fetch(url, {cache: 'no-store', redirect: 'error'});
                 if (!response.ok) throw new Error('HTTP ' + response.status);
                 const result = new DOMParser().parseFromString(await response.text(), 'text/html');
@@ -755,12 +784,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error('O servidor não confirmou avanço no processamento.');
                 }
                 pedidos.add(pedido);
-                status.textContent = pedidos.size + ' pedido(s) processado(s) nesta execução. Mantenha o modal aberto.';
+                temposRecentes.push(performance.now() - inicioPedido);
+                if (temposRecentes.length > 10) temposRecentes.shift();
+                if (temposRecentes.length >= 3) {
+                    const media = temposRecentes.reduce((soma, tempo) => soma + tempo, 0) / temposRecentes.length;
+                    prazoEstimado = performance.now() + Math.max(0, totalPendente - pedidos.size) * media;
+                }
+                status.textContent = pedidos.size + ' de ' + totalPendente +
+                    ' pedido(s) confirmados nesta execução. Mantenha o modal aberto.';
+                atualizarEstimativa();
             }
         } catch (error) {
             status.textContent = 'Processamento interrompido. Pedidos confirmados nesta execução: ' + pedidos.size +
                 '. Feche e reabra as verificações para conferir o estado antes de retomar. ' + error.message;
         } finally {
+            clearInterval(relogio);
+            estimativa.textContent = '';
             status.removeAttribute('aria-busy');
         }
     });
