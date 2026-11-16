@@ -660,7 +660,7 @@ Set rs=Nothing
 <br />
 <br />
 </section>
-<section class="check-card check-final" aria-labelledby="check-final"><h2 id="check-final">Processamento</h2>
+<section class="check-card check-final" aria-labelledby="check-final"><h2 id="check-final" tabindex="-1">Processamento</h2>
 
 <div class="check-scroll" role="region" aria-label="Tabela de verifica&ccedil;&atilde;o" tabindex="0"><table width="100%"  border="1" align="center" cellpadding="5" style="border-collapse:collapse">	
                     
@@ -729,6 +729,38 @@ document.addEventListener('DOMContentLoaded', function () {
     const button = document.getElementById('btnProcessar');
     if (!button) return;
     const status = document.getElementById('statusProcessamento');
+    const pagina = new URL(window.location.href);
+    const emJanelaDeAcompanhamento = window.top === window && pagina.searchParams.get('acompanhamento') === '1';
+
+    if (!emJanelaDeAcompanhamento) {
+        button.textContent = 'Abrir janela de processamento';
+        button.addEventListener('click', function () {
+            const nome = 'stillos_fechamento_' + button.dataset.periodo;
+            const janela = window.open('', nome);
+            if (!janela) {
+                status.textContent = 'Permita a abertura da janela de processamento e tente novamente.';
+                return;
+            }
+            try {
+                if (janela.location.href === 'about:blank' && !janela.stillosFechamentoAbrindo) {
+                    janela.stillosFechamentoAbrindo = true;
+                    pagina.searchParams.delete('modal');
+                    pagina.searchParams.set('acompanhamento', '1');
+                    pagina.hash = 'check-final';
+                    janela.location.replace(pagina.href);
+                }
+                janela.focus();
+                status.textContent = 'Confirme o início na janela de processamento. Depois, você pode fechar este modal.';
+            } catch (error) {
+                status.textContent = 'A janela de processamento já está aberta. Confira-a antes de iniciar outra execução.';
+            }
+        });
+        return;
+    }
+
+    document.title = 'Fechamento #' + button.dataset.periodo + ' · Acompanhamento';
+    document.getElementById('check-final').focus();
+    status.textContent = 'Confira o período e clique em Processar Pagamento. Mantenha esta janela aberta durante a execução.';
     const pedidos = new Set();
     const estimativa = document.getElementById('estimativaProcessamento');
     const totalPendente = Number(button.dataset.pendentes);
@@ -760,10 +792,16 @@ document.addEventListener('DOMContentLoaded', function () {
     url.searchParams.set('VENDEDOR_RECEBE_EM', button.dataset.pagamento);
     url.searchParams.set('modo', 'modal');
 
+    function confirmarSaida(event) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+
     button.addEventListener('click', async function () {
         button.disabled = true;
+        window.addEventListener('beforeunload', confirmarSaida);
         status.setAttribute('aria-busy', 'true');
-        status.textContent = 'Processando… Mantenha este modal aberto.';
+        status.textContent = 'Processando… Mantenha esta janela aberta.';
         atualizarEstimativa();
         const relogio = setInterval(atualizarEstimativa, 1000);
         try {
@@ -791,13 +829,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     prazoEstimado = performance.now() + Math.max(0, totalPendente - pedidos.size) * media;
                 }
                 status.textContent = pedidos.size + ' de ' + totalPendente +
-                    ' pedido(s) confirmados nesta execução. Mantenha o modal aberto.';
+                    ' pedido(s) confirmados nesta execução. Mantenha esta janela aberta.';
                 atualizarEstimativa();
             }
         } catch (error) {
             status.textContent = 'Processamento interrompido. Pedidos confirmados nesta execução: ' + pedidos.size +
                 '. Feche e reabra as verificações para conferir o estado antes de retomar. ' + error.message;
         } finally {
+            window.removeEventListener('beforeunload', confirmarSaida);
             clearInterval(relogio);
             estimativa.textContent = '';
             status.removeAttribute('aria-busy');
